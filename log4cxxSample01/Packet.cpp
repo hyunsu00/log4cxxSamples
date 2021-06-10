@@ -4,18 +4,21 @@
 #include <log4cxx/helpers/charsetdecoder.h> // CharsetDecoder
 #include <log4cxx/helpers/bytebuffer.h> // ByteBuffer
 
-#define CONCATE_(X, Y) X##Y
-#define CONCATE(X, Y) CONCATE_(X, Y)
+// https://stackoverflow.com/questions/424104/can-i-access-private-members-from-outside-the-class-without-using-friends
+namespace {
+	#define CONCATE_(X, Y) X##Y
+	#define CONCATE(X, Y) CONCATE_(X, Y)
 
-#define ALLOW_ACCESS(CLASS, MEMBER, ...) \
-  template<typename Only, __VA_ARGS__ CLASS::*Member> \
-  struct CONCATE(MEMBER, __LINE__) { friend __VA_ARGS__ CLASS::*Access(Only*) { return Member; } }; \
-  template<typename> struct Only_##MEMBER; \
-  template<> struct Only_##MEMBER<CLASS> { friend __VA_ARGS__ CLASS::*Access(Only_##MEMBER<CLASS>*); }; \
-  template struct CONCATE(MEMBER, __LINE__)<Only_##MEMBER<CLASS>, &CLASS::MEMBER>
+	#define ALLOW_ACCESS(CLASS, MEMBER, ...) \
+	  template<typename T, __VA_ARGS__ CLASS::*Member> \
+	  struct CONCATE(MEMBER, __LINE__) { friend __VA_ARGS__ CLASS::*Access(T*) { return Member; } }; \
+	  template<typename> struct T_##MEMBER; \
+	  template<> struct T_##MEMBER<CLASS> { friend __VA_ARGS__ CLASS::*Access(T_##MEMBER<CLASS>*); }; \
+	  template struct CONCATE(MEMBER, __LINE__)<T_##MEMBER<CLASS>, &CLASS::MEMBER>
 
-#define ACCESS(OBJECT, MEMBER) \
-(OBJECT).*Access((Only_##MEMBER<std::remove_reference<decltype(OBJECT)>::type>*)nullptr)
+	#define ACCESS(OBJECT, MEMBER) \
+	(OBJECT).*Access((T_##MEMBER<std::remove_reference<decltype(OBJECT)>::type>*)nullptr)
+} // namespace
 
 namespace log4cxx { namespace helpers {
 
@@ -636,16 +639,87 @@ namespace log4cxx { namespace helpers {
 	}
 
 	
-	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, timeStamp, log4cxx_time_t);
-	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, logger, LogString);
+//	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, timeStamp, log4cxx_time_t);
+// ==
+/*
+	template<typename T, log4cxx_time_t log4cxx::spi::LoggingEvent::* Member> 
+	struct timeStamp642 { 
+		friend log4cxx_time_t log4cxx::spi::LoggingEvent::* Access(T*) { 
+			return Member; 
+		} 
+	}; 
+	template<typename> struct T_timeStamp; 
+	template<> struct T_timeStamp<log4cxx::spi::LoggingEvent> { 
+		friend log4cxx_time_t log4cxx::spi::LoggingEvent::* Access(T_timeStamp<log4cxx::spi::LoggingEvent>*); 
+	}; 
+	template struct timeStamp642<T_timeStamp<log4cxx::spi::LoggingEvent>, &log4cxx::spi::LoggingEvent::timeStamp>;
+*/
 
+//	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, logger, LogString);
+// ==
+/*
+	template<typename T, LogString log4cxx::spi::LoggingEvent::* Member> 
+	struct logger643 { 
+		friend LogString log4cxx::spi::LoggingEvent::* Access(T*) { return Member; } 
+	}; 
+	template<typename> struct T_logger; 
+	template<> struct T_logger<log4cxx::spi::LoggingEvent> { 
+		friend LogString log4cxx::spi::LoggingEvent::* Access(T_logger<log4cxx::spi::LoggingEvent>*); 
+	}; 
+	template struct logger643<T_logger<log4cxx::spi::LoggingEvent>, &log4cxx::spi::LoggingEvent::logger>;
+*/
+/*
+	typedef log4cxx_time_t (log4cxx::spi::LoggingEvent::* Class_m_ptr);
+	Class_m_ptr get_timeStamp();
+
+	template<Class_m_ptr p>
+	struct Rob {
+		friend Class_m_ptr get_timeStamp() {
+			return p;
+		}
+	};
+	template struct Rob<&log4cxx::spi::LoggingEvent::timeStamp>;
+*/
+/*
+	log4cxx_time_t log4cxx::spi::LoggingEvent::* get_timeStamp();
+	template<log4cxx_time_t log4cxx::spi::LoggingEvent::* Member>
+	struct Rob {
+		friend log4cxx_time_t log4cxx::spi::LoggingEvent::* get_timeStamp() {
+			return Member;
+		}
+	};
+	template struct Rob<&log4cxx::spi::LoggingEvent::timeStamp>;
+*/
+	using Class_m_ptr = log4cxx_time_t log4cxx::spi::LoggingEvent::*;
+	Class_m_ptr get_timeStamp();
+	template<Class_m_ptr Member>
+	struct Rob {
+		friend Class_m_ptr get_timeStamp() {
+			return Member;
+		}
+	};
+	template struct Rob<&log4cxx::spi::LoggingEvent::timeStamp>;
+
+	
 	log4cxx::spi::LoggingEventPtr createLoggingEvent(const std::vector<char>& packet)
 	{
 //		log4cxx::spi::LoggingEventPtr event(new log4cxx::spi::LoggingEvent(name, level1, msg, location));
 		log4cxx::spi::LoggingEventPtr event(new log4cxx::spi::LoggingEvent());
 
-		ACCESS(*event, timeStamp) = 42;
-		ACCESS(*event, logger) = L"123";
+//		(*event).*Access((T_timeStamp<std::remove_reference<decltype(*event)>::type>*)nullptr) = 42;
+// ==
+// 		ACCESS(*event, timeStamp) = 42;
+ 
+//		(*event).*Access((T_logger<std::remove_reference<decltype(*event)>::type>*)nullptr) = L"123";
+// ==
+//		ACCESS(*event, logger) = L"123";
+/*
+		Class_m_ptr ptimeStamp = get_timeStamp();
+		(*event).*ptimeStamp = 42;
+*/
+
+		log4cxx_time_t log4cxx::spi::LoggingEvent::* ptimeStamp = get_timeStamp();
+		(*event).*ptimeStamp = 42;
 
 		//const void* pThis = p->cast(log4cxx::spi::LoggingEvent::getStaticClass());
 		//log4cxx::spi::LoggingEvent* p2 = (log4cxx::spi::LoggingEvent*)pThis;
