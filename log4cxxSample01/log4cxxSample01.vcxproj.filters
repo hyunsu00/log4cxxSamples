@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="log4cxxSample01.cpp" />
+    <ClCompile Include="Packet.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packet_#1.bin">
+      <Filter>Packet</Filter>
+    </None>
+    <None Include="packet_#2.bin">
+      <Filter>Packet</Filter>
+    </None>
+    <None Include="packet_#3.bin">
+      <Filter>Packet</Filter>
+    </None>
+    <None Include="log4cxx.conf">
+      <Filter>conf</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Packet">
+      <UniqueIdentifier>{9988aec3-5617-47c3-9490-cbad8dfe7a1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="conf">
+      <UniqueIdentifier>{007fa57b-0c8c-4510-8365-1148906acdd7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Packet.h" />
+  </ItemGroup>
+</Project>
