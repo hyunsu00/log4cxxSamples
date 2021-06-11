@@ -173,7 +173,7 @@ namespace log4cxx { namespace io {
 	{
 		const size_t pos = 0;
 		const char* pBuf = &byteBuf[0] + 0;
-		const size_t packetSize = byteBuf.size();
+		const size_t byteBufSize = byteBuf.size();
 		size_t readSize = 0;
 
 		// STREAM_MAGIC, STREAM_VERSION
@@ -181,7 +181,7 @@ namespace log4cxx { namespace io {
 			0xAC, 0xED, 0x00, 0x05
 		};
 		size_t size = sizeof(start);
-		if (pos + readSize + size > packetSize) {
+		if (pos + readSize + size > byteBufSize) {
 			throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 		}
 
@@ -203,12 +203,12 @@ namespace log4cxx { namespace io {
 		std::pair<std::string, unsigned int>& value
 	) /*throw(InstantiationException, RuntimeException)*/ {
 		const char* pBuf = &byteBuf[0] + pos;
-		const size_t packetSize = byteBuf.size();
+		const size_t byteBufSize = byteBuf.size();
 		size_t readSize = 0;
 
 		unsigned char type = TC_OBJECT;
 		size_t size = sizeof(type);
-		if (pos + readSize + size > packetSize) {
+		if (pos + readSize + size > byteBufSize) {
 			throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 		}
 
@@ -220,7 +220,7 @@ namespace log4cxx { namespace io {
 		readSize += size;
 
 		size = sizeof(type);
-		if (pos + readSize + size > packetSize) {
+		if (pos + readSize + size > byteBufSize) {
 			throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 		}
 		memcpy(&type, pBuf + readSize, size);
@@ -231,7 +231,7 @@ namespace log4cxx { namespace io {
 		case TC_CLASSDESC:
 			{
 				size = classDescLen - sizeof(classDesc[0]);
-				if (pos + readSize + size > packetSize) {
+				if (pos + readSize + size > byteBufSize) {
 					throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 				}
 
@@ -247,7 +247,7 @@ namespace log4cxx { namespace io {
 			{
 				unsigned char bytes[4] = { 0, };
 				size = sizeof(bytes);
-				if (pos + readSize + size > packetSize) {
+				if (pos + readSize + size > byteBufSize) {
 					throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 				}
 
@@ -271,12 +271,12 @@ namespace log4cxx { namespace io {
 	size_t readLocationInfo(const ByteBuf& byteBuf, size_t pos, std::string& value) /*throw(InstantiationException, RuntimeException)*/
 	{
 		const char* pBuf = &byteBuf[0] + pos;
-		const size_t packetSize = byteBuf.size();
+		const size_t byteBufSize = byteBuf.size();
 		size_t readSize = 0;
 
 		unsigned char type = TC_NULL;
 		size_t size = sizeof(type);
-		if (pos + readSize + size > packetSize) {
+		if (pos + readSize + size > byteBufSize) {
 			throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 		}
 		memcpy(&type, pBuf + readSize, size);
@@ -303,12 +303,12 @@ namespace log4cxx { namespace io {
 	size_t readMDC(const ByteBuf& byteBuf, size_t pos, MDC::Map& value) /*throw(InstantiationException, RuntimeException)*/
 	{
 		const char* pBuf = &byteBuf[0] + pos;
-		const size_t packetSize = byteBuf.size();
+		const size_t byteBufSize = byteBuf.size();
 		size_t readSize = 0;
 
 		unsigned char type = TC_NULL;
 		size_t size = sizeof(type);
-		if (pos + readSize + size > packetSize) {
+		if (pos + readSize + size > byteBufSize) {
 			throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 		}
 		memcpy(&type, pBuf + readSize, size);
@@ -331,12 +331,12 @@ namespace log4cxx { namespace io {
 	size_t readNDC(const ByteBuf& byteBuf, size_t pos, LogString& value) /*throw(InstantiationException, RuntimeException)*/
 	{
 		const char* pBuf = &byteBuf[0] + pos;
-		const size_t packetSize = byteBuf.size();
+		const size_t byteBufSize = byteBuf.size();
 		size_t readSize = 0;
 
 		unsigned char type = TC_NULL;
 		size_t size = sizeof(type);
-		if (pos + readSize + size > packetSize) {
+		if (pos + readSize + size > byteBufSize) {
 			throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 		}
 		memcpy(&type, pBuf + readSize, size);
@@ -359,7 +359,7 @@ namespace log4cxx { namespace io {
 	size_t readObject(const ByteBuf& byteBuf, size_t pos, MDC::Map& value) /*throw(InstantiationException, RuntimeException)*/
 	{
 		const char* pBuf = &byteBuf[0] + pos;
-		const size_t packetSize = byteBuf.size();
+		const size_t byteBufSize = byteBuf.size();
 		size_t readSize = 0;
 
 		std::pair<std::string, unsigned int> prolog;
@@ -372,7 +372,7 @@ namespace log4cxx { namespace io {
 			TC_BLOCKDATA, 0x08, 0x00, 0x00, 0x00, 0x07
 		};
 		size = sizeof(data);
-		if (pos + readSize + size > packetSize) {
+		if (pos + readSize + size > byteBufSize) {
 			throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 		}
 
@@ -417,12 +417,12 @@ namespace log4cxx { namespace io {
 	size_t readByte(const ByteBuf& byteBuf, size_t pos, unsigned char& value) /*throw(InstantiationException)*/
 	{
 		const char* pBuf = &byteBuf[0] + pos;
-		const size_t packetSize = byteBuf.size();
+		const size_t byteBufSize = byteBuf.size();
 		size_t readSize = 0;
 
 		unsigned char type = TC_NULL;
 		size_t size = 1;
-		if (pos + readSize + size > packetSize) {
+		if (pos + readSize + size > byteBufSize) {
 			throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 		}
 
@@ -435,11 +435,11 @@ namespace log4cxx { namespace io {
 	size_t readBytes(const ByteBuf& byteBuf, size_t pos, size_t bytes, std::vector<char>& value) /*throw(InstantiationException)*/
 	{
 		const char* pBuf = &byteBuf[0] + pos;
-		const size_t packetSize = byteBuf.size();
+		const size_t byteBufSize = byteBuf.size();
 		size_t readSize = 0;
 
 		size_t size = bytes;
-		if (pos + readSize + size > packetSize) {
+		if (pos + readSize + size > byteBufSize) {
 			throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 		}
 
@@ -453,12 +453,12 @@ namespace log4cxx { namespace io {
 	size_t readLong(const ByteBuf& byteBuf, size_t pos, log4cxx_time_t& value) /*throw(InstantiationException)*/
 	{
 		const char* pBuf = &byteBuf[0] + pos;
-		const size_t packetSize = byteBuf.size();
+		const size_t byteBufSize = byteBuf.size();
 		size_t readSize = 0;
 
 		_ASSERTE(sizeof(log4cxx_time_t) == 8 && "읽을 데이터의 크기는 8이여야 한다.");
 		const size_t size = 8;
-		if (pos + readSize + size > packetSize) {
+		if (pos + readSize + size > byteBufSize) {
 			throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 		}
 
@@ -498,12 +498,12 @@ namespace log4cxx { namespace io {
 	size_t readInt(const ByteBuf& byteBuf, size_t pos, int& value) /*throw(InstantiationException)*/
 	{
 		const char* pBuf = &byteBuf[0] + pos;
-		const size_t packetSize = byteBuf.size();
+		const size_t byteBufSize = byteBuf.size();
 		size_t readSize = 0;
 
 		_ASSERTE(sizeof(int) == 4 && "읽을 데이터의 크기는 4이여야 한다.");
 		const size_t size = 4;
-		if (pos + readSize + size > packetSize) {
+		if (pos + readSize + size > byteBufSize) {
 			throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 		}
 
@@ -537,12 +537,12 @@ namespace log4cxx { namespace io {
 	size_t readLogString(const ByteBuf& byteBuf, size_t pos, LogString& value) /*throw(InstantiationException, RuntimeException)*/
 	{
 		const char* pBuf = &byteBuf[0] + pos;
-		const size_t packetSize = byteBuf.size();
+		const size_t byteBufSize = byteBuf.size();
 		size_t readSize = 0;
 
 		unsigned char type = TC_STRING;
 		size_t size = sizeof(type);
-		if (pos + readSize + size > packetSize) {
+		if (pos + readSize + size > byteBufSize) {
 			throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 		}
 
@@ -558,7 +558,7 @@ namespace log4cxx { namespace io {
 		{
 			char bytes[2];
 			size = sizeof(bytes);
-			if (pos + readSize + size > packetSize) {
+			if (pos + readSize + size > byteBufSize) {
 				throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 			}
 
@@ -576,7 +576,7 @@ namespace log4cxx { namespace io {
 		std::vector<char> data(dataLen, 0);
 		{
 			size = data.size();
-			if (pos + readSize + size > packetSize) {
+			if (pos + readSize + size > byteBufSize) {
 				throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 			}
 			memcpy(&data[0], pBuf + readSize, size);
@@ -597,12 +597,12 @@ namespace log4cxx { namespace io {
 	size_t readUTFString(const ByteBuf& byteBuf, size_t pos, std::string& value) /*throw(InstantiationException, RuntimeException)*/
 	{
 		const char* pBuf = &byteBuf[0] + pos;
-		const size_t packetSize = byteBuf.size();
+		const size_t byteBufSize = byteBuf.size();
 		size_t readSize = 0;
 
 		unsigned char type = TC_STRING;
 		size_t size = sizeof(type);
-		if (pos + readSize + size > packetSize) {
+		if (pos + readSize + size > byteBufSize) {
 			throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 		}
 
@@ -618,7 +618,7 @@ namespace log4cxx { namespace io {
 		{
 			char bytes[2];
 			size = sizeof(bytes);
-			if (pos + readSize + size > packetSize) {
+			if (pos + readSize + size > byteBufSize) {
 				throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 			}
 
@@ -636,7 +636,7 @@ namespace log4cxx { namespace io {
 		std::vector<char> data(dataLen, 0);
 		{
 			size = data.size();
-			if (pos + readSize + size > packetSize) {
+			if (pos + readSize + size > byteBufSize) {
 				throw helpers::InstantiationException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
 			}
 			memcpy(&data[0], pBuf + readSize, size);
