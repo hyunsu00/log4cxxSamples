@@ -18,7 +18,7 @@
 #include <log4cxx/simplelayout.h> // log4cxx::SimpleLayout
 #include <log4cxx/helpers/pool.h> // log4cxx::helpers::Pool
 
-#include "Packet.h"
+#include "log4cxxObj.h"
 #include <crtdbg.h> // _ASSERTE
 
 int main()
