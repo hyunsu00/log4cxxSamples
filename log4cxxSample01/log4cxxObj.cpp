@@ -1,4 +1,5 @@
-﻿#include "Packet.h"
+﻿// log4cxxObj.cpp
+#include "log4cxxObj.h"
 #include <memory> // std::unique_ptr
 #include <crtdbg.h> // _ASSERTE
 #include <log4cxx/helpers/charsetdecoder.h> // CharsetDecoder
@@ -146,36 +147,47 @@ namespace log4cxx { namespace helpers {
 		return getFileContents(filename);
 	}
 
-	bool beginPacket(const std::vector<char>& packet)
+	size_t readStart(const std::vector<char>& packet) /*throw(exception, logic_error)*/
 	{
+		const size_t pos = 0;
+		const char* pBuf = &packet[0] + 0;
+		const size_t packetSize = packet.size();
+		size_t readSize = 0;
+
+		// STREAM_MAGIC, STREAM_VERSION
 		unsigned char start[] = {
 			0xAC, 0xED, 0x00, 0x05
 		};
 		size_t size = sizeof(start);
-		int ret = memcmp(start, &packet[0], size);
-		_ASSERTE(ret == 0 && "memcmp() Failed");
-		if (ret != 0) {
-			return false;
+		if (pos + readSize + size > packetSize) {
+			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
 		}
 
-		return true;
+		int ret = memcmp(start, pBuf + readSize, size);
+		_ASSERTE(ret == 0 && "memcmp() Failed");
+		if (ret != 0) {
+			throw std::logic_error("시작 데이터가 잘못 되었다.");
+		}
+		readSize += size;
+
+		return readSize;
 	}
 
 	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, timeStamp, log4cxx_time_t);
 	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, threadName, const LogString);
-	log4cxx::spi::LoggingEventPtr createLoggingEvent(const std::vector<char>& packet)
+	log4cxx::spi::LoggingEventPtr createLoggingEvent(const std::vector<char>& packet) /*throw(exception, logic_error, bad_alloc)*/
 	{
 		const char* pBuf = &packet[0];
 		size_t pos = 0;
 
-		// == writeProlog(os, p);
+		// <==> writeProlog(os, p);
 		{
 			std::pair<std::string, unsigned int> value;
 			size_t size = readProlog(packet, pos, LOGGING_EVENT, sizeof(LOGGING_EVENT), value);
 			pos += size;
 		}
 
-		// == os.writeBytes(lookupsRequired, sizeof(lookupsRequired), p);
+		// <==> os.writeBytes(lookupsRequired, sizeof(lookupsRequired), p);
 		{
 			unsigned char lookupsRequired[] = { 0, 0 };
 			std::vector<char> value;
@@ -188,7 +200,7 @@ namespace log4cxx { namespace helpers {
 			pos += size;
 		}
 
-		// == os.writeLong(timeStamp/1000, p);
+		// <==> os.writeLong(timeStamp/1000, p);
 		log4cxx_time_t timeStamp = 0;
 		{
 			size_t size = readLong(packet, pos, timeStamp);
@@ -196,49 +208,49 @@ namespace log4cxx { namespace helpers {
 			pos += size;
 		}
 
-		// == os.writeObject(logger, p);
+		// <==> os.writeObject(logger, p);
 		LogString logger;
 		{
 			size_t size = readLogString(packet, pos, logger);
 			pos += size;
 		}
 
-		// locationInfo.write(os, p);
+		// <==> locationInfo.write(os, p);
 		std::string fullInfo;
 		{
 			size_t size = readLocationInfo(packet, pos, fullInfo);
 			pos += size;
 		}
 
-		// mdc
+		// <==> mdc
 		MDC::Map mdcMap;
 		{
 			size_t size = readMDC(packet, pos, mdcMap);
 			pos += size;
 		}
 
-		// ndc 
+		// <==> ndc 
 		LogString ndc;
 		{
 			size_t size = readMDC(packet, pos, mdcMap);
 			pos += size;
 		}
 
-		// == os.writeObject(message, p);
+		// <==> os.writeObject(message, p);
 		LogString message;
 		{
 			size_t size = readLogString(packet, pos, message);
 			pos += size;
 		}
 		
-		// == os.writeObject(threadName, p);
+		// <==> os.writeObject(threadName, p);
 		LogString threadName;
 		{
 			size_t size = readLogString(packet, pos, threadName);
 			pos += size;
 		}
 
-		// == os.writeNull(p);
+		// <==> os.writeNull(p);
 		{
 			unsigned char value = TC_NULL;
 			size_t size = readByte(packet, pos, value);
@@ -248,7 +260,7 @@ namespace log4cxx { namespace helpers {
 			pos += size;
 		}
 
-		// == os.writeByte(ObjectOutputStream::TC_BLOCKDATA, p);
+		// <==> os.writeByte(ObjectOutputStream::TC_BLOCKDATA, p);
 		{
 			unsigned char value = TC_BLOCKDATA;
 			size_t size = readByte(packet, pos, value);
@@ -258,7 +270,7 @@ namespace log4cxx { namespace helpers {
 			pos += size;
 		}
 
-		// == os.writeByte(0x04, p);
+		// <==> os.writeByte(0x04, p);
 		{
 			unsigned char value = 0x04;
 			size_t size = readByte(packet, pos, value);
@@ -268,14 +280,14 @@ namespace log4cxx { namespace helpers {
 			pos += size;
 		}
 
-		// == os.writeInt(level->toInt(), p);
+		// <==> os.writeInt(level->toInt(), p);
 		int level = 0;
 		{
 			size_t size = readInt(packet, pos, level);
 			pos += size;
 		}
 
-		// == os.writeNull(p);
+		// <==> os.writeNull(p);
 		{
 			unsigned char value = TC_NULL;
 			size_t size = readByte(packet, pos, value);
@@ -285,7 +297,7 @@ namespace log4cxx { namespace helpers {
 			pos += size;
 		}
 
-		// == os.writeByte(ObjectOutputStream::TC_ENDBLOCKDATA, p);
+		// <==> os.writeByte(ObjectOutputStream::TC_ENDBLOCKDATA, p);
 		{
 			unsigned char value = TC_ENDBLOCKDATA;
 			size_t size = readByte(packet, pos, value);
@@ -320,9 +332,9 @@ namespace log4cxx { namespace helpers {
 		const unsigned char* classDesc,
 		size_t classDescLen,
 		std::pair<std::string, unsigned int>& value
-	) {
+	) /*throw(exception, logic_error)*/ {
 		const char* pBuf = &packet[0] + pos;
-		size_t packetSize = packet.size();
+		const size_t packetSize = packet.size();
 		size_t readSize = 0;
 
 		unsigned char type = TC_OBJECT;
@@ -387,10 +399,10 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readLocationInfo(const std::vector<char>& packet, size_t pos, std::string& value)
+	size_t readLocationInfo(const std::vector<char>& packet, size_t pos, std::string& value) /*throw(exception, logic_error)*/
 	{
 		const char* pBuf = &packet[0] + pos;
-		size_t packetSize = packet.size();
+		const size_t packetSize = packet.size();
 		size_t readSize = 0;
 
 		unsigned char type = TC_NULL;
@@ -419,10 +431,10 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readMDC(const std::vector<char>& packet, size_t pos, MDC::Map& value)
+	size_t readMDC(const std::vector<char>& packet, size_t pos, MDC::Map& value) /*throw(exception, logic_error)*/
 	{
 		const char* pBuf = &packet[0] + pos;
-		size_t packetSize = packet.size();
+		const size_t packetSize = packet.size();
 		size_t readSize = 0;
 
 		unsigned char type = TC_NULL;
@@ -447,10 +459,10 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readNDC(const std::vector<char>& packet, size_t pos, LogString& value)
+	size_t readNDC(const std::vector<char>& packet, size_t pos, LogString& value) /*throw(exception, logic_error)*/
 	{
 		const char* pBuf = &packet[0] + pos;
-		size_t packetSize = packet.size();
+		const size_t packetSize = packet.size();
 		size_t readSize = 0;
 
 		unsigned char type = TC_NULL;
@@ -475,7 +487,7 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readObject(const std::vector<char>& packet, size_t pos, MDC::Map& value)
+	size_t readObject(const std::vector<char>& packet, size_t pos, MDC::Map& value) /*throw(exception, logic_error)*/
 	{
 		const char* pBuf = &packet[0] + pos;
 		const size_t packetSize = packet.size();
@@ -486,7 +498,7 @@ namespace log4cxx { namespace helpers {
 		readSize += size;
 
 		// == os->write(dataBuf, p);
-		char data[] = {
+		const char data[] = {
 			0x3F, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05,
 			TC_BLOCKDATA, 0x08, 0x00, 0x00, 0x00, 0x07
 		};
@@ -498,7 +510,7 @@ namespace log4cxx { namespace helpers {
 		int ret = memcmp(data, pBuf + readSize, size);
 		_ASSERTE(ret == 0 && "memcmp() Failed");
 		if (ret != 0) {
-			throw std::logic_error("type이 TC_OBJECT이여야만 한다.");
+			throw std::logic_error("data 정보가 잘못 되었다.");
 		}
 		readSize += size;
 
@@ -509,11 +521,11 @@ namespace log4cxx { namespace helpers {
 
 		for (int i = 0; i < mapSize; i++) {
 			LogString first, second;
-			// == writeObject(iter->first, p);
+			// <==> writeObject(iter->first, p);
 			size = readLogString(packet, pos + readSize, first);
 			readSize += size;
 
-			// == writeObject(iter->second, p);
+			// <==> writeObject(iter->second, p);
 			size = readLogString(packet, pos + readSize, second);
 			readSize += size;
 
@@ -525,7 +537,7 @@ namespace log4cxx { namespace helpers {
 			unsigned char value = TC_ENDBLOCKDATA;
 			size = readByte(packet, pos + readSize, value);
 			if (value != TC_ENDBLOCKDATA) {
-				throw std::logic_error("value는 TC_NULL 여야만 한다.");
+				throw std::logic_error("value는 TC_ENDBLOCKDATA 여야만 한다.");
 			}
 			readSize += size;
 		}
@@ -533,7 +545,7 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readByte(const std::vector<char>& packet, size_t pos, unsigned char& value)
+	size_t readByte(const std::vector<char>& packet, size_t pos, unsigned char& value) /*throw(exception)*/
 	{
 		const char* pBuf = &packet[0] + pos;
 		const size_t packetSize = packet.size();
@@ -551,10 +563,10 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readBytes(const std::vector<char>& packet, size_t pos, size_t bytes, std::vector<char>& value)
+	size_t readBytes(const std::vector<char>& packet, size_t pos, size_t bytes, std::vector<char>& value) /*throw(exception)*/
 	{
 		const char* pBuf = &packet[0] + pos;
-		size_t packetSize = packet.size();
+		const size_t packetSize = packet.size();
 		size_t readSize = 0;
 
 		size_t size = bytes;
@@ -569,10 +581,10 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readLong(const std::vector<char>& packet, size_t pos, log4cxx_time_t& value)
+	size_t readLong(const std::vector<char>& packet, size_t pos, log4cxx_time_t& value) /*throw(exception)*/
 	{
 		const char* pBuf = &packet[0] + pos;
-		size_t packetSize = packet.size();
+		const size_t packetSize = packet.size();
 		size_t readSize = 0;
 
 		_ASSERTE(sizeof(log4cxx_time_t) == 8 && "읽을 데이터의 크기는 8이여야 한다.");
@@ -614,7 +626,7 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readInt(const std::vector<char>& packet, size_t pos, int& value)
+	size_t readInt(const std::vector<char>& packet, size_t pos, int& value) /*throw(exception)*/
 	{
 		const char* pBuf = &packet[0] + pos;
 		const size_t packetSize = packet.size();
@@ -653,7 +665,7 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readLogString(const std::vector<char>& packet, size_t pos, LogString& value)
+	size_t readLogString(const std::vector<char>& packet, size_t pos, LogString& value) /*throw(exception, logic_error)*/
 	{
 		const char* pBuf = &packet[0] + pos;
 		const size_t packetSize = packet.size();
@@ -683,6 +695,7 @@ namespace log4cxx { namespace helpers {
 
 			// 빅 엔디안
 			memcpy(bytes, pBuf + readSize, size);
+
 			// 리틀 엔디안으로 변경
 			std::swap(bytes[0], bytes[1]);
 			memcpy(&dataLen, bytes, sizeof(bytes));
@@ -698,6 +711,7 @@ namespace log4cxx { namespace helpers {
 				throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
 			}
 			memcpy(&data[0], pBuf + readSize, size);
+
 			readSize += size;
 		}
 		
@@ -711,7 +725,7 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readUTFString(const std::vector<char>& packet, size_t pos, std::string& value)
+	size_t readUTFString(const std::vector<char>& packet, size_t pos, std::string& value) /*throw(exception, logic_error)*/
 	{
 		const char* pBuf = &packet[0] + pos;
 		const size_t packetSize = packet.size();
@@ -741,6 +755,7 @@ namespace log4cxx { namespace helpers {
 
 			// 빅 엔디안
 			memcpy(bytes, pBuf + readSize, size);
+
 			// 리틀 엔디안으로 변경
 			std::swap(bytes[0], bytes[1]);
 			memcpy(&dataLen, bytes, sizeof(bytes));
@@ -756,17 +771,18 @@ namespace log4cxx { namespace helpers {
 				throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
 			}
 			memcpy(&data[0], pBuf + readSize, size);
+
 			readSize += size;
 		}
 
-		// 
+		// 가장뒤에 0 추가
 		data.push_back(0);
 		value = &data[0];
 
 		return readSize;
 	}
 
-	log4cxx::spi::LocationInfoPtr createLocationInfo(const std::string& fullInfo)
+	log4cxx::spi::LocationInfoPtr createLocationInfo(const std::string& fullInfo) /*throw(bad_alloc)*/
 	{
 		// className
 		std::string className;
@@ -774,14 +790,12 @@ namespace log4cxx { namespace helpers {
 			int iend = fullInfo.find_last_of('(');
 			if (iend == std::string::npos) {
 				className = log4cxx::spi::LocationInfo::NA;
-			}
-			else {
+			} else {
 				iend = fullInfo.find_last_of('.', iend);
 				int ibegin = 0;
 				if (iend == std::string::npos) {
 					className = log4cxx::spi::LocationInfo::NA;
-				}
-				else {
+				} else {
 					size_t count = iend - ibegin;
 					className = fullInfo.substr(ibegin, count);
 				}
@@ -795,8 +809,7 @@ namespace log4cxx { namespace helpers {
 			int ibegin = fullInfo.find_last_of('.', iend);
 			if (ibegin == std::string::npos) {
 				methodName = log4cxx::spi::LocationInfo::NA;
-			}
-			else {
+			} else {
 				size_t count = iend - (ibegin + 1);
 				methodName = fullInfo.substr(ibegin + 1, count);
 			}
@@ -809,8 +822,7 @@ namespace log4cxx { namespace helpers {
 			int iend = fullInfo.find_last_of(':');
 			if (iend == std::string::npos) {
 				fileName = log4cxx::spi::LocationInfo::NA;
-			}
-			else {
+			} else {
 				int ibegin = fullInfo.find_last_of('(', iend - 1);
 				size_t count = iend - (ibegin + 1);
 				fileName = fullInfo.substr(ibegin + 1, count);
@@ -825,14 +837,13 @@ namespace log4cxx { namespace helpers {
 			int ibegin = fullInfo.find_last_of(':', iend - 1);
 			if (ibegin == std::string::npos) {
 				lineNumber = log4cxx::spi::LocationInfo::NA;
-			}
-			else {
+			} else {
 				size_t count = iend - (ibegin + 1);
 				lineNumber = fullInfo.substr(ibegin + 1, count);
 			}
 		}
 
-		// Test
+		// [Test]
 		// == getClassName()
 		{
 			std::string tmp(methodName);
@@ -843,8 +854,7 @@ namespace log4cxx { namespace helpers {
 				if (spacePos != std::string::npos) {
 					tmp.erase(0, spacePos + 1);
 				}
-			}
-			else {
+			} else {
 				tmp.erase(0, tmp.length());
 			}
 		}
@@ -855,8 +865,7 @@ namespace log4cxx { namespace helpers {
 			size_t colonPos = tmp.find("::");
 			if (colonPos != std::string::npos) {
 				tmp.erase(0, colonPos + 2);
-			}
-			else {
+			} else {
 				size_t spacePos = tmp.find(' ');
 				if (spacePos != std::string::npos) {
 					tmp.erase(0, spacePos + 1);
@@ -885,4 +894,5 @@ namespace log4cxx { namespace helpers {
 
 		return locationInfoPtr;
 	}
+
 }} // namespace log4cxx::helpers

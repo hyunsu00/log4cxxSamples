@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="log4cxxSample01.cpp" />
-    <ClCompile Include="Packet.cpp" />
+    <ClCompile Include="log4cxxObj.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packet_#1.bin">
@@ -27,6 +27,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Packet.h" />
+    <ClInclude Include="log4cxxObj.h" />
   </ItemGroup>
 </Project>

@@ -36,14 +36,20 @@ int main()
 
 	{
 		std::vector<char> packet = log4cxx::helpers::loadPacket("packet_#1.bin");
-
-		bool ret = log4cxx::helpers::beginPacket(packet);
-		_ASSERTE(ret && "beginPacket() failed");
-
-		packet.erase(packet.begin(), packet.begin() + 4);
+		
+		size_t size = 0;
+		try {
+			size = log4cxx::helpers::readStart(packet);
+		} catch (std::logic_error& e) {
+			std::cerr << e.what() << std::endl;
+			return -1;
+		} catch (std::exception& e) {
+			std::cout << e.what() << std::endl;
+		}
+		
+		packet.erase(packet.begin(), packet.begin() + size);
 
 		std::vector<char> copyPacket;
-
 		size_t packetSize = packet.size();
 		int count = packetSize / 100;
 		int remain = packetSize % 100;
