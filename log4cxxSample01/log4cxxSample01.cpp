@@ -4,7 +4,7 @@
 #include "log4cxxObj.h"
 #include <iostream> // std::cerr, std::cout
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
-#include <log4cxx/helpers/Exception.h> // log4cxx::helpers::Exception, log4cxx::helpers::RuntimeException
+#include <log4cxx/helpers/Exception.h> // log4cxx::helpers::InstantiationException, log4cxx::helpers::RuntimeException
 
 static bool loadFiles()
 {
@@ -19,7 +19,7 @@ static bool loadFiles()
 		} catch (log4cxx::helpers::RuntimeException& e) {
 			std::cout << e.what() << std::endl;
 			return false;
-		} catch (log4cxx::helpers::Exception& e) {
+		} catch (log4cxx::helpers::InstantiationException& e) {
 			std::cout << e.what() << std::endl;
 		}
 
@@ -35,7 +35,7 @@ static bool loadFiles()
 		} catch (log4cxx::helpers::RuntimeException& e) {
 			std::cerr << e.what() << std::endl;
 			return false;
-		} catch (log4cxx::helpers::Exception& e) {
+		} catch (log4cxx::helpers::InstantiationException& e) {
 			std::cout << e.what() << std::endl;
 		}
 
