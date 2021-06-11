@@ -34,16 +34,27 @@ namespace log4cxx { namespace helpers {
 	std::vector<char> loadPacket(const char* filename);
 
     bool beginPacket(const std::vector<char>& packet);
-	bool parsePacket(const std::vector<char>& packet);
-
-    size_t readLong(const std::vector<char>& packet, size_t pos, log4cxx_time_t& value);
-    size_t readInt(const std::vector<char>& packet, size_t pos, int& value);
-    size_t readLogString(const std::vector<char>& packet, size_t pos, LogString& value);
-    size_t readUTFString(const std::vector<char>& packet, size_t pos, std::string& value);
-    size_t readObject(const std::vector<char>& packet, size_t pos, MDC::Map& value);
-
 
     log4cxx::spi::LoggingEventPtr createLoggingEvent(const std::vector<char>& packet);
     log4cxx::spi::LocationInfoPtr createLocationInfo(const std::string& fullInfo);
 
+    size_t readProlog(
+        const std::vector<char>& packet, 
+        size_t pos, 
+        const unsigned char* classDesc,
+        size_t classDescLen, 
+        std::pair<std::string, unsigned int>& value
+    );
+    size_t readLocationInfo(const std::vector<char>& packet, size_t pos, std::string& value);
+    size_t readMDC(const std::vector<char>& packet, size_t pos, MDC::Map& value);
+    size_t readNDC(const std::vector<char>& packet, size_t pos, LogString& value);
+    size_t readObject(const std::vector<char>& packet, size_t pos, MDC::Map& value);
+
+    size_t readByte(const std::vector<char>& packet, size_t pos, unsigned char& value);
+    size_t readBytes(const std::vector<char>& packet, size_t pos, size_t bytes, std::vector<char>& value);
+    size_t readLong(const std::vector<char>& packet, size_t pos, log4cxx_time_t& value);
+    size_t readInt(const std::vector<char>& packet, size_t pos, int& value);
+    size_t readLogString(const std::vector<char>& packet, size_t pos, LogString& value);
+    size_t readUTFString(const std::vector<char>& packet, size_t pos, std::string& value);
+    
 }} // namespace log4cxx::helpers

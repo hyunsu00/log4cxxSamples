@@ -3,6 +3,7 @@
 #include <crtdbg.h> // _ASSERTE
 #include <log4cxx/helpers/charsetdecoder.h> // CharsetDecoder
 #include <log4cxx/helpers/bytebuffer.h> // ByteBuffer
+#include <stdexcept>
 
 // https://stackoverflow.com/questions/424104/can-i-access-private-members-from-outside-the-class-without-using-friends
 namespace {
@@ -20,6 +21,92 @@ namespace {
 	(OBJECT).*Access((T_##MEMBER<std::remove_reference<decltype(OBJECT)>::type>*)nullptr)
 } // namespace
 
+namespace {
+	// org.apache.log4j.spi.LoggingEvent
+	static const unsigned char LOGGING_EVENT[] = {
+		0x72, 0x00, 0x21,
+		0x6F, 0x72, 0x67, 0x2E, 0x61, 0x70, 0x61, 0x63,
+		0x68, 0x65, 0x2E, 0x6C, 0x6F, 0x67, 0x34, 0x6A,
+		0x2E, 0x73, 0x70, 0x69, 0x2E, 0x4C, 0x6F, 0x67,
+		0x67, 0x69, 0x6E, 0x67, 0x45, 0x76, 0x65, 0x6E,
+		0x74, 0xF3, 0xF2, 0xB9, 0x23, 0x74, 0x0B, 0xB5,
+		0x3F, 0x03, 0x00, 0x0A, 0x5A, 0x00, 0x15, 0x6D,
+		0x64, 0x63, 0x43, 0x6F, 0x70, 0x79, 0x4C, 0x6F,
+		0x6F, 0x6B, 0x75, 0x70, 0x52, 0x65, 0x71, 0x75,
+		0x69, 0x72, 0x65, 0x64, 0x5A, 0x00, 0x11, 0x6E,
+		0x64, 0x63, 0x4C, 0x6F, 0x6F, 0x6B, 0x75, 0x70,
+		0x52, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64,
+		0x4A, 0x00, 0x09, 0x74, 0x69, 0x6D, 0x65, 0x53,
+		0x74, 0x61, 0x6D, 0x70, 0x4C, 0x00, 0x0C, 0x63,
+		0x61, 0x74, 0x65, 0x67, 0x6F, 0x72, 0x79, 0x4E,
+		0x61, 0x6D, 0x65, 0x74, 0x00, 0x12, 0x4C, 0x6A,
+		0x61, 0x76, 0x61, 0x2F, 0x6C, 0x61, 0x6E, 0x67,
+		0x2F, 0x53, 0x74, 0x72, 0x69, 0x6E, 0x67, 0x3B,
+		0x4C, 0x00, 0x0C, 0x6C, 0x6F, 0x63, 0x61, 0x74,
+		0x69, 0x6F, 0x6E, 0x49, 0x6E, 0x66, 0x6F, 0x74,
+		0x00, 0x23, 0x4C, 0x6F, 0x72, 0x67, 0x2F, 0x61,
+		0x70, 0x61, 0x63, 0x68, 0x65, 0x2F, 0x6C, 0x6F,
+		0x67, 0x34, 0x6A, 0x2F, 0x73, 0x70, 0x69, 0x2F,
+		0x4C, 0x6F, 0x63, 0x61, 0x74, 0x69, 0x6F, 0x6E,
+		0x49, 0x6E, 0x66, 0x6F, 0x3B, 0x4C, 0x00, 0x07,
+		0x6D, 0x64, 0x63, 0x43, 0x6F, 0x70, 0x79, 0x74,
+		0x00, 0x15, 0x4C, 0x6A, 0x61, 0x76, 0x61, 0x2F,
+		0x75, 0x74, 0x69, 0x6C, 0x2F, 0x48, 0x61, 0x73,
+		0x68, 0x74, 0x61, 0x62, 0x6C, 0x65, 0x3B, 0x4C,
+		0x00, 0x03, 0x6E, 0x64, 0x63,
+		0x74, 0x00, 0x12, 0x4C, 0x6A,
+		0x61, 0x76, 0x61, 0x2F, 0x6C, 0x61, 0x6E, 0x67,
+		0x2F, 0x53, 0x74, 0x72, 0x69, 0x6E, 0x67, 0x3B,
+		0x4C, 0x00, 0x0F, 0x72, 0x65, 0x6E,
+		0x64, 0x65, 0x72, 0x65, 0x64, 0x4D, 0x65, 0x73,
+		0x73, 0x61, 0x67, 0x65,
+		0x74, 0x00, 0x12, 0x4C, 0x6A,
+		0x61, 0x76, 0x61, 0x2F, 0x6C, 0x61, 0x6E, 0x67,
+		0x2F, 0x53, 0x74, 0x72, 0x69, 0x6E, 0x67, 0x3B,
+		0x4C, 0x00, 0x0A, 0x74, 0x68, 0x72, 0x65,
+		0x61, 0x64, 0x4E, 0x61, 0x6D, 0x65,
+		0x74, 0x00, 0x12, 0x4C, 0x6A,
+		0x61, 0x76, 0x61, 0x2F, 0x6C, 0x61, 0x6E, 0x67,
+		0x2F, 0x53, 0x74, 0x72, 0x69, 0x6E, 0x67, 0x3B,
+		0x4C, 0x00, 0x0D, 0x74, 0x68,
+		0x72, 0x6F, 0x77, 0x61, 0x62, 0x6C, 0x65, 0x49,
+		0x6E, 0x66, 0x6F, 0x74, 0x00, 0x2B, 0x4C, 0x6F,
+		0x72, 0x67, 0x2F, 0x61, 0x70, 0x61, 0x63, 0x68,
+		0x65, 0x2F, 0x6C, 0x6F, 0x67, 0x34, 0x6A, 0x2F,
+		0x73, 0x70, 0x69, 0x2F, 0x54, 0x68, 0x72, 0x6F,
+		0x77, 0x61, 0x62, 0x6C, 0x65, 0x49, 0x6E, 0x66,
+		0x6F, 0x72, 0x6D, 0x61, 0x74, 0x69, 0x6F, 0x6E,
+		0x3B, 0x78, 0x70
+	};
+
+	// org.apache.log4j.spi.LocationInfo
+	static const unsigned char LOCATION_INFO[] = {
+		0x72, 0x00, 0x21, 0x6F, 0x72, 0x67, 0x2E,
+		0x61, 0x70, 0x61, 0x63, 0x68, 0x65, 0x2E, 0x6C,
+		0x6F, 0x67, 0x34, 0x6A, 0x2E, 0x73, 0x70, 0x69,
+		0x2E, 0x4C, 0x6F, 0x63, 0x61, 0x74, 0x69, 0x6F,
+		0x6E, 0x49, 0x6E, 0x66, 0x6F, 0xED, 0x99, 0xBB,
+		0xE1, 0x4A, 0x91, 0xA5, 0x7C, 0x02, 0x00, 0x01,
+		0x4C, 0x00, 0x08, 0x66, 0x75, 0x6C, 0x6C, 0x49,
+		0x6E, 0x66, 0x6F,
+		0x74, 0x00, 0x12, 0x4C, 0x6A,
+		0x61, 0x76, 0x61, 0x2F, 0x6C, 0x61, 0x6E, 0x67,
+		0x2F, 0x53, 0x74, 0x72, 0x69, 0x6E, 0x67, 0x3B,
+		0x78, 0x70
+	};
+
+	// java.util.Hashtable
+	unsigned char HASH_TABLE[] = {
+		0x72, 0x00, 0x13, 0x6A, 0x61, 0x76, 0x61,
+		0x2E, 0x75, 0x74, 0x69, 0x6C, 0x2E, 0x48, 0x61,
+		0x73, 0x68, 0x74, 0x61, 0x62, 0x6C, 0x65, 0x13,
+		0xBB, 0x0F, 0x25, 0x21, 0x4A, 0xE4, 0xB8, 0x03,
+		0x00, 0x02, 0x46, 0x00, 0x0A, 0x6C, 0x6F, 0x61,
+		0x64, 0x46, 0x61, 0x63, 0x74, 0x6F, 0x72, 0x49,
+		0x00, 0x09, 0x74, 0x68, 0x72, 0x65, 0x73, 0x68,
+		0x6F, 0x6C, 0x64, 0x78, 0x70
+	};
+}
 namespace log4cxx { namespace helpers {
 
 	std::vector<char> loadPacket(const char* filename)
@@ -74,540 +161,344 @@ namespace log4cxx { namespace helpers {
 		return true;
 	}
 
-	bool parsePacket(const std::vector<char>& packet)
+	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, timeStamp, log4cxx_time_t);
+	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, threadName, const LogString);
+	log4cxx::spi::LoggingEventPtr createLoggingEvent(const std::vector<char>& packet)
 	{
 		const char* pBuf = &packet[0];
 		size_t pos = 0;
+
 		// == writeProlog(os, p);
 		{
-			unsigned char classDesc[] = {
-				0x72, 0x00, 0x21,
-				0x6F, 0x72, 0x67, 0x2E, 0x61, 0x70, 0x61, 0x63,
-				0x68, 0x65, 0x2E, 0x6C, 0x6F, 0x67, 0x34, 0x6A,
-				0x2E, 0x73, 0x70, 0x69, 0x2E, 0x4C, 0x6F, 0x67,
-				0x67, 0x69, 0x6E, 0x67, 0x45, 0x76, 0x65, 0x6E,
-				0x74, 0xF3, 0xF2, 0xB9, 0x23, 0x74, 0x0B, 0xB5,
-				0x3F, 0x03, 0x00, 0x0A, 0x5A, 0x00, 0x15, 0x6D,
-				0x64, 0x63, 0x43, 0x6F, 0x70, 0x79, 0x4C, 0x6F,
-				0x6F, 0x6B, 0x75, 0x70, 0x52, 0x65, 0x71, 0x75,
-				0x69, 0x72, 0x65, 0x64, 0x5A, 0x00, 0x11, 0x6E,
-				0x64, 0x63, 0x4C, 0x6F, 0x6F, 0x6B, 0x75, 0x70,
-				0x52, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64,
-				0x4A, 0x00, 0x09, 0x74, 0x69, 0x6D, 0x65, 0x53,
-				0x74, 0x61, 0x6D, 0x70, 0x4C, 0x00, 0x0C, 0x63,
-				0x61, 0x74, 0x65, 0x67, 0x6F, 0x72, 0x79, 0x4E,
-				0x61, 0x6D, 0x65, 0x74, 0x00, 0x12, 0x4C, 0x6A,
-				0x61, 0x76, 0x61, 0x2F, 0x6C, 0x61, 0x6E, 0x67,
-				0x2F, 0x53, 0x74, 0x72, 0x69, 0x6E, 0x67, 0x3B,
-				0x4C, 0x00, 0x0C, 0x6C, 0x6F, 0x63, 0x61, 0x74,
-				0x69, 0x6F, 0x6E, 0x49, 0x6E, 0x66, 0x6F, 0x74,
-				0x00, 0x23, 0x4C, 0x6F, 0x72, 0x67, 0x2F, 0x61,
-				0x70, 0x61, 0x63, 0x68, 0x65, 0x2F, 0x6C, 0x6F,
-				0x67, 0x34, 0x6A, 0x2F, 0x73, 0x70, 0x69, 0x2F,
-				0x4C, 0x6F, 0x63, 0x61, 0x74, 0x69, 0x6F, 0x6E,
-				0x49, 0x6E, 0x66, 0x6F, 0x3B, 0x4C, 0x00, 0x07,
-				0x6D, 0x64, 0x63, 0x43, 0x6F, 0x70, 0x79, 0x74,
-				0x00, 0x15, 0x4C, 0x6A, 0x61, 0x76, 0x61, 0x2F,
-				0x75, 0x74, 0x69, 0x6C, 0x2F, 0x48, 0x61, 0x73,
-				0x68, 0x74, 0x61, 0x62, 0x6C, 0x65, 0x3B, 0x4C,
-				0x00, 0x03, 0x6E, 0x64, 0x63,
-				0x74, 0x00, 0x12, 0x4C, 0x6A,
-				0x61, 0x76, 0x61, 0x2F, 0x6C, 0x61, 0x6E, 0x67,
-				0x2F, 0x53, 0x74, 0x72, 0x69, 0x6E, 0x67, 0x3B,
-				0x4C, 0x00, 0x0F, 0x72, 0x65, 0x6E,
-				0x64, 0x65, 0x72, 0x65, 0x64, 0x4D, 0x65, 0x73,
-				0x73, 0x61, 0x67, 0x65,
-				0x74, 0x00, 0x12, 0x4C, 0x6A,
-				0x61, 0x76, 0x61, 0x2F, 0x6C, 0x61, 0x6E, 0x67,
-				0x2F, 0x53, 0x74, 0x72, 0x69, 0x6E, 0x67, 0x3B,
-				0x4C, 0x00, 0x0A, 0x74, 0x68, 0x72, 0x65,
-				0x61, 0x64, 0x4E, 0x61, 0x6D, 0x65,
-				0x74, 0x00, 0x12, 0x4C, 0x6A,
-				0x61, 0x76, 0x61, 0x2F, 0x6C, 0x61, 0x6E, 0x67,
-				0x2F, 0x53, 0x74, 0x72, 0x69, 0x6E, 0x67, 0x3B,
-				0x4C, 0x00, 0x0D, 0x74, 0x68,
-				0x72, 0x6F, 0x77, 0x61, 0x62, 0x6C, 0x65, 0x49,
-				0x6E, 0x66, 0x6F, 0x74, 0x00, 0x2B, 0x4C, 0x6F,
-				0x72, 0x67, 0x2F, 0x61, 0x70, 0x61, 0x63, 0x68,
-				0x65, 0x2F, 0x6C, 0x6F, 0x67, 0x34, 0x6A, 0x2F,
-				0x73, 0x70, 0x69, 0x2F, 0x54, 0x68, 0x72, 0x6F,
-				0x77, 0x61, 0x62, 0x6C, 0x65, 0x49, 0x6E, 0x66,
-				0x6F, 0x72, 0x6D, 0x61, 0x74, 0x69, 0x6F, 0x6E,
-				0x3B, 0x78, 0x70 
-			};
-
-			//
-			unsigned char type = TC_OBJECT;
-			size_t size = sizeof(type);
-			int ret = memcmp(&type, pBuf + pos, size);
-			_ASSERTE(ret == 0 && "memcmp() Failed");
-			if (ret != 0) {
-				return false;
-			}
+			std::pair<std::string, unsigned int> value;
+			size_t size = readProlog(packet, pos, LOGGING_EVENT, sizeof(LOGGING_EVENT), value);
 			pos += size;
-
-			type = *(pBuf + pos);
-			size = sizeof(type);
-			pos += size;
-			switch (type)
-			{
-			case TC_CLASSDESC:
-				{
-					size = sizeof(classDesc) - sizeof(classDesc[0]);
-					ret = memcmp(classDesc + 1, pBuf + pos, size);
-					_ASSERTE(ret == 0 && "memcmp() Failed");
-					if (ret != 0) {
-						return false;
-					}
-					pos += size;
-				}
-				break;
-			case TC_REFERENCE:
-				{
-					// 
-					unsigned char bytes[4] = { 0, };
-					size = sizeof(bytes);
-					memcpy(bytes, pBuf + pos, size);
-					pos += size;
-				}
-				break;
-			default:
-				_ASSERTE(!"type is invalid");
-				return false;
-			}
 		}
 
 		// == os.writeBytes(lookupsRequired, sizeof(lookupsRequired), p);
 		{
 			unsigned char lookupsRequired[] = { 0, 0 };
-			size_t size = sizeof(lookupsRequired);
-			int ret = memcmp(lookupsRequired, pBuf + pos, size);
+			std::vector<char> value;
+			size_t size = readBytes(packet, pos, sizeof(lookupsRequired), value);
+			int ret = memcmp(lookupsRequired, &value[0], sizeof(lookupsRequired));
 			_ASSERTE(ret == 0 && "memcmp() Failed");
 			if (ret != 0) {
-				return false;
+				throw std::logic_error("lookupsRequired와 value는 같아야 한다.");
 			}
 			pos += size;
 		}
 
 		// == os.writeLong(timeStamp/1000, p);
+		log4cxx_time_t timeStamp = 0;
 		{
-			log4cxx_time_t timeStamp = 0;
 			size_t size = readLong(packet, pos, timeStamp);
 			timeStamp *= 1000;
 			pos += size;
 		}
 
 		// == os.writeObject(logger, p);
+		LogString logger;
 		{
-			LogString logger;
 			size_t size = readLogString(packet, pos, logger);
 			pos += size;
 		}
 
 		// locationInfo.write(os, p);
+		std::string fullInfo;
 		{
-			unsigned char type = *(pBuf + pos);
-			switch (type)
-			{
-			// == os.writeNull(p);
-			case TC_NULL:
-				{
-					size_t size = sizeof(type);
-					pos += size;
-				}
-				break;
-			// == os.writeProlog("org.apache.log4j.spi.LocationInfo", 2, prolog, sizeof(prolog), p);
-			default:
-				{
-					unsigned char classDesc[] = {
-						0x72, 0x00, 0x21, 0x6F, 0x72, 0x67, 0x2E,
-						0x61, 0x70, 0x61, 0x63, 0x68, 0x65, 0x2E, 0x6C,
-						0x6F, 0x67, 0x34, 0x6A, 0x2E, 0x73, 0x70, 0x69,
-						0x2E, 0x4C, 0x6F, 0x63, 0x61, 0x74, 0x69, 0x6F,
-						0x6E, 0x49, 0x6E, 0x66, 0x6F, 0xED, 0x99, 0xBB,
-						0xE1, 0x4A, 0x91, 0xA5, 0x7C, 0x02, 0x00, 0x01,
-						0x4C, 0x00, 0x08, 0x66, 0x75, 0x6C, 0x6C, 0x49,
-						0x6E, 0x66, 0x6F,
-						0x74, 0x00, 0x12, 0x4C, 0x6A,
-						0x61, 0x76, 0x61, 0x2F, 0x6C, 0x61, 0x6E, 0x67,
-						0x2F, 0x53, 0x74, 0x72, 0x69, 0x6E, 0x67, 0x3B,
-						0x78, 0x70
-					};
-
-					type = TC_OBJECT;
-					size_t size = sizeof(type);
-					int ret = memcmp(&type, pBuf + pos, size);
-					_ASSERTE(ret == 0 && "memcmp() Failed");
-					if (ret != 0) {
-						return false;
-					}
-					pos += size;
-
-					type = *(pBuf + pos);
-					size = sizeof(type);
-					pos += size;
-					switch (type)
-					{
-					case TC_CLASSDESC:
-						{
-							size = sizeof(classDesc) - sizeof(classDesc[0]);
-							ret = memcmp(classDesc + 1, pBuf + pos, size);
-							_ASSERTE(ret == 0 && "memcmp() Failed");
-							if (ret != 0) {
-								return false;
-							}
-							pos += size;
-						}
-						break;
-					case TC_REFERENCE:
-						{
-							// 
-							unsigned char bytes[4] = { 0, };
-							size = sizeof(bytes);
-							memcpy(bytes, pBuf + pos, size);
-							pos += size;
-						}
-						break;
-					default:
-						_ASSERTE(!"type is invalid");
-						return false;
-					}
-
-					std::string fullInfo;
-					size = readUTFString(packet, pos, fullInfo);
-					pos += size;
-
-					// 테스트
-					createLocationInfo(fullInfo);
-				}
-				break;
-			}
+			size_t size = readLocationInfo(packet, pos, fullInfo);
+			pos += size;
 		}
 
 		// mdc
+		MDC::Map mdcMap;
 		{
-			unsigned char type = *(pBuf + pos);
-			switch (type)
-			{
-			// == os.writeNull(p);
-			case TC_NULL:
-				{
-					size_t size = sizeof(type);
-					pos += size;
-				}
-				break;
-			// == os.writeObject(*mdcCopy, p);
-			default:
-				{
-					MDC::Map mdcMap;
-					size_t size = readObject(packet, pos, mdcMap);
-					pos += size;
-				}
-				break;
-			}
+			size_t size = readMDC(packet, pos, mdcMap);
+			pos += size;
 		}
 
 		// ndc 
+		LogString ndc;
 		{
-			unsigned char type = *(pBuf + pos);
-			switch (type)
-			{
-			// == os.writeNull(p);
-			case TC_NULL:
-				{
-					size_t size = sizeof(type);
-					pos += size;
-				}
-				break;
-			// == os.writeObject(*ndc, p);
-			default:
-				{
-					MDC::Map ndcMap;
-					size_t size = readObject(packet, pos, ndcMap);
-					pos += size;
-				}
-				break;
-			}
+			size_t size = readMDC(packet, pos, mdcMap);
+			pos += size;
 		}
 
 		// == os.writeObject(message, p);
+		LogString message;
 		{
-			LogString message;
 			size_t size = readLogString(packet, pos, message);
 			pos += size;
 		}
 		
 		// == os.writeObject(threadName, p);
+		LogString threadName;
 		{
-			LogString threadName;
 			size_t size = readLogString(packet, pos, threadName);
 			pos += size;
 		}
 
 		// == os.writeNull(p);
 		{
-			unsigned char type = TC_NULL;
-			size_t size = sizeof(type);
-			int ret = memcmp(&type, pBuf + pos, size);
-			_ASSERTE(ret == 0 && "memcmp() Failed");
-			if (ret != 0) {
-				return false;
+			unsigned char value = TC_NULL;
+			size_t size = readByte(packet, pos, value);
+			if (value != TC_NULL) {
+				throw std::logic_error("value는 TC_NULL 여야만 한다.");
 			}
 			pos += size;
 		}
 
 		// == os.writeByte(ObjectOutputStream::TC_BLOCKDATA, p);
 		{
-			unsigned char type = TC_BLOCKDATA;
-			size_t size = sizeof(type);
-			int ret = memcmp(&type, pBuf + pos, size);
-			_ASSERTE(ret == 0 && "memcmp() Failed");
-			if (ret != 0) {
-				return false;
+			unsigned char value = TC_BLOCKDATA;
+			size_t size = readByte(packet, pos, value);
+			if (value != TC_BLOCKDATA) {
+				throw std::logic_error("value는 TC_BLOCKDATA 여야만 한다.");
 			}
 			pos += size;
 		}
 
 		// == os.writeByte(0x04, p);
 		{
-			unsigned char type = 0x04;
-			size_t size = sizeof(type);
-			int ret = memcmp(&type, pBuf + pos, size);
-			_ASSERTE(ret == 0 && "memcmp() Failed");
-			if (ret != 0) {
-				return false;
+			unsigned char value = 0x04;
+			size_t size = readByte(packet, pos, value);
+			if (value != 0x04) {
+				throw std::logic_error("value는 0x04 여야만 한다.");
 			}
 			pos += size;
 		}
 
 		// == os.writeInt(level->toInt(), p);
+		int level = 0;
 		{
-			int level = 0;
 			size_t size = readInt(packet, pos, level);
 			pos += size;
 		}
 
 		// == os.writeNull(p);
 		{
-			unsigned char type = TC_NULL;
-			size_t size = sizeof(type);
-			int ret = memcmp(&type, pBuf + pos, size);
-			_ASSERTE(ret == 0 && "memcmp() Failed");
-			if (ret != 0) {
-				return false;
+			unsigned char value = TC_NULL;
+			size_t size = readByte(packet, pos, value);
+			if (value != TC_NULL) {
+				throw std::logic_error("value는 TC_NULL 여야만 한다.");
 			}
 			pos += size;
 		}
 
 		// == os.writeByte(ObjectOutputStream::TC_ENDBLOCKDATA, p);
 		{
-			unsigned char type = TC_ENDBLOCKDATA;
-			size_t size = sizeof(type);
-			int ret = memcmp(&type, pBuf + pos, size);
-			_ASSERTE(ret == 0 && "memcmp() Failed");
-			if (ret != 0) {
-				return false;
+			unsigned char value = TC_ENDBLOCKDATA;
+			size_t size = readByte(packet, pos, value);
+			if (value != TC_ENDBLOCKDATA) {
+				throw std::logic_error("value는 TC_NULL 여야만 한다.");
 			}
 			pos += size;
 		}
 
 		_ASSERTE((packet.size() == pos) && "모든 값을 읽지 못했다.");
 
-		return true;
+		log4cxx::spi::LoggingEventPtr event(
+			new log4cxx::spi::LoggingEvent(
+				logger, 
+				Level::toLevel(level),
+				message,
+				*createLocationInfo(fullInfo)
+			)
+		);
+		// backdoor
+		ACCESS(*event, timeStamp) = timeStamp;
+		const_cast<LogString&>(ACCESS(*event, threadName)) = threadName;
+// ==
+//		const_cast<LogString&>(event->getThreadName()) = threadName;
+
+		return event;
 	}
 
-	size_t readLong(const std::vector<char>& packet, size_t pos, log4cxx_time_t& value)
-	{
-		memcpy(&value, &packet[0] + pos, sizeof(log4cxx_time_t));
-
-		char bytes[8] = { 0, };
-		bytes[7] = (char)(value & 0xFF);
-		bytes[6] = (char)((value >> 8) & 0xFF);
-		bytes[5] = (char)((value >> 16) & 0xFF);
-		bytes[4] = (char)((value >> 24) & 0xFF);
-		bytes[3] = (char)((value >> 32) & 0xFF);
-		bytes[2] = (char)((value >> 40) & 0xFF);
-		bytes[1] = (char)((value >> 48) & 0xFF);
-		bytes[0] = (char)((value >> 56) & 0xFF);
-
-		memcpy(&value, bytes, sizeof(bytes));
-/*
-		char bytes[8];
-		memcpy(bytes, &packet[0] + pos, 8);
-
-		std::swap(bytes[0], bytes[7]);
-		std::swap(bytes[1], bytes[6]);
-		std::swap(bytes[2], bytes[5]);
-		std::swap(bytes[3], bytes[4]);
-
-		memcpy(&value, bytes, sizeof(bytes));
-*/
-		return sizeof(log4cxx_time_t);
-	}
-
-	size_t readInt(const std::vector<char>& packet, size_t pos, int& value)
-	{
-		memcpy(&value, &packet[0] + pos, sizeof(int));
-
-		char bytes[4] = { 0, };
-		bytes[3] = (char)(value & 0xFF);
-		bytes[2] = (char)((value >> 8) & 0xFF);
-		bytes[1] = (char)((value >> 16) & 0xFF);
-		bytes[0] = (char)((value >> 24) & 0xFF);
-
-		memcpy(&value, bytes, sizeof(bytes));
-
-/*
-		char bytes[4];
-		memcpy(bytes, &packet[0] + pos, 4);
-
-		std::swap(bytes[0], bytes[3]);
-		std::swap(bytes[1], bytes[2]);
-
-		memcpy(&value, bytes, sizeof(bytes));
-*/
-		return sizeof(int);
-	}
-
-	size_t readLogString(const std::vector<char>& packet, size_t pos, LogString& value)
-	{
+	size_t readProlog(
+		const std::vector<char>& packet,
+		size_t pos,
+		const unsigned char* classDesc,
+		size_t classDescLen,
+		std::pair<std::string, unsigned int>& value
+	) {
+		const char* pBuf = &packet[0] + pos;
+		size_t packetSize = packet.size();
 		size_t readSize = 0;
 
-		const char* pBuf = &packet[0];
-		unsigned char type = TC_STRING;
-		size_t size = sizeof(type);
-		int ret = memcmp(&type, pBuf + pos + readSize, size);
-		_ASSERTE(ret == 0 && "memcmp() Failed");
-		if (ret != 0) {
-			return readSize;
-		}
-		readSize += size;
-
-		//
-		size_t dataLen = 0;
-		char bytes[2];
-		size = sizeof(bytes);
-		memcpy(bytes, pBuf + pos + readSize, size);
-		std::swap(bytes[0], bytes[1]);
-		memcpy(&dataLen, bytes, sizeof(bytes));
-		readSize += size;
-		
-		//
-		std::vector<char> data(dataLen, 0);
-		size = data.size();
-		memcpy(&data[0], pBuf + pos + readSize, size);
-		readSize += size;
-
-		//
-		CharsetDecoderPtr utf8Decoder(CharsetDecoder::getUTF8Decoder());
-		ByteBuffer buf(&data[0], size);
-		utf8Decoder->decode(buf, value);
-
-		return readSize;
-	}
-
-	size_t readUTFString(const std::vector<char>& packet, size_t pos, std::string& value)
-	{
-		size_t readSize = 0;
-
-		const char* pBuf = &packet[0];
-		unsigned char type = TC_STRING;
-		size_t size = sizeof(type);
-		int ret = memcmp(&type, pBuf + pos + readSize, size);
-		_ASSERTE(ret == 0 && "memcmp() Failed");
-		if (ret != 0) {
-			return readSize;
-		}
-		readSize += size;
-
-		//
-		size_t dataLen = 0;
-		char bytes[2];
-		size = sizeof(bytes);
-		memcpy(bytes, pBuf + pos + readSize, size);
-		std::swap(bytes[0], bytes[1]);
-		memcpy(&dataLen, bytes, sizeof(bytes));
-		readSize += size;
-
-		//
-		std::vector<char> data(dataLen, 0);
-		size = data.size();
-		memcpy(&data[0], pBuf + pos + readSize, size);
-		readSize += size;
-		
-		//
-		data.push_back(0);
-		value = &data[0];
-
-		return readSize;
-	}
-
-	size_t readObject(const std::vector<char>& packet, size_t pos, MDC::Map& value)
-	{
-		size_t readSize = 0;
-		const char* pBuf = &packet[0];
-
-		unsigned char classDesc[] = {
-			0x72, 0x00, 0x13, 0x6A, 0x61, 0x76, 0x61,
-			0x2E, 0x75, 0x74, 0x69, 0x6C, 0x2E, 0x48, 0x61,
-			0x73, 0x68, 0x74, 0x61, 0x62, 0x6C, 0x65, 0x13,
-			0xBB, 0x0F, 0x25, 0x21, 0x4A, 0xE4, 0xB8, 0x03,
-			0x00, 0x02, 0x46, 0x00, 0x0A, 0x6C, 0x6F, 0x61,
-			0x64, 0x46, 0x61, 0x63, 0x74, 0x6F, 0x72, 0x49,
-			0x00, 0x09, 0x74, 0x68, 0x72, 0x65, 0x73, 0x68,
-			0x6F, 0x6C, 0x64, 0x78, 0x70 
-		};
-
-		// == writeProlog("java.util.Hashtable", 1, prolog, sizeof(prolog), p);
 		unsigned char type = TC_OBJECT;
 		size_t size = sizeof(type);
-		int ret = memcmp(&type, pBuf + pos + readSize, size);
+		if (pos + readSize + size > packetSize) {
+			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+		}
+
+		int ret = memcmp(&type, pBuf + readSize, size);
 		_ASSERTE(ret == 0 && "memcmp() Failed");
 		if (ret != 0) {
-			return readSize;
+			throw std::logic_error("type이 TC_OBJECT이여야만 한다.");
 		}
 		readSize += size;
 
-		type = *(pBuf + pos + readSize);
 		size = sizeof(type);
+		if (pos + readSize + size > packetSize) {
+			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+		}
+		memcpy(&type, pBuf + readSize, size);
 		readSize += size;
+
 		switch (type)
 		{
 		case TC_CLASSDESC:
 			{
-				size = sizeof(classDesc) - sizeof(classDesc[0]);
-				ret = memcmp(classDesc + 1, pBuf + pos + readSize, size);
+				size = classDescLen - sizeof(classDesc[0]);
+				if (pos + readSize + size > packetSize) {
+					throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+				}
+
+				ret = memcmp(classDesc + 1, pBuf + readSize, size);
 				_ASSERTE(ret == 0 && "memcmp() Failed");
 				if (ret != 0) {
-					return 0;
+					throw std::logic_error("TC_CLASSDESC의 클래스 정보가 잘못되었다.");
 				}
 				readSize += size;
 			}
 			break;
 		case TC_REFERENCE:
 			{
-				// 
 				unsigned char bytes[4] = { 0, };
 				size = sizeof(bytes);
-				memcpy(bytes, pBuf + pos + readSize, size);
+				if (pos + readSize + size > packetSize) {
+					throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+				}
+
+				memcpy(bytes, pBuf + readSize, size);
 				readSize += size;
+
+				// 리틀 엔디안으로 변경
+				std::swap(bytes[0], bytes[3]);
+				std::swap(bytes[1], bytes[2]);
+				memcpy(&value.second, bytes, sizeof(bytes));
 			}
 			break;
 		default:
 			_ASSERTE(!"type is invalid");
-			return 0;
+			throw std::logic_error("type 정보를 처리 할수 없다.");
 		}
 
+		return readSize;
+	}
+
+	size_t readLocationInfo(const std::vector<char>& packet, size_t pos, std::string& value)
+	{
+		const char* pBuf = &packet[0] + pos;
+		size_t packetSize = packet.size();
+		size_t readSize = 0;
+
+		unsigned char type = TC_NULL;
+		size_t size = sizeof(type);
+		if (pos + readSize + size > packetSize) {
+			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+		}
+		memcpy(&type, pBuf + readSize, size);
+
+		if (type == TC_NULL) {
+			readSize += size;
+
+			value.clear();
+		} else {
+			std::pair<std::string, unsigned int> prolog;
+			size = readProlog(packet, pos, LOCATION_INFO, sizeof(LOCATION_INFO), prolog);
+			readSize += size;
+
+			std::string fullInfo;
+			size = readUTFString(packet, pos + readSize, fullInfo);
+			readSize += size;
+
+			value = fullInfo;
+		}
+		
+		return readSize;
+	}
+
+	size_t readMDC(const std::vector<char>& packet, size_t pos, MDC::Map& value)
+	{
+		const char* pBuf = &packet[0] + pos;
+		size_t packetSize = packet.size();
+		size_t readSize = 0;
+
+		unsigned char type = TC_NULL;
+		size_t size = sizeof(type);
+		if (pos + readSize + size > packetSize) {
+			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+		}
+		memcpy(&type, pBuf + readSize, size);
+
+		if (type == TC_NULL) {
+			readSize += size;
+
+			value.clear();
+		} else {
+			MDC::Map mdcMap;
+			size = readObject(packet, pos, mdcMap);
+			readSize += size;
+
+			value = mdcMap;
+		}
+		
+		return readSize;
+	}
+
+	size_t readNDC(const std::vector<char>& packet, size_t pos, LogString& value)
+	{
+		const char* pBuf = &packet[0] + pos;
+		size_t packetSize = packet.size();
+		size_t readSize = 0;
+
+		unsigned char type = TC_NULL;
+		size_t size = sizeof(type);
+		if (pos + readSize + size > packetSize) {
+			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+		}
+		memcpy(&type, pBuf + readSize, size);
+
+		if (type == TC_NULL) {
+			readSize += size;
+
+			value.clear();
+		} else {
+			LogString ndc;
+			size = readLogString(packet, pos, ndc);
+			readSize += size;
+
+			value = ndc;
+		}
+		
+		return readSize;
+	}
+
+	size_t readObject(const std::vector<char>& packet, size_t pos, MDC::Map& value)
+	{
+		const char* pBuf = &packet[0] + pos;
+		const size_t packetSize = packet.size();
+		size_t readSize = 0;
+
+		std::pair<std::string, unsigned int> prolog;
+		size_t size = readProlog(packet, pos, HASH_TABLE, sizeof(HASH_TABLE), prolog);
+		readSize += size;
+
 		// == os->write(dataBuf, p);
-		char data[] = { 
+		char data[] = {
 			0x3F, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05,
-			TC_BLOCKDATA, 0x08, 0x00, 0x00, 0x00, 0x07 
+			TC_BLOCKDATA, 0x08, 0x00, 0x00, 0x00, 0x07
 		};
 		size = sizeof(data);
-		ret = memcmp(data, pBuf + pos + readSize, size);
+		if (pos + readSize + size > packetSize) {
+			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+		}
+
+		int ret = memcmp(data, pBuf + readSize, size);
 		_ASSERTE(ret == 0 && "memcmp() Failed");
 		if (ret != 0) {
-			return 0;
+			throw std::logic_error("type이 TC_OBJECT이여야만 한다.");
 		}
 		readSize += size;
 
@@ -621,6 +512,7 @@ namespace log4cxx { namespace helpers {
 			// == writeObject(iter->first, p);
 			size = readLogString(packet, pos + readSize, first);
 			readSize += size;
+
 			// == writeObject(iter->second, p);
 			size = readLogString(packet, pos + readSize, second);
 			readSize += size;
@@ -629,133 +521,273 @@ namespace log4cxx { namespace helpers {
 		}
 
 		// == writeByte(TC_ENDBLOCKDATA, p);
-		type = TC_ENDBLOCKDATA;
-		size = sizeof(type);
-		ret = memcmp(&type, pBuf + pos + readSize, size);
-		_ASSERTE(ret == 0 && "memcmp() Failed");
-		if (ret != 0) {
-			return 0;
+		{
+			unsigned char value = TC_ENDBLOCKDATA;
+			size = readByte(packet, pos + readSize, value);
+			if (value != TC_ENDBLOCKDATA) {
+				throw std::logic_error("value는 TC_NULL 여야만 한다.");
+			}
+			readSize += size;
 		}
+
+		return readSize;
+	}
+
+	size_t readByte(const std::vector<char>& packet, size_t pos, unsigned char& value)
+	{
+		const char* pBuf = &packet[0] + pos;
+		const size_t packetSize = packet.size();
+		size_t readSize = 0;
+
+		unsigned char type = TC_NULL;
+		size_t size = 1;
+		if (pos + readSize + size > packetSize) {
+			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+		}
+
+		memcpy(&value, pBuf + readSize, size);
 		readSize += size;
 
 		return readSize;
 	}
 
-	
-//	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, timeStamp, log4cxx_time_t);
-// ==
-/*
-	template<typename T, log4cxx_time_t log4cxx::spi::LoggingEvent::* Member> 
-	struct timeStamp642 { 
-		friend log4cxx_time_t log4cxx::spi::LoggingEvent::* Access(T*) { 
-			return Member; 
-		} 
-	}; 
-	template<typename> struct T_timeStamp; 
-	template<> struct T_timeStamp<log4cxx::spi::LoggingEvent> { 
-		friend log4cxx_time_t log4cxx::spi::LoggingEvent::* Access(T_timeStamp<log4cxx::spi::LoggingEvent>*); 
-	}; 
-	template struct timeStamp642<T_timeStamp<log4cxx::spi::LoggingEvent>, &log4cxx::spi::LoggingEvent::timeStamp>;
-*/
-
-//	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, logger, LogString);
-// ==
-/*
-	template<typename T, LogString log4cxx::spi::LoggingEvent::* Member> 
-	struct logger643 { 
-		friend LogString log4cxx::spi::LoggingEvent::* Access(T*) { return Member; } 
-	}; 
-	template<typename> struct T_logger; 
-	template<> struct T_logger<log4cxx::spi::LoggingEvent> { 
-		friend LogString log4cxx::spi::LoggingEvent::* Access(T_logger<log4cxx::spi::LoggingEvent>*); 
-	}; 
-	template struct logger643<T_logger<log4cxx::spi::LoggingEvent>, &log4cxx::spi::LoggingEvent::logger>;
-*/
-/*
-	typedef log4cxx_time_t (log4cxx::spi::LoggingEvent::* Class_m_ptr);
-	Class_m_ptr get_timeStamp();
-
-	template<Class_m_ptr p>
-	struct Rob {
-		friend Class_m_ptr get_timeStamp() {
-			return p;
-		}
-	};
-	template struct Rob<&log4cxx::spi::LoggingEvent::timeStamp>;
-*/
-/*
-	log4cxx_time_t log4cxx::spi::LoggingEvent::* get_timeStamp();
-	template<log4cxx_time_t log4cxx::spi::LoggingEvent::* Member>
-	struct Rob {
-		friend log4cxx_time_t log4cxx::spi::LoggingEvent::* get_timeStamp() {
-			return Member;
-		}
-	};
-	template struct Rob<&log4cxx::spi::LoggingEvent::timeStamp>;
-*/
-	using Class_m_ptr = log4cxx_time_t log4cxx::spi::LoggingEvent::*;
-	Class_m_ptr get_timeStamp();
-	template<Class_m_ptr Member>
-	struct Rob {
-		friend Class_m_ptr get_timeStamp() {
-			return Member;
-		}
-	};
-	template struct Rob<&log4cxx::spi::LoggingEvent::timeStamp>;
-
-	
-	log4cxx::spi::LoggingEventPtr createLoggingEvent(const std::vector<char>& packet)
+	size_t readBytes(const std::vector<char>& packet, size_t pos, size_t bytes, std::vector<char>& value)
 	{
-//		log4cxx::spi::LoggingEventPtr event(new log4cxx::spi::LoggingEvent(name, level1, msg, location));
-		log4cxx::spi::LoggingEventPtr event(new log4cxx::spi::LoggingEvent());
+		const char* pBuf = &packet[0] + pos;
+		size_t packetSize = packet.size();
+		size_t readSize = 0;
 
-//		(*event).*Access((T_timeStamp<std::remove_reference<decltype(*event)>::type>*)nullptr) = 42;
-// ==
-// 		ACCESS(*event, timeStamp) = 42;
- 
-//		(*event).*Access((T_logger<std::remove_reference<decltype(*event)>::type>*)nullptr) = L"123";
-// ==
-//		ACCESS(*event, logger) = L"123";
+		size_t size = bytes;
+		if (pos + readSize + size > packetSize) {
+			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+		}
+
+		value = std::vector<char>(bytes, 0);
+		memcpy(&value[0], pBuf + readSize, size);
+		readSize += size;
+
+		return readSize;
+	}
+
+	size_t readLong(const std::vector<char>& packet, size_t pos, log4cxx_time_t& value)
+	{
+		const char* pBuf = &packet[0] + pos;
+		size_t packetSize = packet.size();
+		size_t readSize = 0;
+
+		_ASSERTE(sizeof(log4cxx_time_t) == 8 && "읽을 데이터의 크기는 8이여야 한다.");
+		const size_t size = 8;
+		if (pos + readSize + size > packetSize) {
+			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+		}
+
+		// 빅 엔디안
+		memcpy(&value, pBuf + readSize, size);
+
+		// 리틀 엔디안으로 변경
+		char bytes[8] = { 0, };
+		bytes[7] = (char)(value & 0xFF);
+		bytes[6] = (char)((value >> 8) & 0xFF);
+		bytes[5] = (char)((value >> 16) & 0xFF);
+		bytes[4] = (char)((value >> 24) & 0xFF);
+		bytes[3] = (char)((value >> 32) & 0xFF);
+		bytes[2] = (char)((value >> 40) & 0xFF);
+		bytes[1] = (char)((value >> 48) & 0xFF);
+		bytes[0] = (char)((value >> 56) & 0xFF);
+
+		memcpy(&value, bytes, sizeof(bytes));
+// == 
 /*
-		Class_m_ptr ptimeStamp = get_timeStamp();
-		(*event).*ptimeStamp = 42;
+		char bytes[8];
+		// 빅 엔디안
+		memcpy(bytes, pBuf + readSize, size);
+
+		// 리틀 엔디안으로 변경
+		std::swap(bytes[0], bytes[7]);
+		std::swap(bytes[1], bytes[6]);
+		std::swap(bytes[2], bytes[5]);
+		std::swap(bytes[3], bytes[4]);
+
+		memcpy(&value, bytes, sizeof(bytes));
 */
+		readSize += size;
+		return readSize;
+	}
 
-		log4cxx_time_t log4cxx::spi::LoggingEvent::* ptimeStamp = get_timeStamp();
-		(*event).*ptimeStamp = 42;
+	size_t readInt(const std::vector<char>& packet, size_t pos, int& value)
+	{
+		const char* pBuf = &packet[0] + pos;
+		const size_t packetSize = packet.size();
+		size_t readSize = 0;
 
-		//const void* pThis = p->cast(log4cxx::spi::LoggingEvent::getStaticClass());
-		//log4cxx::spi::LoggingEvent* p2 = (log4cxx::spi::LoggingEvent*)pThis;
-		//p2->logger = "root1";
+		_ASSERTE(sizeof(int) == 4 && "읽을 데이터의 크기는 4이여야 한다.");
+		const size_t size = 4;
+		if (pos + readSize + size > packetSize) {
+			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+		}
 
+		// 빅 엔디안
+		memcpy(&value, pBuf + readSize, size);
 
-		return event;
+		// 리틀 엔디안으로 변경
+		char bytes[4] = { 0, };
+		bytes[3] = (char)(value & 0xFF);
+		bytes[2] = (char)((value >> 8) & 0xFF);
+		bytes[1] = (char)((value >> 16) & 0xFF);
+		bytes[0] = (char)((value >> 24) & 0xFF);
+
+		memcpy(&value, bytes, sizeof(bytes));
+// == 
+/*
+		char bytes[4];
+		// 빅 엔디안
+		memcpy(bytes, pBuf + readSize, size);
+
+		// 리틀 엔디안으로 변경
+		std::swap(bytes[0], bytes[3]);
+		std::swap(bytes[1], bytes[2]);
+
+		memcpy(&value, bytes, sizeof(bytes));
+*/
+		readSize += size;
+		return readSize;
+	}
+
+	size_t readLogString(const std::vector<char>& packet, size_t pos, LogString& value)
+	{
+		const char* pBuf = &packet[0] + pos;
+		const size_t packetSize = packet.size();
+		size_t readSize = 0;
+
+		unsigned char type = TC_STRING;
+		size_t size = sizeof(type);
+		if (pos + readSize + size > packetSize) {
+			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+		}
+
+		int ret = memcmp(&type, pBuf + readSize, size);
+		_ASSERTE(ret == 0 && "memcmp() Failed");
+		if (ret != 0) {
+			throw std::logic_error("type이 TC_STRING이여야만 한다.");
+		}
+		readSize += size;
+
+		// UTF 스트링 길이 구함
+		size_t dataLen = 0;
+		{
+			char bytes[2];
+			size = sizeof(bytes);
+			if (pos + readSize + size > packetSize) {
+				throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+			}
+
+			// 빅 엔디안
+			memcpy(bytes, pBuf + readSize, size);
+			// 리틀 엔디안으로 변경
+			std::swap(bytes[0], bytes[1]);
+			memcpy(&dataLen, bytes, sizeof(bytes));
+
+			readSize += size;
+		}
+		
+		// UTF 스트링 복사
+		std::vector<char> data(dataLen, 0);
+		{
+			size = data.size();
+			if (pos + readSize + size > packetSize) {
+				throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+			}
+			memcpy(&data[0], pBuf + readSize, size);
+			readSize += size;
+		}
+		
+		// UTF-8 스트링 -> LogString으로 변환
+		{
+			CharsetDecoderPtr utf8Decoder(CharsetDecoder::getUTF8Decoder());
+			ByteBuffer buf(&data[0], data.size());
+			utf8Decoder->decode(buf, value);
+		}
+		
+		return readSize;
+	}
+
+	size_t readUTFString(const std::vector<char>& packet, size_t pos, std::string& value)
+	{
+		const char* pBuf = &packet[0] + pos;
+		const size_t packetSize = packet.size();
+		size_t readSize = 0;
+
+		unsigned char type = TC_STRING;
+		size_t size = sizeof(type);
+		if (pos + readSize + size > packetSize) {
+			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+		}
+
+		int ret = memcmp(&type, pBuf + readSize, size);
+		_ASSERTE(ret == 0 && "memcmp() Failed");
+		if (ret != 0) {
+			throw std::logic_error("type이 TC_STRING이여야만 한다.");
+		}
+		readSize += size;
+
+		// UTF 스트링 길이 구함
+		size_t dataLen = 0;
+		{
+			char bytes[2];
+			size = sizeof(bytes);
+			if (pos + readSize + size > packetSize) {
+				throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+			}
+
+			// 빅 엔디안
+			memcpy(bytes, pBuf + readSize, size);
+			// 리틀 엔디안으로 변경
+			std::swap(bytes[0], bytes[1]);
+			memcpy(&dataLen, bytes, sizeof(bytes));
+
+			readSize += size;
+		}
+		
+		// UTF 스트링 복사
+		std::vector<char> data(dataLen, 0);
+		{
+			size = data.size();
+			if (pos + readSize + size > packetSize) {
+				throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+			}
+			memcpy(&data[0], pBuf + readSize, size);
+			readSize += size;
+		}
+
+		// 
+		data.push_back(0);
+		value = &data[0];
+
+		return readSize;
 	}
 
 	log4cxx::spi::LocationInfoPtr createLocationInfo(const std::string& fullInfo)
 	{
-//		const_cast<std::string&>(fullInfo) =  ".__cdecl main(void)(d:\\temp\\log4cxxsamples\\examples\\example01.cpp:50)";
-
-		log4cxx::spi::LocationInfoPtr info;
-
 		// className
 		std::string className;
 		{
 			int iend = fullInfo.find_last_of('(');
 			if (iend == std::string::npos) {
 				className = log4cxx::spi::LocationInfo::NA;
-			} else {
+			}
+			else {
 				iend = fullInfo.find_last_of('.', iend);
 				int ibegin = 0;
 				if (iend == std::string::npos) {
 					className = log4cxx::spi::LocationInfo::NA;
-				} else {
+				}
+				else {
 					size_t count = iend - ibegin;
 					className = fullInfo.substr(ibegin, count);
 				}
 			}
 		}
-		
+
 		// methodName
 		std::string methodName;
 		{
@@ -763,11 +795,13 @@ namespace log4cxx { namespace helpers {
 			int ibegin = fullInfo.find_last_of('.', iend);
 			if (ibegin == std::string::npos) {
 				methodName = log4cxx::spi::LocationInfo::NA;
-			} else {
+			}
+			else {
 				size_t count = iend - (ibegin + 1);
 				methodName = fullInfo.substr(ibegin + 1, count);
 			}
 		}
+		static std::string sMethodName = methodName;
 
 		// fileName
 		std::string fileName;
@@ -775,13 +809,15 @@ namespace log4cxx { namespace helpers {
 			int iend = fullInfo.find_last_of(':');
 			if (iend == std::string::npos) {
 				fileName = log4cxx::spi::LocationInfo::NA;
-			} else {
+			}
+			else {
 				int ibegin = fullInfo.find_last_of('(', iend - 1);
 				size_t count = iend - (ibegin + 1);
 				fileName = fullInfo.substr(ibegin + 1, count);
 			}
 		}
-		
+		static std::string sFileName = fileName;
+
 		// lineNumber
 		std::string lineNumber;
 		{
@@ -789,7 +825,8 @@ namespace log4cxx { namespace helpers {
 			int ibegin = fullInfo.find_last_of(':', iend - 1);
 			if (ibegin == std::string::npos) {
 				lineNumber = log4cxx::spi::LocationInfo::NA;
-			} else {
+			}
+			else {
 				size_t count = iend - (ibegin + 1);
 				lineNumber = fullInfo.substr(ibegin + 1, count);
 			}
@@ -806,7 +843,8 @@ namespace log4cxx { namespace helpers {
 				if (spacePos != std::string::npos) {
 					tmp.erase(0, spacePos + 1);
 				}
-			} else {
+			}
+			else {
 				tmp.erase(0, tmp.length());
 			}
 		}
@@ -817,7 +855,8 @@ namespace log4cxx { namespace helpers {
 			size_t colonPos = tmp.find("::");
 			if (colonPos != std::string::npos) {
 				tmp.erase(0, colonPos + 2);
-			} else {
+			}
+			else {
 				size_t spacePos = tmp.find(' ');
 				if (spacePos != std::string::npos) {
 					tmp.erase(0, spacePos + 1);
@@ -829,6 +868,21 @@ namespace log4cxx { namespace helpers {
 			}
 		}
 
-		return info;
+		log4cxx::spi::LocationInfoPtr locationInfoPtr;
+		if (fullInfo.empty()) {
+			locationInfoPtr = log4cxx::spi::LocationInfoPtr(
+				new log4cxx::spi::LocationInfo()
+			);
+		} else {
+			locationInfoPtr = log4cxx::spi::LocationInfoPtr(
+				new log4cxx::spi::LocationInfo(
+					sFileName.c_str(),
+					sMethodName.c_str(),
+					std::atoi(lineNumber.c_str())
+				)
+			);
+		}
+
+		return locationInfoPtr;
 	}
 }} // namespace log4cxx::helpers

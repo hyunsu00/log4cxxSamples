@@ -16,15 +16,16 @@
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
 #include <log4cxx/helpers/exception.h> // log4cxx::helpers::Exception
 #include <log4cxx/simplelayout.h> // log4cxx::SimpleLayout
+#include <log4cxx/helpers/pool.h> // log4cxx::helpers::Pool
 
 #include "Packet.h"
 #include <crtdbg.h> // _ASSERTE
 
 int main()
 {
-#ifdef _WIN32
-	_setmode(_fileno(stdout), _O_U16TEXT);
-#endif
+//#ifdef _WIN32
+//	_setmode(_fileno(stdout), _O_U16TEXT);
+//#endif
 
 	setlocale(LC_ALL, "");
 
@@ -40,25 +41,73 @@ int main()
 		_ASSERTE(ret && "beginPacket() failed");
 
 		packet.erase(packet.begin(), packet.begin() + 4);
-		ret = log4cxx::helpers::parsePacket(packet);
-		_ASSERTE(ret && "parsePacket() failed");
+
+		std::vector<char> copyPacket;
+
+		size_t packetSize = packet.size();
+		int count = packetSize / 100;
+		int remain = packetSize % 100;
+
+		for (int i = 0; i < count; i++) {
+			for (int j = 0; j < 100; j++) {
+				copyPacket.push_back(packet[j + 100 * i]);
+			}
+			//
+			try {
+				log4cxx::spi::LoggingEventPtr event = log4cxx::helpers::createLoggingEvent(copyPacket);
+				log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
+				if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
+					log4cxx::helpers::Pool p;
+					remoteLogger->callAppenders(event, p);
+				}
+			} catch (std::logic_error& e) {
+				std::cerr << e.what() << std::endl;
+				return -1;
+			} catch (std::exception& e) {
+				std::cout << e.what() << std::endl;
+			}
+			
+		}
+		for (int i = 0; i < remain; i++) {
+			copyPacket.push_back(packet[i + 100 * count]);
+		}
+		//
+		try {
+			log4cxx::spi::LoggingEventPtr event = log4cxx::helpers::createLoggingEvent(copyPacket);
+			log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
+			if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
+				log4cxx::helpers::Pool p;
+				remoteLogger->callAppenders(event, p);
+			}
+		} catch (std::logic_error& e) {
+			std::cerr << e.what() << std::endl;
+			return -1;
+		} catch (std::exception& e) {
+			std::cout << e.what() << std::endl;
+		}
 	}
 	
+# if 0
 	{
 		std::vector<char> packet = log4cxx::helpers::loadPacket("packet_#2.bin");
 
-		bool ret = log4cxx::helpers::parsePacket(packet);
-
-		log4cxx::helpers::createLoggingEvent(packet);
-		_ASSERTE(ret && "parsePacket() failed");
+		log4cxx::spi::LoggingEventPtr event = log4cxx::helpers::createLoggingEvent(packet);
+		log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
+		if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
+			log4cxx::helpers::Pool p;
+			remoteLogger->callAppenders(event, p);
+		}
 	}
 
 	{
 		std::vector<char> packet = log4cxx::helpers::loadPacket("packet_#2.bin");
 
-		bool ret = log4cxx::helpers::parsePacket(packet);
-
-		log4cxx::helpers::createLoggingEvent(packet);
-		_ASSERTE(ret && "parsePacket() failed");
+		log4cxx::spi::LoggingEventPtr event = log4cxx::helpers::createLoggingEvent(packet);
+		log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
+		if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
+			log4cxx::helpers::Pool p;
+			remoteLogger->callAppenders(event, p);
+		}
 	}
+#endif
 }
