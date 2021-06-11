@@ -9,21 +9,21 @@
       <Filter>conf</Filter>
     </None>
     <None Include="LoggingEvent_#1.bin">
-      <Filter>Packet</Filter>
+      <Filter>bin</Filter>
     </None>
     <None Include="LoggingEvent_#2.bin">
-      <Filter>Packet</Filter>
+      <Filter>bin</Filter>
     </None>
     <None Include="LoggingEvent_#3.bin">
-      <Filter>Packet</Filter>
+      <Filter>bin</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Packet">
-      <UniqueIdentifier>{9988aec3-5617-47c3-9490-cbad8dfe7a1f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="conf">
       <UniqueIdentifier>{007fa57b-0c8c-4510-8365-1148906acdd7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bin">
+      <UniqueIdentifier>{9988aec3-5617-47c3-9490-cbad8dfe7a1f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
