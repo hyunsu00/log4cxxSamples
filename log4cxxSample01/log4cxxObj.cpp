@@ -147,11 +147,11 @@ namespace log4cxx { namespace helpers {
 		return getFileContents(filename);
 	}
 
-	size_t readStart(const std::vector<char>& packet) /*throw(exception, logic_error)*/
+	size_t readStart(const std::vector<char>& byteBuf) /*throw(exception, logic_error)*/
 	{
 		const size_t pos = 0;
-		const char* pBuf = &packet[0] + 0;
-		const size_t packetSize = packet.size();
+		const char* pBuf = &byteBuf[0] + 0;
+		const size_t packetSize = byteBuf.size();
 		size_t readSize = 0;
 
 		// STREAM_MAGIC, STREAM_VERSION
@@ -160,7 +160,7 @@ namespace log4cxx { namespace helpers {
 		};
 		size_t size = sizeof(start);
 		if (pos + readSize + size > packetSize) {
-			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+			throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 		}
 
 		int ret = memcmp(start, pBuf + readSize, size);
@@ -175,15 +175,15 @@ namespace log4cxx { namespace helpers {
 
 	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, timeStamp, log4cxx_time_t);
 	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, threadName, const LogString);
-	log4cxx::spi::LoggingEventPtr createLoggingEvent(const std::vector<char>& packet) /*throw(exception, logic_error, bad_alloc)*/
+	log4cxx::spi::LoggingEventPtr createLoggingEvent(const std::vector<char>& byteBuf) /*throw(exception, logic_error, bad_alloc)*/
 	{
-		const char* pBuf = &packet[0];
+		const char* pBuf = &byteBuf[0];
 		size_t pos = 0;
 
 		// <==> writeProlog(os, p);
 		{
 			std::pair<std::string, unsigned int> value;
-			size_t size = readProlog(packet, pos, LOGGING_EVENT, sizeof(LOGGING_EVENT), value);
+			size_t size = readProlog(byteBuf, pos, LOGGING_EVENT, sizeof(LOGGING_EVENT), value);
 			pos += size;
 		}
 
@@ -191,7 +191,7 @@ namespace log4cxx { namespace helpers {
 		{
 			unsigned char lookupsRequired[] = { 0, 0 };
 			std::vector<char> value;
-			size_t size = readBytes(packet, pos, sizeof(lookupsRequired), value);
+			size_t size = readBytes(byteBuf, pos, sizeof(lookupsRequired), value);
 			int ret = memcmp(lookupsRequired, &value[0], sizeof(lookupsRequired));
 			_ASSERTE(ret == 0 && "memcmp() Failed");
 			if (ret != 0) {
@@ -203,7 +203,7 @@ namespace log4cxx { namespace helpers {
 		// <==> os.writeLong(timeStamp/1000, p);
 		log4cxx_time_t timeStamp = 0;
 		{
-			size_t size = readLong(packet, pos, timeStamp);
+			size_t size = readLong(byteBuf, pos, timeStamp);
 			timeStamp *= 1000;
 			pos += size;
 		}
@@ -211,49 +211,49 @@ namespace log4cxx { namespace helpers {
 		// <==> os.writeObject(logger, p);
 		LogString logger;
 		{
-			size_t size = readLogString(packet, pos, logger);
+			size_t size = readLogString(byteBuf, pos, logger);
 			pos += size;
 		}
 
 		// <==> locationInfo.write(os, p);
 		std::string fullInfo;
 		{
-			size_t size = readLocationInfo(packet, pos, fullInfo);
+			size_t size = readLocationInfo(byteBuf, pos, fullInfo);
 			pos += size;
 		}
 
 		// <==> mdc
 		MDC::Map mdcMap;
 		{
-			size_t size = readMDC(packet, pos, mdcMap);
+			size_t size = readMDC(byteBuf, pos, mdcMap);
 			pos += size;
 		}
 
 		// <==> ndc 
 		LogString ndc;
 		{
-			size_t size = readMDC(packet, pos, mdcMap);
+			size_t size = readNDC(byteBuf, pos, ndc);
 			pos += size;
 		}
 
 		// <==> os.writeObject(message, p);
 		LogString message;
 		{
-			size_t size = readLogString(packet, pos, message);
+			size_t size = readLogString(byteBuf, pos, message);
 			pos += size;
 		}
 		
 		// <==> os.writeObject(threadName, p);
 		LogString threadName;
 		{
-			size_t size = readLogString(packet, pos, threadName);
+			size_t size = readLogString(byteBuf, pos, threadName);
 			pos += size;
 		}
 
 		// <==> os.writeNull(p);
 		{
 			unsigned char value = TC_NULL;
-			size_t size = readByte(packet, pos, value);
+			size_t size = readByte(byteBuf, pos, value);
 			if (value != TC_NULL) {
 				throw std::logic_error("value는 TC_NULL 여야만 한다.");
 			}
@@ -263,7 +263,7 @@ namespace log4cxx { namespace helpers {
 		// <==> os.writeByte(ObjectOutputStream::TC_BLOCKDATA, p);
 		{
 			unsigned char value = TC_BLOCKDATA;
-			size_t size = readByte(packet, pos, value);
+			size_t size = readByte(byteBuf, pos, value);
 			if (value != TC_BLOCKDATA) {
 				throw std::logic_error("value는 TC_BLOCKDATA 여야만 한다.");
 			}
@@ -273,7 +273,7 @@ namespace log4cxx { namespace helpers {
 		// <==> os.writeByte(0x04, p);
 		{
 			unsigned char value = 0x04;
-			size_t size = readByte(packet, pos, value);
+			size_t size = readByte(byteBuf, pos, value);
 			if (value != 0x04) {
 				throw std::logic_error("value는 0x04 여야만 한다.");
 			}
@@ -283,14 +283,14 @@ namespace log4cxx { namespace helpers {
 		// <==> os.writeInt(level->toInt(), p);
 		int level = 0;
 		{
-			size_t size = readInt(packet, pos, level);
+			size_t size = readInt(byteBuf, pos, level);
 			pos += size;
 		}
 
 		// <==> os.writeNull(p);
 		{
 			unsigned char value = TC_NULL;
-			size_t size = readByte(packet, pos, value);
+			size_t size = readByte(byteBuf, pos, value);
 			if (value != TC_NULL) {
 				throw std::logic_error("value는 TC_NULL 여야만 한다.");
 			}
@@ -300,14 +300,14 @@ namespace log4cxx { namespace helpers {
 		// <==> os.writeByte(ObjectOutputStream::TC_ENDBLOCKDATA, p);
 		{
 			unsigned char value = TC_ENDBLOCKDATA;
-			size_t size = readByte(packet, pos, value);
+			size_t size = readByte(byteBuf, pos, value);
 			if (value != TC_ENDBLOCKDATA) {
 				throw std::logic_error("value는 TC_NULL 여야만 한다.");
 			}
 			pos += size;
 		}
 
-		_ASSERTE((packet.size() == pos) && "모든 값을 읽지 못했다.");
+		_ASSERTE((byteBuf.size() == pos) && "모든 값을 읽지 못했다.");
 
 		log4cxx::spi::LoggingEventPtr event(
 			new log4cxx::spi::LoggingEvent(
@@ -327,20 +327,20 @@ namespace log4cxx { namespace helpers {
 	}
 
 	size_t readProlog(
-		const std::vector<char>& packet,
+		const std::vector<char>& byteBuf,
 		size_t pos,
 		const unsigned char* classDesc,
 		size_t classDescLen,
 		std::pair<std::string, unsigned int>& value
 	) /*throw(exception, logic_error)*/ {
-		const char* pBuf = &packet[0] + pos;
-		const size_t packetSize = packet.size();
+		const char* pBuf = &byteBuf[0] + pos;
+		const size_t packetSize = byteBuf.size();
 		size_t readSize = 0;
 
 		unsigned char type = TC_OBJECT;
 		size_t size = sizeof(type);
 		if (pos + readSize + size > packetSize) {
-			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+			throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 		}
 
 		int ret = memcmp(&type, pBuf + readSize, size);
@@ -352,7 +352,7 @@ namespace log4cxx { namespace helpers {
 
 		size = sizeof(type);
 		if (pos + readSize + size > packetSize) {
-			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+			throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 		}
 		memcpy(&type, pBuf + readSize, size);
 		readSize += size;
@@ -363,7 +363,7 @@ namespace log4cxx { namespace helpers {
 			{
 				size = classDescLen - sizeof(classDesc[0]);
 				if (pos + readSize + size > packetSize) {
-					throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+					throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 				}
 
 				ret = memcmp(classDesc + 1, pBuf + readSize, size);
@@ -379,7 +379,7 @@ namespace log4cxx { namespace helpers {
 				unsigned char bytes[4] = { 0, };
 				size = sizeof(bytes);
 				if (pos + readSize + size > packetSize) {
-					throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+					throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 				}
 
 				memcpy(bytes, pBuf + readSize, size);
@@ -399,16 +399,16 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readLocationInfo(const std::vector<char>& packet, size_t pos, std::string& value) /*throw(exception, logic_error)*/
+	size_t readLocationInfo(const std::vector<char>& byteBuf, size_t pos, std::string& value) /*throw(exception, logic_error)*/
 	{
-		const char* pBuf = &packet[0] + pos;
-		const size_t packetSize = packet.size();
+		const char* pBuf = &byteBuf[0] + pos;
+		const size_t packetSize = byteBuf.size();
 		size_t readSize = 0;
 
 		unsigned char type = TC_NULL;
 		size_t size = sizeof(type);
 		if (pos + readSize + size > packetSize) {
-			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+			throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 		}
 		memcpy(&type, pBuf + readSize, size);
 
@@ -418,11 +418,11 @@ namespace log4cxx { namespace helpers {
 			value.clear();
 		} else {
 			std::pair<std::string, unsigned int> prolog;
-			size = readProlog(packet, pos, LOCATION_INFO, sizeof(LOCATION_INFO), prolog);
+			size = readProlog(byteBuf, pos, LOCATION_INFO, sizeof(LOCATION_INFO), prolog);
 			readSize += size;
 
 			std::string fullInfo;
-			size = readUTFString(packet, pos + readSize, fullInfo);
+			size = readUTFString(byteBuf, pos + readSize, fullInfo);
 			readSize += size;
 
 			value = fullInfo;
@@ -431,16 +431,16 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readMDC(const std::vector<char>& packet, size_t pos, MDC::Map& value) /*throw(exception, logic_error)*/
+	size_t readMDC(const std::vector<char>& byteBuf, size_t pos, MDC::Map& value) /*throw(exception, logic_error)*/
 	{
-		const char* pBuf = &packet[0] + pos;
-		const size_t packetSize = packet.size();
+		const char* pBuf = &byteBuf[0] + pos;
+		const size_t packetSize = byteBuf.size();
 		size_t readSize = 0;
 
 		unsigned char type = TC_NULL;
 		size_t size = sizeof(type);
 		if (pos + readSize + size > packetSize) {
-			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+			throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 		}
 		memcpy(&type, pBuf + readSize, size);
 
@@ -450,7 +450,7 @@ namespace log4cxx { namespace helpers {
 			value.clear();
 		} else {
 			MDC::Map mdcMap;
-			size = readObject(packet, pos, mdcMap);
+			size = readObject(byteBuf, pos, mdcMap);
 			readSize += size;
 
 			value = mdcMap;
@@ -459,16 +459,16 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readNDC(const std::vector<char>& packet, size_t pos, LogString& value) /*throw(exception, logic_error)*/
+	size_t readNDC(const std::vector<char>& byteBuf, size_t pos, LogString& value) /*throw(exception, logic_error)*/
 	{
-		const char* pBuf = &packet[0] + pos;
-		const size_t packetSize = packet.size();
+		const char* pBuf = &byteBuf[0] + pos;
+		const size_t packetSize = byteBuf.size();
 		size_t readSize = 0;
 
 		unsigned char type = TC_NULL;
 		size_t size = sizeof(type);
 		if (pos + readSize + size > packetSize) {
-			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+			throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 		}
 		memcpy(&type, pBuf + readSize, size);
 
@@ -478,7 +478,7 @@ namespace log4cxx { namespace helpers {
 			value.clear();
 		} else {
 			LogString ndc;
-			size = readLogString(packet, pos, ndc);
+			size = readLogString(byteBuf, pos, ndc);
 			readSize += size;
 
 			value = ndc;
@@ -487,14 +487,14 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readObject(const std::vector<char>& packet, size_t pos, MDC::Map& value) /*throw(exception, logic_error)*/
+	size_t readObject(const std::vector<char>& byteBuf, size_t pos, MDC::Map& value) /*throw(exception, logic_error)*/
 	{
-		const char* pBuf = &packet[0] + pos;
-		const size_t packetSize = packet.size();
+		const char* pBuf = &byteBuf[0] + pos;
+		const size_t packetSize = byteBuf.size();
 		size_t readSize = 0;
 
 		std::pair<std::string, unsigned int> prolog;
-		size_t size = readProlog(packet, pos, HASH_TABLE, sizeof(HASH_TABLE), prolog);
+		size_t size = readProlog(byteBuf, pos, HASH_TABLE, sizeof(HASH_TABLE), prolog);
 		readSize += size;
 
 		// == os->write(dataBuf, p);
@@ -504,7 +504,7 @@ namespace log4cxx { namespace helpers {
 		};
 		size = sizeof(data);
 		if (pos + readSize + size > packetSize) {
-			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+			throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 		}
 
 		int ret = memcmp(data, pBuf + readSize, size);
@@ -516,17 +516,17 @@ namespace log4cxx { namespace helpers {
 
 		// == os->write(sizeBuf, p);
 		int mapSize = 0;
-		size = readInt(packet, pos + readSize, mapSize);
+		size = readInt(byteBuf, pos + readSize, mapSize);
 		readSize += size;
 
 		for (int i = 0; i < mapSize; i++) {
 			LogString first, second;
 			// <==> writeObject(iter->first, p);
-			size = readLogString(packet, pos + readSize, first);
+			size = readLogString(byteBuf, pos + readSize, first);
 			readSize += size;
 
 			// <==> writeObject(iter->second, p);
-			size = readLogString(packet, pos + readSize, second);
+			size = readLogString(byteBuf, pos + readSize, second);
 			readSize += size;
 
 			value[first] = second;
@@ -535,7 +535,7 @@ namespace log4cxx { namespace helpers {
 		// == writeByte(TC_ENDBLOCKDATA, p);
 		{
 			unsigned char value = TC_ENDBLOCKDATA;
-			size = readByte(packet, pos + readSize, value);
+			size = readByte(byteBuf, pos + readSize, value);
 			if (value != TC_ENDBLOCKDATA) {
 				throw std::logic_error("value는 TC_ENDBLOCKDATA 여야만 한다.");
 			}
@@ -545,16 +545,16 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readByte(const std::vector<char>& packet, size_t pos, unsigned char& value) /*throw(exception)*/
+	size_t readByte(const std::vector<char>& byteBuf, size_t pos, unsigned char& value) /*throw(exception)*/
 	{
-		const char* pBuf = &packet[0] + pos;
-		const size_t packetSize = packet.size();
+		const char* pBuf = &byteBuf[0] + pos;
+		const size_t packetSize = byteBuf.size();
 		size_t readSize = 0;
 
 		unsigned char type = TC_NULL;
 		size_t size = 1;
 		if (pos + readSize + size > packetSize) {
-			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+			throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 		}
 
 		memcpy(&value, pBuf + readSize, size);
@@ -563,15 +563,15 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readBytes(const std::vector<char>& packet, size_t pos, size_t bytes, std::vector<char>& value) /*throw(exception)*/
+	size_t readBytes(const std::vector<char>& byteBuf, size_t pos, size_t bytes, std::vector<char>& value) /*throw(exception)*/
 	{
-		const char* pBuf = &packet[0] + pos;
-		const size_t packetSize = packet.size();
+		const char* pBuf = &byteBuf[0] + pos;
+		const size_t packetSize = byteBuf.size();
 		size_t readSize = 0;
 
 		size_t size = bytes;
 		if (pos + readSize + size > packetSize) {
-			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+			throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 		}
 
 		value = std::vector<char>(bytes, 0);
@@ -581,16 +581,16 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readLong(const std::vector<char>& packet, size_t pos, log4cxx_time_t& value) /*throw(exception)*/
+	size_t readLong(const std::vector<char>& byteBuf, size_t pos, log4cxx_time_t& value) /*throw(exception)*/
 	{
-		const char* pBuf = &packet[0] + pos;
-		const size_t packetSize = packet.size();
+		const char* pBuf = &byteBuf[0] + pos;
+		const size_t packetSize = byteBuf.size();
 		size_t readSize = 0;
 
 		_ASSERTE(sizeof(log4cxx_time_t) == 8 && "읽을 데이터의 크기는 8이여야 한다.");
 		const size_t size = 8;
 		if (pos + readSize + size > packetSize) {
-			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+			throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 		}
 
 		// 빅 엔디안
@@ -626,16 +626,16 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readInt(const std::vector<char>& packet, size_t pos, int& value) /*throw(exception)*/
+	size_t readInt(const std::vector<char>& byteBuf, size_t pos, int& value) /*throw(exception)*/
 	{
-		const char* pBuf = &packet[0] + pos;
-		const size_t packetSize = packet.size();
+		const char* pBuf = &byteBuf[0] + pos;
+		const size_t packetSize = byteBuf.size();
 		size_t readSize = 0;
 
 		_ASSERTE(sizeof(int) == 4 && "읽을 데이터의 크기는 4이여야 한다.");
 		const size_t size = 4;
 		if (pos + readSize + size > packetSize) {
-			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+			throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 		}
 
 		// 빅 엔디안
@@ -665,16 +665,16 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readLogString(const std::vector<char>& packet, size_t pos, LogString& value) /*throw(exception, logic_error)*/
+	size_t readLogString(const std::vector<char>& byteBuf, size_t pos, LogString& value) /*throw(exception, logic_error)*/
 	{
-		const char* pBuf = &packet[0] + pos;
-		const size_t packetSize = packet.size();
+		const char* pBuf = &byteBuf[0] + pos;
+		const size_t packetSize = byteBuf.size();
 		size_t readSize = 0;
 
 		unsigned char type = TC_STRING;
 		size_t size = sizeof(type);
 		if (pos + readSize + size > packetSize) {
-			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+			throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 		}
 
 		int ret = memcmp(&type, pBuf + readSize, size);
@@ -690,7 +690,7 @@ namespace log4cxx { namespace helpers {
 			char bytes[2];
 			size = sizeof(bytes);
 			if (pos + readSize + size > packetSize) {
-				throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+				throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 			}
 
 			// 빅 엔디안
@@ -708,7 +708,7 @@ namespace log4cxx { namespace helpers {
 		{
 			size = data.size();
 			if (pos + readSize + size > packetSize) {
-				throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+				throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 			}
 			memcpy(&data[0], pBuf + readSize, size);
 
@@ -725,16 +725,16 @@ namespace log4cxx { namespace helpers {
 		return readSize;
 	}
 
-	size_t readUTFString(const std::vector<char>& packet, size_t pos, std::string& value) /*throw(exception, logic_error)*/
+	size_t readUTFString(const std::vector<char>& byteBuf, size_t pos, std::string& value) /*throw(exception, logic_error)*/
 	{
-		const char* pBuf = &packet[0] + pos;
-		const size_t packetSize = packet.size();
+		const char* pBuf = &byteBuf[0] + pos;
+		const size_t packetSize = byteBuf.size();
 		size_t readSize = 0;
 
 		unsigned char type = TC_STRING;
 		size_t size = sizeof(type);
 		if (pos + readSize + size > packetSize) {
-			throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+			throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 		}
 
 		int ret = memcmp(&type, pBuf + readSize, size);
@@ -750,7 +750,7 @@ namespace log4cxx { namespace helpers {
 			char bytes[2];
 			size = sizeof(bytes);
 			if (pos + readSize + size > packetSize) {
-				throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+				throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 			}
 
 			// 빅 엔디안
@@ -768,7 +768,7 @@ namespace log4cxx { namespace helpers {
 		{
 			size = data.size();
 			if (pos + readSize + size > packetSize) {
-				throw std::exception("패킷 사이즈가 작아 읽을 수가 없다.");
+				throw std::exception("버퍼 사이즈가 작아 읽을 수가 없다.");
 			}
 			memcpy(&data[0], pBuf + readSize, size);
 

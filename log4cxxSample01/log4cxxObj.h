@@ -35,28 +35,28 @@ namespace log4cxx { namespace helpers {
 	std::vector<char> loadPacket(const char* filename);
 
     // 자바 스트림 프로토콜 반환
-    size_t readStart(const std::vector<char>& packet) /*throw(exception, logic_error)*/;
+    size_t readStart(const std::vector<char>& byteBuf) /*throw(exception, logic_error)*/;
 
-    log4cxx::spi::LoggingEventPtr createLoggingEvent(const std::vector<char>& packet) /*throw(exception, logic_error, bad_alloc)*/;
+    log4cxx::spi::LoggingEventPtr createLoggingEvent(const std::vector<char>& byteBuf) /*throw(exception, logic_error, bad_alloc)*/;
     log4cxx::spi::LocationInfoPtr createLocationInfo(const std::string& fullInfo) /*throw(bad_alloc)*/;
 
     size_t readProlog(
-        const std::vector<char>& packet, 
+        const std::vector<char>& byteBuf, 
         size_t pos, 
         const unsigned char* classDesc,
         size_t classDescLen, 
         std::pair<std::string, unsigned int>& value
     ) /*throw(exception, logic_error)*/;
-    size_t readLocationInfo(const std::vector<char>& packet, size_t pos, std::string& value) /*throw(exception, logic_error)*/;
-    size_t readMDC(const std::vector<char>& packet, size_t pos, MDC::Map& value) /*throw(exception, logic_error)*/;
-    size_t readNDC(const std::vector<char>& packet, size_t pos, LogString& value) /*throw(exception, logic_error)*/;
-    size_t readObject(const std::vector<char>& packet, size_t pos, MDC::Map& value) /*throw(exception, logic_error)*/;
+    size_t readLocationInfo(const std::vector<char>& byteBuf, size_t pos, std::string& value) /*throw(exception, logic_error)*/;
+    size_t readMDC(const std::vector<char>& byteBuf, size_t pos, MDC::Map& value) /*throw(exception, logic_error)*/;
+    size_t readNDC(const std::vector<char>& byteBuf, size_t pos, LogString& value) /*throw(exception, logic_error)*/;
+    size_t readObject(const std::vector<char>& byteBuf, size_t pos, MDC::Map& value) /*throw(exception, logic_error)*/;
 
-    size_t readByte(const std::vector<char>& packet, size_t pos, unsigned char& value) /*throw(exception)*/;
-    size_t readBytes(const std::vector<char>& packet, size_t pos, size_t bytes, std::vector<char>& value) /*throw(exception)*/;
-    size_t readLong(const std::vector<char>& packet, size_t pos, log4cxx_time_t& value) /*throw(exception)*/;
-    size_t readInt(const std::vector<char>& packet, size_t pos, int& value) /*throw(exception)*/;
-    size_t readLogString(const std::vector<char>& packet, size_t pos, LogString& value) /*throw(exception, logic_error)*/;
-    size_t readUTFString(const std::vector<char>& packet, size_t pos, std::string& value) /*throw(exception, logic_error)*/;
+    size_t readByte(const std::vector<char>& byteBuf, size_t pos, unsigned char& value) /*throw(exception)*/;
+    size_t readBytes(const std::vector<char>& byteBuf, size_t pos, size_t bytes, std::vector<char>& value) /*throw(exception)*/;
+    size_t readLong(const std::vector<char>& byteBuf, size_t pos, log4cxx_time_t& value) /*throw(exception)*/;
+    size_t readInt(const std::vector<char>& byteBuf, size_t pos, int& value) /*throw(exception)*/;
+    size_t readLogString(const std::vector<char>& byteBuf, size_t pos, LogString& value) /*throw(exception, logic_error)*/;
+    size_t readUTFString(const std::vector<char>& byteBuf, size_t pos, std::string& value) /*throw(exception, logic_error)*/;
     
 }} // namespace log4cxx::helpers
