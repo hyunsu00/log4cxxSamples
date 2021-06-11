@@ -1,7 +1,7 @@
 ﻿// log4cxxSample01.cpp : 이 파일에는 'main' 함수가 포함됩니다. 거기서 프로그램 실행이 시작되고 종료됩니다.
 //
 
-#include "log4cxxObj.h"
+#include "ObjectFactory.h"
 #include <iostream> // std::cerr, std::cout
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
 #include <log4cxx/helpers/Exception.h> // log4cxx::helpers::InstantiationException, log4cxx::helpers::RuntimeException

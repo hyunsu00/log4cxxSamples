@@ -20,7 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="log4cxxSample01.cpp" />
-    <ClCompile Include="log4cxxObj.cpp" />
+    <ClCompile Include="ObjectFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="log4cxx.conf" />
@@ -34,7 +34,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="log4cxxObj.h" />
+    <ClInclude Include="ObjectFactory.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

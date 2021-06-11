@@ -1,11 +1,12 @@
-﻿// log4cxxObj.cpp
-#include "log4cxxObj.h"
+﻿// ObjectFactory.cpp
+#include "ObjectFactory.h"
 #include <log4cxx/helpers/Exception.h> // helpers::InstantiationException, helpers::RuntimeException
 #include <log4cxx/helpers/charsetdecoder.h> // log4cxx::helpers::CharsetDecoder
 #include <log4cxx/helpers/bytebuffer.h> // log4cxx::helpers::ByteBuffer
 
 // https://stackoverflow.com/questions/424104/can-i-access-private-members-from-outside-the-class-without-using-friends
 namespace {
+
 	#define CONCATE_(X, Y) X##Y
 	#define CONCATE(X, Y) CONCATE_(X, Y)
 
@@ -18,9 +19,11 @@ namespace {
 
 	#define ACCESS(OBJECT, MEMBER) \
 	(OBJECT).*Access((T_##MEMBER<std::remove_reference<decltype(OBJECT)>::type>*)nullptr)
+
 } // namespace
 
 namespace log4cxx { namespace classDesc {
+
 	// org.apache.log4j.spi.LoggingEvent
 	static const unsigned char LOGGING_EVENT[] = {
 		0x72, 0x00, 0x21,
@@ -655,6 +658,116 @@ namespace log4cxx { namespace io {
 
 namespace log4cxx { namespace factory {
 
+	using LocationInfoPtr = std::unique_ptr<spi::LocationInfo>;
+	LocationInfoPtr createLocationInfo(const std::string& fullInfo) /*throw(bad_alloc)*/
+	{
+		// className
+		std::string className;
+		{
+			size_t iend = fullInfo.find_last_of('(');
+			if (iend == std::string::npos) {
+				className = log4cxx::spi::LocationInfo::NA;
+			} else {
+				iend = fullInfo.find_last_of('.', iend);
+				size_t ibegin = 0;
+				if (iend == std::string::npos) {
+					className = log4cxx::spi::LocationInfo::NA;
+				} else {
+					size_t count = iend - ibegin;
+					className = fullInfo.substr(ibegin, count);
+				}
+			}
+		}
+
+		// methodName
+		std::string methodName;
+		{
+			size_t iend = fullInfo.find_last_of('(');
+			size_t ibegin = fullInfo.find_last_of('.', iend);
+			if (ibegin == std::string::npos) {
+				methodName = log4cxx::spi::LocationInfo::NA;
+			} else {
+				size_t count = iend - (ibegin + 1);
+				methodName = fullInfo.substr(ibegin + 1, count);
+			}
+		}
+		static std::string sMethodName = methodName;
+
+		// fileName
+		std::string fileName;
+		{
+			size_t iend = fullInfo.find_last_of(':');
+			if (iend == std::string::npos) {
+				fileName = log4cxx::spi::LocationInfo::NA;
+			} else {
+				size_t ibegin = fullInfo.find_last_of('(', iend - 1);
+				size_t count = iend - (ibegin + 1);
+				fileName = fullInfo.substr(ibegin + 1, count);
+			}
+		}
+		static std::string sFileName = fileName;
+
+		// lineNumber
+		std::string lineNumber;
+		{
+			size_t iend = fullInfo.find_last_of(')');
+			size_t ibegin = fullInfo.find_last_of(':', iend - 1);
+			if (ibegin == std::string::npos) {
+				lineNumber = log4cxx::spi::LocationInfo::NA;
+			} else {
+				size_t count = iend - (ibegin + 1);
+				lineNumber = fullInfo.substr(ibegin + 1, count);
+			}
+		}
+
+		// [Test]
+		// == getClassName()
+		{
+			std::string tmp(methodName);
+			size_t colonPos = tmp.find("::");
+			if (colonPos != std::string::npos) {
+				tmp.erase(colonPos);
+				size_t spacePos = tmp.find_last_of(' ');
+				if (spacePos != std::string::npos) {
+					tmp.erase(0, spacePos + 1);
+				}
+			} else {
+				tmp.erase(0, tmp.length());
+			}
+		}
+
+		// == getMethodName()
+		{
+			std::string tmp(methodName);
+			size_t colonPos = tmp.find("::");
+			if (colonPos != std::string::npos) {
+				tmp.erase(0, colonPos + 2);
+			} else {
+				size_t spacePos = tmp.find(' ');
+				if (spacePos != std::string::npos) {
+					tmp.erase(0, spacePos + 1);
+				}
+			}
+			size_t parenPos = tmp.find('(');
+			if (parenPos != std::string::npos) {
+				tmp.erase(parenPos);
+			}
+		}
+
+		LocationInfoPtr locationInfoPtr;
+		if (fullInfo.empty()) {
+			locationInfoPtr = std::make_unique<spi::LocationInfo>();
+		} else {
+			locationInfoPtr = std::make_unique<spi::LocationInfo>(
+				sFileName.c_str(),
+				sMethodName.c_str(),
+				std::atoi(lineNumber.c_str())
+			);
+		}
+
+		return locationInfoPtr;
+	}
+
 	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, timeStamp, log4cxx_time_t);
 	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, threadName, const LogString);
 	log4cxx::spi::LoggingEventPtr createLoggingEvent(const ByteBuf& byteBuf) /*throw(InstantiationException, RuntimeException, bad_alloc)*/
@@ -806,119 +919,6 @@ namespace log4cxx { namespace factory {
 		// const_cast<LogString&>(event->getThreadName()) = threadName;
 
 		return event;
-	}
-
-    log4cxx::spi::LocationInfoPtr createLocationInfo(const std::string& fullInfo) /*throw(bad_alloc)*/
-	{
-		// className
-		std::string className;
-		{
-			size_t iend = fullInfo.find_last_of('(');
-			if (iend == std::string::npos) {
-				className = log4cxx::spi::LocationInfo::NA;
-			} else {
-				iend = fullInfo.find_last_of('.', iend);
-				size_t ibegin = 0;
-				if (iend == std::string::npos) {
-					className = log4cxx::spi::LocationInfo::NA;
-				} else {
-					size_t count = iend - ibegin;
-					className = fullInfo.substr(ibegin, count);
-				}
-			}
-		}
-
-		// methodName
-		std::string methodName;
-		{
-			size_t iend = fullInfo.find_last_of('(');
-			size_t ibegin = fullInfo.find_last_of('.', iend);
-			if (ibegin == std::string::npos) {
-				methodName = log4cxx::spi::LocationInfo::NA;
-			} else {
-				size_t count = iend - (ibegin + 1);
-				methodName = fullInfo.substr(ibegin + 1, count);
-			}
-		}
-		static std::string sMethodName = methodName;
-
-		// fileName
-		std::string fileName;
-		{
-			size_t iend = fullInfo.find_last_of(':');
-			if (iend == std::string::npos) {
-				fileName = log4cxx::spi::LocationInfo::NA;
-			} else {
-				size_t ibegin = fullInfo.find_last_of('(', iend - 1);
-				size_t count = iend - (ibegin + 1);
-				fileName = fullInfo.substr(ibegin + 1, count);
-			}
-		}
-		static std::string sFileName = fileName;
-
-		// lineNumber
-		std::string lineNumber;
-		{
-			size_t iend = fullInfo.find_last_of(')');
-			size_t ibegin = fullInfo.find_last_of(':', iend - 1);
-			if (ibegin == std::string::npos) {
-				lineNumber = log4cxx::spi::LocationInfo::NA;
-			} else {
-				size_t count = iend - (ibegin + 1);
-				lineNumber = fullInfo.substr(ibegin + 1, count);
-			}
-		}
-
-		// [Test]
-		// == getClassName()
-		{
-			std::string tmp(methodName);
-			size_t colonPos = tmp.find("::");
-			if (colonPos != std::string::npos) {
-				tmp.erase(colonPos);
-				size_t spacePos = tmp.find_last_of(' ');
-				if (spacePos != std::string::npos) {
-					tmp.erase(0, spacePos + 1);
-				}
-			} else {
-				tmp.erase(0, tmp.length());
-			}
-		}
-
-		// == getMethodName()
-		{
-			std::string tmp(methodName);
-			size_t colonPos = tmp.find("::");
-			if (colonPos != std::string::npos) {
-				tmp.erase(0, colonPos + 2);
-			} else {
-				size_t spacePos = tmp.find(' ');
-				if (spacePos != std::string::npos) {
-					tmp.erase(0, spacePos + 1);
-				}
-			}
-			size_t parenPos = tmp.find('(');
-			if (parenPos != std::string::npos) {
-				tmp.erase(parenPos);
-			}
-		}
-
-		log4cxx::spi::LocationInfoPtr locationInfoPtr;
-		if (fullInfo.empty()) {
-			locationInfoPtr = log4cxx::spi::LocationInfoPtr(
-				new log4cxx::spi::LocationInfo()
-			);
-		} else {
-			locationInfoPtr = log4cxx::spi::LocationInfoPtr(
-				new log4cxx::spi::LocationInfo(
-					sFileName.c_str(),
-					sMethodName.c_str(),
-					std::atoi(lineNumber.c_str())
-				)
-			);
-		}
-
-		return locationInfoPtr;
 	}
 
 }} // log4cxx::factory
