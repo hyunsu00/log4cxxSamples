@@ -33,17 +33,26 @@ int main()
 
 	log4cxx::LoggerPtr rootLogger = log4cxx::Logger::getRootLogger();
 
-	//{
-	//	std::vector<char> packet = log4cxx::helpers::loadPacket("packet_#1.bin");
+	{
+		std::vector<char> packet = log4cxx::helpers::loadPacket("packet_#1.bin");
 
-	//	bool ret = log4cxx::helpers::beginPacket(packet);
-	//	_ASSERTE(ret && "beginPacket() failed");
+		bool ret = log4cxx::helpers::beginPacket(packet);
+		_ASSERTE(ret && "beginPacket() failed");
 
-	//	packet.erase(packet.begin(), packet.begin() + 4);
-	//	ret = log4cxx::helpers::parsePacket(packet);
-	//	_ASSERTE(ret && "parsePacket() failed");
-	//}
+		packet.erase(packet.begin(), packet.begin() + 4);
+		ret = log4cxx::helpers::parsePacket(packet);
+		_ASSERTE(ret && "parsePacket() failed");
+	}
 	
+	{
+		std::vector<char> packet = log4cxx::helpers::loadPacket("packet_#2.bin");
+
+		bool ret = log4cxx::helpers::parsePacket(packet);
+
+		log4cxx::helpers::createLoggingEvent(packet);
+		_ASSERTE(ret && "parsePacket() failed");
+	}
+
 	{
 		std::vector<char> packet = log4cxx::helpers::loadPacket("packet_#2.bin");
 

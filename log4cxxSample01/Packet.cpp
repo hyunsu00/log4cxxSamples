@@ -276,6 +276,9 @@ namespace log4cxx { namespace helpers {
 					std::string fullInfo;
 					size = readUTFString(packet, pos, fullInfo);
 					pos += size;
+
+					// 테스트
+					createLocationInfo(fullInfo);
 				}
 				break;
 			}
@@ -729,4 +732,103 @@ namespace log4cxx { namespace helpers {
 		return event;
 	}
 
+	log4cxx::spi::LocationInfoPtr createLocationInfo(const std::string& fullInfo)
+	{
+//		const_cast<std::string&>(fullInfo) =  ".__cdecl main(void)(d:\\temp\\log4cxxsamples\\examples\\example01.cpp:50)";
+
+		log4cxx::spi::LocationInfoPtr info;
+
+		// className
+		std::string className;
+		{
+			int iend = fullInfo.find_last_of('(');
+			if (iend == std::string::npos) {
+				className = log4cxx::spi::LocationInfo::NA;
+			} else {
+				iend = fullInfo.find_last_of('.', iend);
+				int ibegin = 0;
+				if (iend == std::string::npos) {
+					className = log4cxx::spi::LocationInfo::NA;
+				} else {
+					size_t count = iend - ibegin;
+					className = fullInfo.substr(ibegin, count);
+				}
+			}
+		}
+		
+		// methodName
+		std::string methodName;
+		{
+			int iend = fullInfo.find_last_of('(');
+			int ibegin = fullInfo.find_last_of('.', iend);
+			if (ibegin == std::string::npos) {
+				methodName = log4cxx::spi::LocationInfo::NA;
+			} else {
+				size_t count = iend - (ibegin + 1);
+				methodName = fullInfo.substr(ibegin + 1, count);
+			}
+		}
+
+		// fileName
+		std::string fileName;
+		{
+			int iend = fullInfo.find_last_of(':');
+			if (iend == std::string::npos) {
+				fileName = log4cxx::spi::LocationInfo::NA;
+			} else {
+				int ibegin = fullInfo.find_last_of('(', iend - 1);
+				size_t count = iend - (ibegin + 1);
+				fileName = fullInfo.substr(ibegin + 1, count);
+			}
+		}
+		
+		// lineNumber
+		std::string lineNumber;
+		{
+			int iend = fullInfo.find_last_of(')');
+			int ibegin = fullInfo.find_last_of(':', iend - 1);
+			if (ibegin == std::string::npos) {
+				lineNumber = log4cxx::spi::LocationInfo::NA;
+			} else {
+				size_t count = iend - (ibegin + 1);
+				lineNumber = fullInfo.substr(ibegin + 1, count);
+			}
+		}
+
+		// Test
+		// == getClassName()
+		{
+			std::string tmp(methodName);
+			size_t colonPos = tmp.find("::");
+			if (colonPos != std::string::npos) {
+				tmp.erase(colonPos);
+				size_t spacePos = tmp.find_last_of(' ');
+				if (spacePos != std::string::npos) {
+					tmp.erase(0, spacePos + 1);
+				}
+			} else {
+				tmp.erase(0, tmp.length());
+			}
+		}
+
+		// == getMethodName()
+		{
+			std::string tmp(methodName);
+			size_t colonPos = tmp.find("::");
+			if (colonPos != std::string::npos) {
+				tmp.erase(0, colonPos + 2);
+			} else {
+				size_t spacePos = tmp.find(' ');
+				if (spacePos != std::string::npos) {
+					tmp.erase(0, spacePos + 1);
+				}
+			}
+			size_t parenPos = tmp.find('(');
+			if (parenPos != std::string::npos) {
+				tmp.erase(parenPos);
+			}
+		}
+
+		return info;
+	}
 }} // namespace log4cxx::helpers

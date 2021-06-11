@@ -4,6 +4,12 @@
 #include <log4cxx/logstring.h> // LogString
 #include <log4cxx/mdc.h> // MDC::Map
 #include <log4cxx/spi/loggingevent.h> // LoggingEvent
+#include <log4cxx/spi/location/locationinfo.h> // LocationInfo
+#include <memory> // std::shared_ptr
+
+namespace log4cxx { namespace spi {
+    typedef std::shared_ptr<LocationInfo> LocationInfoPtr;
+}}
 
 namespace log4cxx { namespace helpers {
 
@@ -38,5 +44,6 @@ namespace log4cxx { namespace helpers {
 
 
     log4cxx::spi::LoggingEventPtr createLoggingEvent(const std::vector<char>& packet);
+    log4cxx::spi::LocationInfoPtr createLocationInfo(const std::string& fullInfo);
 
 }} // namespace log4cxx::helpers
