@@ -5,17 +5,17 @@
     <ClCompile Include="log4cxxObj.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packet_#1.bin">
-      <Filter>Packet</Filter>
-    </None>
-    <None Include="packet_#2.bin">
-      <Filter>Packet</Filter>
-    </None>
-    <None Include="packet_#3.bin">
-      <Filter>Packet</Filter>
-    </None>
     <None Include="log4cxx.conf">
       <Filter>conf</Filter>
+    </None>
+    <None Include="LoggingEvent_#1.bin">
+      <Filter>Packet</Filter>
+    </None>
+    <None Include="LoggingEvent_#2.bin">
+      <Filter>Packet</Filter>
+    </None>
+    <None Include="LoggingEvent_#3.bin">
+      <Filter>Packet</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

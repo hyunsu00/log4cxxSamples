@@ -24,9 +24,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="log4cxx.conf" />
-    <None Include="packet_#1.bin" />
-    <None Include="packet_#2.bin" />
-    <None Include="packet_#3.bin" />
+    <None Include="LoggingEvent_#1.bin" />
+    <None Include="LoggingEvent_#2.bin" />
+    <None Include="LoggingEvent_#3.bin" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Extern\log4cxx\log4cxx.vcxproj">
