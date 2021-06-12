@@ -658,119 +658,105 @@ namespace log4cxx { namespace io {
 
 namespace log4cxx { namespace factory {
 
-	using LocationInfoPtr = std::unique_ptr<spi::LocationInfo>;
-	LocationInfoPtr createLocationInfo(const std::string& fullInfo) /*throw(bad_alloc)*/
-	{
-		// className
+	auto getClassName = [](const std::string& fullInfo) -> std::string {
+
 		std::string className;
-		{
-			size_t iend = fullInfo.find_last_of('(');
+		size_t iend = fullInfo.find_last_of('(');
+		if (iend == std::string::npos) {
+			className = log4cxx::spi::LocationInfo::NA;
+		} else {
+			iend = fullInfo.find_last_of('.', iend);
+			size_t ibegin = 0;
 			if (iend == std::string::npos) {
 				className = log4cxx::spi::LocationInfo::NA;
 			} else {
-				iend = fullInfo.find_last_of('.', iend);
-				size_t ibegin = 0;
-				if (iend == std::string::npos) {
-					className = log4cxx::spi::LocationInfo::NA;
-				} else {
-					size_t count = iend - ibegin;
-					className = fullInfo.substr(ibegin, count);
-				}
+				size_t count = iend - ibegin;
+				className = fullInfo.substr(ibegin, count);
 			}
 		}
 
-		// methodName
+		return className;
+	};
+
+	auto getMethodName = [](const std::string& fullInfo) -> std::string {
+
 		std::string methodName;
-		{
-			size_t iend = fullInfo.find_last_of('(');
-			size_t ibegin = fullInfo.find_last_of('.', iend);
-			if (ibegin == std::string::npos) {
-				methodName = log4cxx::spi::LocationInfo::NA;
-			} else {
-				size_t count = iend - (ibegin + 1);
-				methodName = fullInfo.substr(ibegin + 1, count);
-			}
+		size_t iend = fullInfo.find_last_of('(');
+		size_t ibegin = fullInfo.find_last_of('.', iend);
+		if (ibegin == std::string::npos) {
+			methodName = log4cxx::spi::LocationInfo::NA;
 		}
-		static std::string sMethodName = methodName;
+		else {
+			size_t count = iend - (ibegin + 1);
+			methodName = fullInfo.substr(ibegin + 1, count);
+		}
 
-		// fileName
+		return methodName;
+	};
+
+	auto getFileName = [](const std::string& fullInfo) -> std::string {
+
 		std::string fileName;
-		{
-			size_t iend = fullInfo.find_last_of(':');
-			if (iend == std::string::npos) {
-				fileName = log4cxx::spi::LocationInfo::NA;
-			} else {
-				size_t ibegin = fullInfo.find_last_of('(', iend - 1);
-				size_t count = iend - (ibegin + 1);
-				fileName = fullInfo.substr(ibegin + 1, count);
-			}
+		size_t iend = fullInfo.find_last_of(':');
+		if (iend == std::string::npos) {
+			fileName = log4cxx::spi::LocationInfo::NA;
 		}
-		static std::string sFileName = fileName;
+		else {
+			size_t ibegin = fullInfo.find_last_of('(', iend - 1);
+			size_t count = iend - (ibegin + 1);
+			fileName = fullInfo.substr(ibegin + 1, count);
+		}
 
-		// lineNumber
+		return fileName;
+	};
+
+	auto getLineNumber = [](const std::string& fullInfo) -> std::string {
+
 		std::string lineNumber;
-		{
-			size_t iend = fullInfo.find_last_of(')');
-			size_t ibegin = fullInfo.find_last_of(':', iend - 1);
-			if (ibegin == std::string::npos) {
-				lineNumber = log4cxx::spi::LocationInfo::NA;
-			} else {
-				size_t count = iend - (ibegin + 1);
-				lineNumber = fullInfo.substr(ibegin + 1, count);
-			}
+		size_t iend = fullInfo.find_last_of(')');
+		size_t ibegin = fullInfo.find_last_of(':', iend - 1);
+		if (ibegin == std::string::npos) {
+			lineNumber = log4cxx::spi::LocationInfo::NA;
+		}
+		else {
+			size_t count = iend - (ibegin + 1);
+			lineNumber = fullInfo.substr(ibegin + 1, count);
 		}
 
-		// [Test]
-		// == getClassName()
-		{
-			std::string tmp(methodName);
-			size_t colonPos = tmp.find("::");
-			if (colonPos != std::string::npos) {
-				tmp.erase(colonPos);
-				size_t spacePos = tmp.find_last_of(' ');
-				if (spacePos != std::string::npos) {
-					tmp.erase(0, spacePos + 1);
-				}
-			} else {
-				tmp.erase(0, tmp.length());
-			}
-		}
+		return lineNumber;
+	};
 
-		// == getMethodName()
+	class LoggingEventEx :
+		public virtual spi::LoggingEvent
+	{
+	public:
+		LoggingEventEx(const LogString& logger,
+			const LevelPtr& level, const LogString& message,
+			const std::string& fullInfo
+		) : spi::LoggingEvent(logger, level, message, spi::LocationInfo())
 		{
-			std::string tmp(methodName);
-			size_t colonPos = tmp.find("::");
-			if (colonPos != std::string::npos) {
-				tmp.erase(0, colonPos + 2);
-			} else {
-				size_t spacePos = tmp.find(' ');
-				if (spacePos != std::string::npos) {
-					tmp.erase(0, spacePos + 1);
-				}
-			}
-			size_t parenPos = tmp.find('(');
-			if (parenPos != std::string::npos) {
-				tmp.erase(parenPos);
-			}
-		}
+			m_FileNameFromStream = getFileName(fullInfo);
+			m_MethodNameFromStream = getMethodName(fullInfo);
+			std::string lineNumber = getLineNumber(fullInfo);
 
-		LocationInfoPtr locationInfoPtr;
-		if (fullInfo.empty()) {
-			locationInfoPtr = std::make_unique<spi::LocationInfo>();
-		} else {
-			locationInfoPtr = std::make_unique<spi::LocationInfo>(
-				sFileName.c_str(),
-				sMethodName.c_str(),
+			const_cast<spi::LocationInfo&>(getLocationInformation()) = spi::LocationInfo(
+				m_FileNameFromStream.c_str(),
+				m_MethodNameFromStream.c_str(),
 				std::atoi(lineNumber.c_str())
 			);
 		}
+		~LoggingEventEx()
+		{
+		}
 
-		return locationInfoPtr;
-	}
-
+	private:
+		std::string m_FileNameFromStream;
+		std::string m_MethodNameFromStream;
+	}; // class LoggingEventEx
+	
 	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, timeStamp, log4cxx_time_t);
 	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, threadName, const LogString);
-	log4cxx::spi::LoggingEventPtr createLoggingEvent(const ByteBuf& byteBuf) /*throw(InstantiationException, RuntimeException, bad_alloc)*/
+	log4cxx::spi::LoggingEventPtr createLoggingEvent(const ByteBuf& byteBuf, size_t& readBytes) /*throw(InstantiationException, RuntimeException, bad_alloc)*/
 	{
 		const char* pBuf = &byteBuf[0];
 		size_t pos = 0;
@@ -902,16 +888,17 @@ namespace log4cxx { namespace factory {
 			pos += size;
 		}
 
-		_ASSERTE((byteBuf.size() == pos) && "모든 값을 읽지 못했다.");
+		_ASSERTE((byteBuf.size() >= pos) && "모든 값을 읽지 못했다.");
+		readBytes = pos;
 
 		log4cxx::spi::LoggingEventPtr event(
-			new log4cxx::spi::LoggingEvent(
+			new LoggingEventEx(
 				logger,
 				Level::toLevel(level),
 				message,
-				*createLocationInfo(fullInfo)
+				fullInfo
 			)
-			);
+		);
 		// backdoor
 		ACCESS(*event, timeStamp) = timeStamp;
 		const_cast<LogString&>(ACCESS(*event, threadName)) = threadName;

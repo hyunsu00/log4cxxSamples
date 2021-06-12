@@ -37,6 +37,6 @@ namespace log4cxx { namespace factory {
 
     using ByteBuf = io::ByteBuf;
 
-    log4cxx::spi::LoggingEventPtr createLoggingEvent(const ByteBuf& byteBuf) /*throw(InstantiationException, RuntimeException, bad_alloc)*/;
+    log4cxx::spi::LoggingEventPtr createLoggingEvent(const ByteBuf& byteBuf, size_t& readBytes) /*throw(InstantiationException, RuntimeException, bad_alloc)*/;
 
 }} // log4cxx::factory
