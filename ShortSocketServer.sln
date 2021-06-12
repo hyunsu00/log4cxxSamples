@@ -5,17 +5,17 @@ VisualStudioVersion = 16.0.31321.278
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extern", "Extern", "{8F1996E7-AA75-4408-8799-B05C73A8D933}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "expat", "Extern\log4cxx\expat.vcxproj", "{055E5BCC-C917-4ECE-8C76-D81B3DBAE6EB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "expat", "Extern\log4cxx-0.10.0\expat.vcxproj", "{055E5BCC-C917-4ECE-8C76-D81B3DBAE6EB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "apr", "Extern\log4cxx\apr.vcxproj", "{705A869D-5AE7-4281-ABCA-081F842E2237}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "apr", "Extern\log4cxx-0.10.0\apr.vcxproj", "{705A869D-5AE7-4281-ABCA-081F842E2237}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "apr-util", "Extern\log4cxx\apr-util.vcxproj", "{FB49065A-4F57-47CF-B28C-AB7CFD0BF84F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "apr-util", "Extern\log4cxx-0.10.0\apr-util.vcxproj", "{FB49065A-4F57-47CF-B28C-AB7CFD0BF84F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{705A869D-5AE7-4281-ABCA-081F842E2237} = {705A869D-5AE7-4281-ABCA-081F842E2237}
 		{055E5BCC-C917-4ECE-8C76-D81B3DBAE6EB} = {055E5BCC-C917-4ECE-8C76-D81B3DBAE6EB}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "log4cxx", "Extern\log4cxx\log4cxx.vcxproj", "{24D2D608-22E9-42EF-960B-15A900E6AD16}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "log4cxx", "Extern\log4cxx-0.10.0\log4cxx.vcxproj", "{24D2D608-22E9-42EF-960B-15A900E6AD16}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Readme", "Readme", "{A6836C22-EB59-488F-8A1C-896BA5157121}"
 	ProjectSection(SolutionItems) = preProject

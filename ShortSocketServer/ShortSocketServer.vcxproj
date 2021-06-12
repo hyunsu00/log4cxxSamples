@@ -29,12 +29,12 @@
     <None Include="LoggingEvent_#3.bin" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Extern\log4cxx\log4cxx.vcxproj">
-      <Project>{24d2d608-22e9-42ef-960b-15a900e6ad16}</Project>
-    </ProjectReference>
+    <ClInclude Include="ObjectFactory.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ObjectFactory.h" />
+    <ProjectReference Include="..\Extern\log4cxx-0.10.0\log4cxx.vcxproj">
+      <Project>{24d2d608-22e9-42ef-960b-15a900e6ad16}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -114,7 +114,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Extern\log4cxx\log4cxx\src\main\include;$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Extern\log4cxx-0.10.0\log4cxx\src\main\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -136,7 +136,7 @@ xcopy ".\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Extern\log4cxx\log4cxx\src\main\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Extern\log4cxx-0.10.0\log4cxx\src\main\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -158,7 +158,7 @@ xcopy ".\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Extern\log4cxx\log4cxx\src\main\include;$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Extern\log4cxx-0.10.0\log4cxx\src\main\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -180,7 +180,7 @@ xcopy ".\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Extern\log4cxx\log4cxx\src\main\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Extern\log4cxx-0.10.0\log4cxx\src\main\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
