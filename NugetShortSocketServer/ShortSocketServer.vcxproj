@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -18,29 +18,11 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="log4cxxSample01.cpp" />
-    <ClCompile Include="ObjectFactory.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="log4cxx.conf" />
-    <None Include="LoggingEvent_#1.bin" />
-    <None Include="LoggingEvent_#2.bin" />
-    <None Include="LoggingEvent_#3.bin" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Extern\log4cxx\log4cxx.vcxproj">
-      <Project>{24d2d608-22e9-42ef-960b-15a900e6ad16}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="ObjectFactory.h" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>16.0</VCProjectVersion>
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{47808743-92C8-4878-B99E-1DD1869B28DC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{1d1886d9-3716-443f-8e41-8ecb3d6e53ec}</ProjectGuid>
-    <RootNamespace>log4cxxSample01</RootNamespace>
+    <RootNamespace>ShortSocketServer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -74,6 +56,9 @@
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
+    <Import Project="..\packages\log4cxx-v141.redist.0.10.0-stable\build\native\log4cxx-v141.redist.targets" Condition="Exists('..\packages\log4cxx-v141.redist.0.10.0-stable\build\native\log4cxx-v141.redist.targets')" />
+    <Import Project="..\packages\log4cxx-v141.0.10.0-stable\build\native\log4cxx-v141.targets" Condition="Exists('..\packages\log4cxx-v141.0.10.0-stable\build\native\log4cxx-v141.targets')" />
+    <Import Project="..\packages\expat.v141.2.2.9\build\native\expat.v141.targets" Condition="Exists('..\packages\expat.v141.2.2.9\build\native\expat.v141.targets')" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -93,13 +78,13 @@
     <OutDir>$(SolutionDir)\Build\Windows\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\Build\Windows\$(Platform)\Obj\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LinkIncremental>false</LinkIncremental>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)\Build\Windows\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\Build\Windows\$(Platform)\Obj\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>true</LinkIncremental>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)\Build\Windows\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\Build\Windows\$(Platform)\Obj\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
@@ -110,27 +95,59 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Extern\log4cxx\log4cxx\src\main\include;$(ProjectDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>xcopy "$(SolutionDir)\ShortSocketServer\log4cxx.conf" "$(OutDir)\" /d /h /y /f
+xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#1.bin" "$(OutDir)\" /d /h /y /f
+xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#2.bin" "$(OutDir)\" /d /h /y /f
+xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PreBuildEvent>
+      <Command>xcopy "$(SolutionDir)\ShortSocketServer\log4cxx.conf" "$(OutDir)\" /d /h /y /f
+xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#1.bin" "$(OutDir)\" /d /h /y /f
+xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#2.bin" "$(OutDir)\" /d /h /y /f
+xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Extern\log4cxx\log4cxx\src\main\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -139,30 +156,24 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Extern\log4cxx\log4cxx\src\main\include;$(ProjectDir)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
+    <PreBuildEvent>
+      <Command>xcopy "$(SolutionDir)\ShortSocketServer\log4cxx.conf" "$(OutDir)\" /d /h /y /f
+xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#1.bin" "$(OutDir)\" /d /h /y /f
+xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#2.bin" "$(OutDir)\" /d /h /y /f
+xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Extern\log4cxx\log4cxx\src\main\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -171,8 +182,34 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>xcopy "$(SolutionDir)\ShortSocketServer\log4cxx.conf" "$(OutDir)\" /d /h /y /f
+xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#1.bin" "$(OutDir)\" /d /h /y /f
+xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#2.bin" "$(OutDir)\" /d /h /y /f
+xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="..\ShortSocketServer\log4cxx.conf" />
+    <None Include="..\ShortSocketServer\LoggingEvent_#1.bin" />
+    <None Include="..\ShortSocketServer\LoggingEvent_#2.bin" />
+    <None Include="..\ShortSocketServer\LoggingEvent_#3.bin" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\ShortSocketServer\ObjectFactory.cpp" />
+    <ClCompile Include="..\ShortSocketServer\ShortSocketServer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\ShortSocketServer\ObjectFactory.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>이 프로젝트는 이 컴퓨터에 없는 NuGet 패키지를 참조합니다. 해당 패키지를 다운로드하려면 NuGet 패키지 복원을 사용하십시오. 자세한 내용은 http://go.microsoft.com/fwlink/?LinkID=322105를 참조하십시오. 누락된 파일은 {0}입니다.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\log4cxx-v141.redist.0.10.0-stable\build\native\log4cxx-v141.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\log4cxx-v141.redist.0.10.0-stable\build\native\log4cxx-v141.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\log4cxx-v141.0.10.0-stable\build\native\log4cxx-v141.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\log4cxx-v141.0.10.0-stable\build\native\log4cxx-v141.targets'))" />
+    <Error Condition="!Exists('..\packages\expat.v141.2.2.9\build\native\expat.v141.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\expat.v141.2.2.9\build\native\expat.v141.targets'))" />
+  </Target>
 </Project>

@@ -1,4 +1,4 @@
-﻿// log4cxxSample01.cpp : 이 파일에는 'main' 함수가 포함됩니다. 거기서 프로그램 실행이 시작되고 종료됩니다.
+﻿// ShortSocketServer.cpp : 이 파일에는 'main' 함수가 포함됩니다. 거기서 프로그램 실행이 시작되고 종료됩니다.
 //
 
 #include "ObjectFactory.h"
@@ -7,10 +7,8 @@
 #include <log4cxx/helpers/loglog.h> // log4cxx::helpers::LogLog
 #include <thread> // std::thread
 
-#ifdef _WIN32
 #include <winsock2.h>
-#include <WS2tcpip.h>
-#endif
+#include <WS2tcpip.h> // inet_ntop
 
 const char* const SERVER_LOGGER = "serverLogger";
 inline log4cxx::LoggerPtr serverLogger()
@@ -19,7 +17,7 @@ inline log4cxx::LoggerPtr serverLogger()
 }
 using LogLog = log4cxx::helpers::LogLog;
 
-auto loadFiles = []() -> bool {
+auto loadFiles = [](const std::string& sampleDir) -> bool {
 
 	auto forceLog = [](const std::vector<char>& byteBuf) -> bool {
 		try {
@@ -41,7 +39,7 @@ auto loadFiles = []() -> bool {
 	}; // auto forceLog
 
 	{
-		std::vector<char> byteBuf = log4cxx::io::loadFile("LoggingEvent_#1.bin");
+		std::vector<char> byteBuf = log4cxx::io::loadFile((sampleDir + "LoggingEvent_#1.bin").c_str());
 
 		size_t size = 0;
 		try {
@@ -79,14 +77,14 @@ auto loadFiles = []() -> bool {
 	}
 
 	{
-		std::vector<char> byteBuf = log4cxx::io::loadFile("LoggingEvent_#2.bin");
+		std::vector<char> byteBuf = log4cxx::io::loadFile((sampleDir + "LoggingEvent_#2.bin").c_str());
 		if (!forceLog(byteBuf)) {
 			return false;
 		}
 	}
 
 	{
-		std::vector<char> byteBuf = log4cxx::io::loadFile("LoggingEvent_#3.bin");
+		std::vector<char> byteBuf = log4cxx::io::loadFile((sampleDir + "LoggingEvent_#3.bin").c_str());
 		if (!forceLog(byteBuf)) {
 			return false;
 		}
@@ -211,14 +209,21 @@ auto runServer = [](int port_num) -> void {
 	closesocket(serverSocket);
 }; // auto runServer
 
-int main()
+int main(int argc, char* argv[])
 {
 	setlocale(LC_ALL, "");
 
-	std::string filePath = "log4cxx.conf";
+	std::string exeDir;
+	{
+		char drive[_MAX_DRIVE] = { 0, }; // 드라이브 명
+		char dir[_MAX_DIR] = { 0, }; // 디렉토리 경로
+		_splitpath_s(argv[0], drive, _MAX_DRIVE, dir, _MAX_DIR, nullptr, 0, nullptr, 0);
+		exeDir = std::string(drive) + dir;
+	}
+	std::string filePath = exeDir + "log4cxx.conf";
 	log4cxx::PropertyConfigurator::configure(log4cxx::File(filePath));
 	
-//	loadFiles();
+	loadFiles(exeDir);
 
 	WSADATA data;
 	::WSAStartup(MAKEWORD(2, 2), &data);
