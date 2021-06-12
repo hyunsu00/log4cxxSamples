@@ -3,7 +3,7 @@
 
 #include "ObjectFactory.h"
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
-#include <log4cxx/helpers/Exception.h> // log4cxx::helpers::InstantiationException, log4cxx::helpers::RuntimeException
+#include <log4cxx/helpers/exception.h> // log4cxx::helpers::InstantiationException, log4cxx::helpers::RuntimeException
 #include <log4cxx/helpers/loglog.h> // log4cxx::helpers::LogLog
 #include <thread> // std::thread
 
