@@ -11,7 +11,7 @@
 #include <sys/epoll.h>
 #include <arpa/inet.h>
 
-#include "ObjectLoader.h"
+#include "objectLoader.h"
 #include <string.h> // strdup
 #include <libgen.h> // dirname
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
