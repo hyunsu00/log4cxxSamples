@@ -4,7 +4,7 @@
     <None Include="packages.config">
       <Filter>packages</Filter>
     </None>
-    <None Include="..\ShortSocketServer\ShortSocketServer.conf" />
+    <None Include="..\shortSocketServer\shortSocketServer.conf" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="packages">
@@ -12,10 +12,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\ShortSocketServer\ShortSocketServer.cpp" />
-    <ClCompile Include="..\common\ObjectLoader.cpp" />
+    <ClCompile Include="..\shortSocketServer\shortSocketServer.cpp" />
+    <ClCompile Include="..\common\objectLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\common\ObjectLoader.h" />
+    <ClInclude Include="..\common\objectLoader.h" />
   </ItemGroup>
 </Project>

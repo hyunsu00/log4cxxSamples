@@ -22,7 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{47808743-92C8-4878-B99E-1DD1869B28DC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>ShortSocketServer</RootNamespace>
+    <RootNamespace>shortSocketServer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -110,7 +110,7 @@
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\ShortSocketServer\ShortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+      <Command>xcopy "$(SolutionDir)\shortSocketServer\shortSocketServer.conf" "$(OutDir)\" /d /h /y /f
 xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -131,7 +131,7 @@ xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\ShortSocketServer\ShortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+      <Command>xcopy "$(SolutionDir)\shortSocketServer\shortSocketServer.conf" "$(OutDir)\" /d /h /y /f
 xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -156,7 +156,7 @@ xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\ShortSocketServer\ShortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+      <Command>xcopy "$(SolutionDir)\shortSocketServer\shortSocketServer.conf" "$(OutDir)\" /d /h /y /f
 xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -181,20 +181,20 @@ xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\ShortSocketServer\ShortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+      <Command>xcopy "$(SolutionDir)\shortSocketServer\shortSocketServer.conf" "$(OutDir)\" /d /h /y /f
 xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\ShortSocketServer\ShortSocketServer.conf" />
+    <None Include="..\shortSocketServer\shortSocketServer.conf" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\common\ObjectLoader.cpp" />
-    <ClCompile Include="..\ShortSocketServer\ShortSocketServer.cpp" />
+    <ClCompile Include="..\common\objectLoader.cpp" />
+    <ClCompile Include="..\shortSocketServer\shortSocketServer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\common\ObjectLoader.h" />
+    <ClInclude Include="..\common\objectLoader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
