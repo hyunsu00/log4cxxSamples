@@ -11,7 +11,6 @@ namespace log4cxx { namespace ext { namespace io {
     bool readInt(int socket, int& value) noexcept;
     bool readLong(int socket, log4cxx_time_t& value) noexcept;
 
-    bool readUTFString(int socket, std::vector<char>& value, bool skipTypeClass = false) noexcept;
     bool readUTFString(int socket, std::string& value, bool skipTypeClass = false) noexcept;
     bool readLogString(int socket, LogString& value, bool skipTypeClass = false) noexcept;
     bool readObject(int socket, MDC::Map& value, bool skipTypeClass = false) noexcept;

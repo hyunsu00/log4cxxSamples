@@ -229,7 +229,7 @@ namespace log4cxx { namespace ext { namespace io {
 		return true;
 	}
 
-	bool readUTFString(int socket, std::vector<char>& value, bool skipTypeClass /*= false*/) noexcept
+	bool readUTFString(int socket, std::string& value, bool skipTypeClass /*= false*/) noexcept
 	{
 		if (!skipTypeClass) {
 			unsigned char typeClass = TC_STRING;
@@ -250,38 +250,47 @@ namespace log4cxx { namespace ext { namespace io {
 		memcpy(&dataLen, bytes, sizeof(bytes));
 
 		// UTF 스트링 복사
-		value = std::vector<char>(dataLen, 0);
-		if (!read(socket, &value[0], dataLen)) {
+		std::vector<char> data(dataLen, 0);
+		if (!read(socket, &data[0], dataLen)) {
 			return false;
 		}
 
 		// 가장뒤에 0 추가
-		value.push_back(0);
-
-		return true;
-	}
-
-	bool readUTFString(int socket, std::string& value, bool skipTypeClass /*= false*/) noexcept
-	{
-		std::vector<char> utfString;
-		if (!readUTFString(socket, utfString, skipTypeClass)) {
-			return false;
-		}
-		value = &utfString[0];
+		data.push_back(0);
+		value = &data[0];
 
 		return true;
 	}
 
 	bool readLogString(int socket, LogString& value, bool skipTypeClass /*= false*/) noexcept
 	{
-		std::vector<char> utfString;
-		if (!readUTFString(socket, utfString, skipTypeClass)) {
+		if (!skipTypeClass) {
+			unsigned char typeClass = TC_STRING;
+			if (!readByte(socket, typeClass) || typeClass != TC_STRING) {
+				return false;
+			}
+		}
+
+		// UTF 스트링 길이 구함
+		size_t dataLen = 0;
+		char bytes[2];
+		if (!read(socket, bytes, sizeof(bytes))) {
+			return false;
+		}
+
+		// 리틀 엔디안으로 변경
+		std::swap(bytes[0], bytes[1]);
+		memcpy(&dataLen, bytes, sizeof(bytes));
+
+		// UTF 스트링 복사
+		std::vector<char> data(dataLen, 0);
+		if (!read(socket, &data[0], dataLen)) {
 			return false;
 		}
 
 		// UTF-8 스트링 -> LogString으로 변환
 		log4cxx::helpers::CharsetDecoderPtr utf8Decoder(log4cxx::helpers::CharsetDecoder::getUTF8Decoder());
-		log4cxx::helpers::ByteBuffer buf((char*)&utfString[0], utfString.size());
+		log4cxx::helpers::ByteBuffer buf(const_cast<char*>(&data[0]), data.size());
 		utf8Decoder->decode(buf, value);
 
 		return true;
