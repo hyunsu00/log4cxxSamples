@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\common\objectLoader.cpp" />
+    <ClCompile Include="..\common\socketLoader.cpp" />
     <ClCompile Include="shortSocketServer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -32,6 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\objectLoader.h" />
+    <ClInclude Include="..\common\socketLoader.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

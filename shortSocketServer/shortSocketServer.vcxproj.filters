@@ -3,9 +3,11 @@
   <ItemGroup>
     <ClCompile Include="shortSocketServer.cpp" />
     <ClCompile Include="..\common\objectLoader.cpp" />
+    <ClCompile Include="..\common\socketLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\objectLoader.h" />
+    <ClInclude Include="..\common\socketLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shortSocketServer.conf" />

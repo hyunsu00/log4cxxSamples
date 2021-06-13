@@ -8,6 +8,7 @@
 
 #include <winsock2.h>
 #include <WS2tcpip.h> // inet_ntop
+#include "socketLoader.h"
 
 const char* const SERVER_LOGGER = "serverLogger";
 inline log4cxx::LoggerPtr serverLogger()
@@ -117,6 +118,7 @@ auto runClient = [](SOCKET clientSocket, const std::string& clientInfo) {
 
 	// LoggingEvent
 	{
+#if 0
 		auto forceLog = [](std::vector<char>& byteBuf) -> bool {
 			while (!byteBuf.empty()) {
 				try {
@@ -155,6 +157,21 @@ auto runClient = [](SOCKET clientSocket, const std::string& clientInfo) {
 				goto CLEAN_UP;
 			}
 		}
+#else
+		while (true) {
+
+			log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::createLoggingEvent(clientSocket);
+			if (!event) {
+				LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] : 종료중... "));
+				goto CLEAN_UP;
+			}
+			log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
+			if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
+				log4cxx::helpers::Pool p;
+				remoteLogger->callAppenders(event, p);
+			}
+		}
+#endif
 	}
 
 CLEAN_UP:
