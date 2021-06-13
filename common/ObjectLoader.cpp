@@ -1,8 +1,17 @@
-﻿// ObjectFactory.cpp
-#include "ObjectFactory.h"
-#include <log4cxx/helpers/Exception.h> // helpers::InstantiationException, helpers::RuntimeException
+﻿// ObjectLoader.cpp
+#include "ObjectLoader.h"
+#include <log4cxx/helpers/exception.h> // helpers::InstantiationException, helpers::RuntimeException
 #include <log4cxx/helpers/charsetdecoder.h> // log4cxx::helpers::CharsetDecoder
 #include <log4cxx/helpers/bytebuffer.h> // log4cxx::helpers::ByteBuffer
+#include <memory> // std::unique_ptr
+#include <memory.h> // memcmp
+
+#ifdef _WIN32
+#	include <crtdbg.h>
+#else
+#	include <assert.h>
+#	define _ASSERTE assert
+#endif
 
 // https://stackoverflow.com/questions/424104/can-i-access-private-members-from-outside-the-class-without-using-friends
 namespace {

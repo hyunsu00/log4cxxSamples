@@ -1,7 +1,7 @@
 ﻿// ShortSocketServer.cpp : 이 파일에는 'main' 함수가 포함됩니다. 거기서 프로그램 실행이 시작되고 종료됩니다.
 //
 
-#include "ObjectFactory.h"
+#include "ObjectLoader.h"
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
 #include <log4cxx/helpers/exception.h> // log4cxx::helpers::InstantiationException, log4cxx::helpers::RuntimeException
 #include <log4cxx/helpers/loglog.h> // log4cxx::helpers::LogLog
@@ -220,10 +220,10 @@ int main(int argc, char* argv[])
 		_splitpath_s(argv[0], drive, _MAX_DRIVE, dir, _MAX_DIR, nullptr, 0, nullptr, 0);
 		exeDir = std::string(drive) + dir;
 	}
-	std::string filePath = exeDir + "log4cxx.conf";
+	std::string filePath = exeDir + "ShortSocketServer.conf";
 	log4cxx::PropertyConfigurator::configure(log4cxx::File(filePath));
 	
-	loadFiles(exeDir);
+	loadFiles(exeDir + "samples\\");
 
 	WSADATA data;
 	::WSAStartup(MAKEWORD(2, 2), &data);

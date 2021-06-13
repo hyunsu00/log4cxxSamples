@@ -6,14 +6,12 @@
 #include <string.h>
 #include <fcntl.h>
 
-using namespace std;
-
 #include <sys/unistd.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <arpa/inet.h>
 
-#include "ObjectFactory.h"
+#include "ObjectLoader.h"
 #include <string.h> // strdup
 #include <libgen.h> // dirname
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
@@ -30,7 +28,7 @@ int main(int argc, char* argv[])
 	std::string exeDir = dirname(exePath);
 	free(exePath);
 	exeDir += "/";
-	std::string filePath = exeDir + "log4cxx.conf";
+	std::string filePath = exeDir + "epollSocketServer.conf";
 	log4cxx::PropertyConfigurator::configure(log4cxx::File(filePath));
 
     printf("hello from Leviathan_for_Linux!\n");

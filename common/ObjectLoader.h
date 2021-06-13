@@ -1,4 +1,4 @@
-﻿// ObjectFactory.h
+﻿// ObjectLoader.h
 #pragma once
 #include <vector> // std::vector
 #include <log4cxx/spi/loggingevent.h> // log4cxx::spi::LoggingEventPtr

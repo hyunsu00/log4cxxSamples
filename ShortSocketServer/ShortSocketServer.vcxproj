@@ -19,22 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\common\ObjectLoader.cpp" />
     <ClCompile Include="ShortSocketServer.cpp" />
-    <ClCompile Include="ObjectFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="log4cxx.conf" />
-    <None Include="LoggingEvent_#1.bin" />
-    <None Include="LoggingEvent_#2.bin" />
-    <None Include="LoggingEvent_#3.bin" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="ObjectFactory.h" />
+    <None Include="ShortSocketServer.conf" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Extern\log4cxx-0.10.0\log4cxx.vcxproj">
       <Project>{24d2d608-22e9-42ef-960b-15a900e6ad16}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\common\ObjectLoader.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -114,7 +111,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Extern\log4cxx-0.10.0\log4cxx\src\main\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Extern\log4cxx-0.10.0\log4cxx\src\main\include;..\common</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -122,10 +119,8 @@
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy ".\log4cxx.conf" "$(OutDir)\" /d /h /y /f
-xcopy ".\LoggingEvent_#1.bin" "$(OutDir)\" /d /h /y /f
-xcopy ".\LoggingEvent_#2.bin" "$(OutDir)\" /d /h /y /f
-xcopy ".\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy ".\ShortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -136,7 +131,7 @@ xcopy ".\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Extern\log4cxx-0.10.0\log4cxx\src\main\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Extern\log4cxx-0.10.0\log4cxx\src\main\include;..\common</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,10 +141,8 @@ xcopy ".\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy ".\log4cxx.conf" "$(OutDir)\" /d /h /y /f
-xcopy ".\LoggingEvent_#1.bin" "$(OutDir)\" /d /h /y /f
-xcopy ".\LoggingEvent_#2.bin" "$(OutDir)\" /d /h /y /f
-xcopy ".\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy ".\ShortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -158,7 +151,7 @@ xcopy ".\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Extern\log4cxx-0.10.0\log4cxx\src\main\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Extern\log4cxx-0.10.0\log4cxx\src\main\include;..\common</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -166,10 +159,8 @@ xcopy ".\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy ".\log4cxx.conf" "$(OutDir)\" /d /h /y /f
-xcopy ".\LoggingEvent_#1.bin" "$(OutDir)\" /d /h /y /f
-xcopy ".\LoggingEvent_#2.bin" "$(OutDir)\" /d /h /y /f
-xcopy ".\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy ".\ShortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -180,7 +171,7 @@ xcopy ".\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Extern\log4cxx-0.10.0\log4cxx\src\main\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Extern\log4cxx-0.10.0\log4cxx\src\main\include;..\common</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -190,10 +181,8 @@ xcopy ".\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy ".\log4cxx.conf" "$(OutDir)\" /d /h /y /f
-xcopy ".\LoggingEvent_#1.bin" "$(OutDir)\" /d /h /y /f
-xcopy ".\LoggingEvent_#2.bin" "$(OutDir)\" /d /h /y /f
-xcopy ".\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy ".\ShortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

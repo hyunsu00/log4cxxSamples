@@ -102,6 +102,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -109,10 +110,8 @@
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\ShortSocketServer\log4cxx.conf" "$(OutDir)\" /d /h /y /f
-xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#1.bin" "$(OutDir)\" /d /h /y /f
-xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#2.bin" "$(OutDir)\" /d /h /y /f
-xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy "$(SolutionDir)\ShortSocketServer\ShortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -124,6 +123,7 @@ xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#3.bin" "$(OutDir)\" /d /h 
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,10 +131,8 @@ xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#3.bin" "$(OutDir)\" /d /h 
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\ShortSocketServer\log4cxx.conf" "$(OutDir)\" /d /h /y /f
-xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#1.bin" "$(OutDir)\" /d /h /y /f
-xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#2.bin" "$(OutDir)\" /d /h /y /f
-xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy "$(SolutionDir)\ShortSocketServer\ShortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -148,6 +146,7 @@ xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#3.bin" "$(OutDir)\" /d /h 
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -157,10 +156,8 @@ xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#3.bin" "$(OutDir)\" /d /h 
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\ShortSocketServer\log4cxx.conf" "$(OutDir)\" /d /h /y /f
-xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#1.bin" "$(OutDir)\" /d /h /y /f
-xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#2.bin" "$(OutDir)\" /d /h /y /f
-xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy "$(SolutionDir)\ShortSocketServer\ShortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -174,6 +171,7 @@ xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#3.bin" "$(OutDir)\" /d /h 
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -183,25 +181,20 @@ xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#3.bin" "$(OutDir)\" /d /h 
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\ShortSocketServer\log4cxx.conf" "$(OutDir)\" /d /h /y /f
-xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#1.bin" "$(OutDir)\" /d /h /y /f
-xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#2.bin" "$(OutDir)\" /d /h /y /f
-xcopy "$(SolutionDir)\ShortSocketServer\LoggingEvent_#3.bin" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy "$(SolutionDir)\ShortSocketServer\ShortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\ShortSocketServer\log4cxx.conf" />
-    <None Include="..\ShortSocketServer\LoggingEvent_#1.bin" />
-    <None Include="..\ShortSocketServer\LoggingEvent_#2.bin" />
-    <None Include="..\ShortSocketServer\LoggingEvent_#3.bin" />
+    <None Include="..\ShortSocketServer\ShortSocketServer.conf" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\ShortSocketServer\ObjectFactory.cpp" />
+    <ClCompile Include="..\common\ObjectLoader.cpp" />
     <ClCompile Include="..\ShortSocketServer\ShortSocketServer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\ShortSocketServer\ObjectFactory.h" />
+    <ClInclude Include="..\common\ObjectLoader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

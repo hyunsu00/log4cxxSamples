@@ -1,31 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <None Include="..\ShortSocketServer\log4cxx.conf">
-      <Filter>conf</Filter>
-    </None>
-    <None Include="..\ShortSocketServer\LoggingEvent_#1.bin">
-      <Filter>bin</Filter>
-    </None>
-    <None Include="..\ShortSocketServer\LoggingEvent_#2.bin">
-      <Filter>bin</Filter>
-    </None>
-    <None Include="..\ShortSocketServer\LoggingEvent_#3.bin">
-      <Filter>bin</Filter>
-    </None>
     <None Include="packages.config">
       <Filter>packages</Filter>
     </None>
+    <None Include="..\ShortSocketServer\ShortSocketServer.conf" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="conf">
-      <UniqueIdentifier>{7967d469-e6dc-4d78-99eb-8fcf1b6fdf46}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="bin">
-      <UniqueIdentifier>{c018aa61-c476-4297-9cc8-5ef6fee2401e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="packages">
       <UniqueIdentifier>{78c32e65-a57e-4d1a-aa4e-276a21368d24}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\ShortSocketServer\ShortSocketServer.cpp" />
+    <ClCompile Include="..\common\ObjectLoader.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\common\ObjectLoader.h" />
   </ItemGroup>
 </Project>

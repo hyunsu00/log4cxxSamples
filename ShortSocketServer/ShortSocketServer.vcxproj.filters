@@ -2,31 +2,12 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="ShortSocketServer.cpp" />
-    <ClCompile Include="ObjectFactory.cpp" />
+    <ClCompile Include="..\common\ObjectLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="log4cxx.conf">
-      <Filter>conf</Filter>
-    </None>
-    <None Include="LoggingEvent_#1.bin">
-      <Filter>bin</Filter>
-    </None>
-    <None Include="LoggingEvent_#2.bin">
-      <Filter>bin</Filter>
-    </None>
-    <None Include="LoggingEvent_#3.bin">
-      <Filter>bin</Filter>
-    </None>
+    <ClInclude Include="..\common\ObjectLoader.h" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="conf">
-      <UniqueIdentifier>{007fa57b-0c8c-4510-8365-1148906acdd7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="bin">
-      <UniqueIdentifier>{9988aec3-5617-47c3-9490-cbad8dfe7a1f}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="ObjectFactory.h" />
+    <None Include="ShortSocketServer.conf" />
   </ItemGroup>
 </Project>
