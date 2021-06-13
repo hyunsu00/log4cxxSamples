@@ -1,4 +1,4 @@
-﻿// example01.cpp
+﻿// shortSocketClient.cpp
 #ifdef _WIN32
 #include <io.h> // _setmode
 #include <fcntl.h> // _O_U16TEXT
