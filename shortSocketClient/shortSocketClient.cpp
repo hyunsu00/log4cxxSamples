@@ -7,13 +7,9 @@
 #include <iostream> // std::cout
 #include <thread> // std::this_thread::sleep_for
 #include <chrono> // std::chrono::duration
-#include <log4cxx/stream.h> // log4cxx::logstream
 #include <log4cxx/basicconfigurator.h> // log4cxx::BasicConfigurator
 #include <log4cxx/helpers/exception.h> // log4cxx::helpers::Exception
-#include <log4cxx/ndc.h> // log4cxx::NDC
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
-#include <log4cxx/helpers/exception.h> // log4cxx::helpers::Exception
-#include <log4cxx/simplelayout.h> // log4cxx::SimpleLayout
 
 int main(int argc, char* argv[])
 {

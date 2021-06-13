@@ -22,7 +22,7 @@ auto loadFiles = [](const std::string& sampleDir) -> bool {
 	auto forceLog = [](const std::vector<char>& byteBuf) -> bool {
 		try {
 			size_t readBytes = 0;
-			log4cxx::spi::LoggingEventPtr event = log4cxx::factory::createLoggingEvent(byteBuf, readBytes);
+			log4cxx::spi::LoggingEventPtr event = log4cxx::loader::createLoggingEvent(byteBuf, readBytes);
 			log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
 			if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
 				log4cxx::helpers::Pool p;
@@ -93,7 +93,7 @@ auto loadFiles = [](const std::string& sampleDir) -> bool {
 	return true;
 }; // auto loadFiles
 
-auto runClient = [](int clientSocket, const std::string& clientInfo) {
+auto runClient = [](SOCKET clientSocket, const std::string& clientInfo) {
 
 	LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 접속 - ") << clientInfo.c_str());
 
@@ -122,7 +122,7 @@ auto runClient = [](int clientSocket, const std::string& clientInfo) {
 			while (!byteBuf.empty()) {
 				try {
 					size_t readBytes = 0;
-					log4cxx::spi::LoggingEventPtr event = log4cxx::factory::createLoggingEvent(byteBuf, readBytes);
+					log4cxx::spi::LoggingEventPtr event = log4cxx::loader::createLoggingEvent(byteBuf, readBytes);
 					log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
 					if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
 						log4cxx::helpers::Pool p;
@@ -143,7 +143,7 @@ auto runClient = [](int clientSocket, const std::string& clientInfo) {
 
 		std::vector<char> byteBuf;
 		while (true) {
-			int recvBytes = recv(clientSocket, &recvBuf[0], recvBuf.size(), 0);
+			int recvBytes = recv(clientSocket, &recvBuf[0], static_cast<int>(recvBuf.size()), 0);
 			// recvBytes == 0 일 경우 -> 정상적인 종료
 			// recvBytes == SOCKET_ERROR(-1) 일 경우 -> 소켓에러 WSAGetLastError() 호출하여 오류코드 검색 가능
 			if (recvBytes <= 0) {
@@ -165,7 +165,7 @@ CLEAN_UP:
 
 auto runServer = [](int port_num) -> void {
 
-	int serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	SOCKET serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (serverSocket == INVALID_SOCKET) {
 		LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("소켓을 못열었다."));
 		return;
@@ -194,7 +194,7 @@ auto runServer = [](int port_num) -> void {
 	while (true) {
 		struct sockaddr_in clientAddr;
 		int len = sizeof(clientAddr);
-		int clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddr, (socklen_t*)&len);
+		SOCKET clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddr, (socklen_t*)&len);
 		if (clientSocket < 0) {
 			LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("accept 시도 실패."));
 			break;
@@ -223,7 +223,7 @@ int main(int argc, char* argv[])
 	std::string filePath = exeDir + "shortSocketServer.conf";
 	log4cxx::PropertyConfigurator::configure(log4cxx::File(filePath));
 	
-	loadFiles(exeDir + "samples\\");
+	// loadFiles(exeDir + "samples\\");
 
 	WSADATA data;
 	::WSAStartup(MAKEWORD(2, 2), &data);

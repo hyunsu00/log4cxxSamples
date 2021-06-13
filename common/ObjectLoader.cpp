@@ -665,7 +665,7 @@ namespace log4cxx { namespace io {
 
 }} // // log4cxx::io
 
-namespace log4cxx { namespace factory {
+namespace log4cxx { namespace loader {
 
 	auto getClassName = [](const std::string& fullInfo) -> std::string {
 

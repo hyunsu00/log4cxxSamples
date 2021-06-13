@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31321.278
-MinimumVisualStudioVersion = 10.0.40219.1ss
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shortSocketServer", "nugetShortSocketServer\shortSocketServer.vcxproj", "{47808743-92C8-4878-B99E-1DD1869B28DC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{6CC575E9-DFFD-40B1-93AF-B47676EB321A}"
@@ -10,6 +10,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{6CC5
 		samples\LoggingEvent_#1.bin = samples\LoggingEvent_#1.bin
 		samples\LoggingEvent_#2.bin = samples\LoggingEvent_#2.bin
 		samples\LoggingEvent_#3.bin = samples\LoggingEvent_#3.bin
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Readme", "Readme", "{EC0D6AD1-99EA-49D0-A92B-0E7F70625022}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		README.md = README.md
 	EndProjectSection
 EndProject
 Global
