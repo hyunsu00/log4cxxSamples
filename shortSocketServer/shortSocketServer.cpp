@@ -3,7 +3,6 @@
 
 #include "objectLoader.h"
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
-#include <log4cxx/helpers/exception.h> // log4cxx::helpers::InstantiationException, log4cxx::helpers::RuntimeException
 #include <log4cxx/helpers/loglog.h> // log4cxx::helpers::LogLog
 #include <thread> // std::thread
 
@@ -22,34 +21,34 @@ auto loadFiles = [](const std::string& sampleDir) -> bool {
 	auto forceLog = [](const std::vector<char>& byteBuf) -> bool {
 		try {
 			size_t readBytes = 0;
-			log4cxx::spi::LoggingEventPtr event = log4cxx::loader::createLoggingEvent(byteBuf, readBytes);
+			log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::createLoggingEvent(byteBuf, readBytes);
 			log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
 			if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
 				log4cxx::helpers::Pool p;
 				remoteLogger->callAppenders(event, p);
 			}
-		} catch (log4cxx::helpers::RuntimeException& e) {
+		} catch (log4cxx::ext::SmallBufferException& e) {
+			LOG4CXX_WARN(serverLogger(), e.what());
+		} catch (log4cxx::ext::InvalidBufferException& e) {
 			LOG4CXX_ERROR(serverLogger(), e.what());
 			return false;
-		} catch (log4cxx::helpers::InstantiationException& e) {
-			LOG4CXX_WARN(serverLogger(), e.what());
-		}
+		} 
 
 		return true;
 	}; // auto forceLog
 
 	{
-		std::vector<char> byteBuf = log4cxx::io::loadFile((sampleDir + "LoggingEvent_#1.bin").c_str());
+		std::vector<char> byteBuf = log4cxx::ext::io::loadFile((sampleDir + "LoggingEvent_#1.bin").c_str());
 
 		size_t size = 0;
 		try {
-			size = log4cxx::io::readStart(byteBuf);
-		} catch (log4cxx::helpers::RuntimeException& e) {
+			size = log4cxx::ext::io::readStart(byteBuf);
+		} catch (log4cxx::ext::SmallBufferException& e) {
+			LOG4CXX_WARN(serverLogger(), e.what());
+		} catch (log4cxx::ext::InvalidBufferException& e) {
 			LOG4CXX_ERROR(serverLogger(), e.what());
 			return false;
-		} catch (log4cxx::helpers::InstantiationException& e) {
-			LOG4CXX_WARN(serverLogger(), e.what());
-		}
+		} 
 
 		byteBuf.erase(byteBuf.begin(), byteBuf.begin() + size);
 
@@ -77,14 +76,14 @@ auto loadFiles = [](const std::string& sampleDir) -> bool {
 	}
 
 	{
-		std::vector<char> byteBuf = log4cxx::io::loadFile((sampleDir + "LoggingEvent_#2.bin").c_str());
+		std::vector<char> byteBuf = log4cxx::ext::io::loadFile((sampleDir + "LoggingEvent_#2.bin").c_str());
 		if (!forceLog(byteBuf)) {
 			return false;
 		}
 	}
 
 	{
-		std::vector<char> byteBuf = log4cxx::io::loadFile((sampleDir + "LoggingEvent_#3.bin").c_str());
+		std::vector<char> byteBuf = log4cxx::ext::io::loadFile((sampleDir + "LoggingEvent_#3.bin").c_str());
 		if (!forceLog(byteBuf)) {
 			return false;
 		}
@@ -97,7 +96,7 @@ auto runClient = [](SOCKET clientSocket, const std::string& clientInfo) {
 
 	LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 접속 - ") << clientInfo.c_str());
 
-	const size_t BUF_LEN = 1024;
+	const size_t BUF_LEN = 4096;
 	std::vector<char> recvBuf(BUF_LEN, 0);
 
 	// 자바 스트림 프로토콜 확인
@@ -109,7 +108,7 @@ auto runClient = [](SOCKET clientSocket, const std::string& clientInfo) {
 		} 
 
 		try {
-			log4cxx::io::readStart(recvBuf);
+			log4cxx::ext::io::readStart(recvBuf);
 		} catch (log4cxx::helpers::Exception& e) {
 			LOG4CXX_ERROR(serverLogger(), e.what());
 			goto CLEAN_UP;
@@ -122,20 +121,20 @@ auto runClient = [](SOCKET clientSocket, const std::string& clientInfo) {
 			while (!byteBuf.empty()) {
 				try {
 					size_t readBytes = 0;
-					log4cxx::spi::LoggingEventPtr event = log4cxx::loader::createLoggingEvent(byteBuf, readBytes);
+					log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::createLoggingEvent(byteBuf, readBytes);
 					log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
 					if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
 						log4cxx::helpers::Pool p;
 						remoteLogger->callAppenders(event, p);
 					}
 					byteBuf.erase(byteBuf.begin(), byteBuf.begin() + readBytes);
-				} catch (log4cxx::helpers::RuntimeException& e) { // 종료
-					LOG4CXX_ERROR(serverLogger(), e.what());
-					return false;
-				} catch (log4cxx::helpers::InstantiationException& e) { // 무시
+				} catch (log4cxx::ext::SmallBufferException& e) { // 무시
 					LOG4CXX_WARN(serverLogger(), e.what());
 					break;
-				}
+				} catch (log4cxx::ext::InvalidBufferException& e) { // 종료
+					LOG4CXX_ERROR(serverLogger(), e.what());
+					return false;
+				} 
 			}
 
 			return true;
