@@ -5,10 +5,10 @@
 #include <log4cxx/helpers/bytebuffer.h> // log4cxx::helpers::ByteBuffer
 #include <memory> // std::unique_ptr
 #include <memory.h> // memcmp
-#include <winsock2.h> // recv
 
 #ifdef _WIN32
-#	include <crtdbg.h>
+#	include <crtdbg.h> // _ASSERTE
+#	include <winsock2.h> // recv
 #else
 #	include <assert.h>
 #	define _ASSERTE assert
@@ -145,7 +145,7 @@ namespace log4cxx { namespace ext { namespace io  {
 
 namespace log4cxx { namespace ext { namespace io {
 
-	bool read(int socket, void* buf, size_t len)
+	bool read(int socket, void* buf, size_t len) noexcept
 	{
 		int len_read = 0;
 		unsigned char* p = (unsigned char*)buf;
@@ -172,12 +172,12 @@ namespace log4cxx { namespace ext { namespace io {
 		return result;
 	}
 
-	bool readByte(int socket, unsigned char& value)
+	bool readByte(int socket, unsigned char& value) noexcept
 	{
 		return read(socket, &value, sizeof(unsigned char));
 	}
 
-	bool readBytes(int socket, size_t bytes, std::vector<unsigned char>& value)
+	bool readBytes(int socket, size_t bytes, std::vector<unsigned char>& value) noexcept
 	{
 		value = std::vector<unsigned char>(bytes, 0);
 		if (!read(socket, &value[0], bytes)) {
@@ -187,7 +187,7 @@ namespace log4cxx { namespace ext { namespace io {
 		return true;
 	}
 
-	bool readInt(int socket, int& value)
+	bool readInt(int socket, int& value) noexcept
 	{
 		_ASSERTE(sizeof(int) == 4 && "읽을 데이터의 크기는 4이여야 한다.");
 		if (!read(socket, &value, sizeof(int))) {
@@ -206,7 +206,7 @@ namespace log4cxx { namespace ext { namespace io {
 		return true;
 	}
 
-	bool readLong(int socket, log4cxx_time_t& value)
+	bool readLong(int socket, log4cxx_time_t& value) noexcept
 	{
 		_ASSERTE(sizeof(log4cxx_time_t) == 8 && "읽을 데이터의 크기는 8이여야 한다.");
 		if (!read(socket, &value, sizeof(log4cxx_time_t))) {
@@ -229,7 +229,7 @@ namespace log4cxx { namespace ext { namespace io {
 		return true;
 	}
 
-	bool readUTFString(int socket, std::string& value, bool skipTypeClass)
+	bool readUTFString(int socket, std::vector<char>& value, bool skipTypeClass /*= false*/) noexcept
 	{
 		if (!skipTypeClass) {
 			unsigned char typeClass = TC_STRING;
@@ -250,53 +250,44 @@ namespace log4cxx { namespace ext { namespace io {
 		memcpy(&dataLen, bytes, sizeof(bytes));
 
 		// UTF 스트링 복사
-		std::vector<unsigned char> data;
-		if (!readBytes(socket, dataLen, data)) {
+		value = std::vector<char>(dataLen, 0);
+		if (!read(socket, &value[0], dataLen)) {
 			return false;
 		}
 
 		// 가장뒤에 0 추가
-		data.push_back(0);
-		value = (const char*)&data[0];
+		value.push_back(0);
 
 		return true;
 	}
 
-	bool readLogString(int socket, LogString& value, bool skipTypeClass)
+	bool readUTFString(int socket, std::string& value, bool skipTypeClass /*= false*/) noexcept
 	{
-		if (!skipTypeClass) {
-			unsigned char typeClass = TC_STRING;
-			if (!readByte(socket, typeClass) || typeClass != TC_STRING) {
-				return false;
-			}
-		}
-
-		// UTF 스트링 길이 구함
-		size_t dataLen = 0;
-		char bytes[2];
-		if (!read(socket, bytes, sizeof(bytes))) {
+		std::vector<char> utfString;
+		if (!readUTFString(socket, utfString, skipTypeClass)) {
 			return false;
 		}
+		value = &utfString[0];
 
-		// 리틀 엔디안으로 변경
-		std::swap(bytes[0], bytes[1]);
-		memcpy(&dataLen, bytes, sizeof(bytes));
+		return true;
+	}
 
-		// UTF 스트링 복사
-		std::vector<unsigned char> data;
-		if (!readBytes(socket, dataLen, data)) {
+	bool readLogString(int socket, LogString& value, bool skipTypeClass /*= false*/) noexcept
+	{
+		std::vector<char> utfString;
+		if (!readUTFString(socket, utfString, skipTypeClass)) {
 			return false;
 		}
 
 		// UTF-8 스트링 -> LogString으로 변환
 		log4cxx::helpers::CharsetDecoderPtr utf8Decoder(log4cxx::helpers::CharsetDecoder::getUTF8Decoder());
-		log4cxx::helpers::ByteBuffer buf((char*)&data[0], data.size());
+		log4cxx::helpers::ByteBuffer buf((char*)&utfString[0], utfString.size());
 		utf8Decoder->decode(buf, value);
 
 		return true;
 	}
 
-	bool readObject(int socket, MDC::Map& value, bool skipTypeClass)
+	bool readObject(int socket, MDC::Map& value, bool skipTypeClass /*= false*/) noexcept
 	{
 		if (!skipTypeClass) {
 			unsigned char typeClass = TC_OBJECT;
@@ -310,6 +301,7 @@ namespace log4cxx { namespace ext { namespace io {
 			return false;
 		}
 
+		// == os->write(dataBuf, p);
 		const char data[] = {
 			0x3F, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05,
 			TC_BLOCKDATA, 0x08, 0x00, 0x00, 0x00, 0x07
@@ -325,6 +317,7 @@ namespace log4cxx { namespace ext { namespace io {
 			return false;
 		}
 
+		// == os->write(sizeBuf, p);
 		int mapSize = 0;
 		if (!readInt(socket, mapSize)) {
 			return false;
@@ -334,27 +327,30 @@ namespace log4cxx { namespace ext { namespace io {
 			LogString first, second;
 
 			// <==> writeObject(iter->first, p);
-			if (!readLogString(socket, first, false)) {
+			if (!readLogString(socket, first)) {
 				return false;
 			}
 
 			// <==> writeObject(iter->second, p);
-			if (!readLogString(socket, second, false)) {
+			if (!readLogString(socket, second)) {
 				return false;
 			}
 
 			value[first] = second;
 		}
 
-		unsigned char type = TC_ENDBLOCKDATA;
-		if (!readByte(socket, type) || type != TC_ENDBLOCKDATA) {
-			return false;
+		// == writeByte(TC_ENDBLOCKDATA, p);
+		{
+			unsigned char type = TC_ENDBLOCKDATA;
+			if (!readByte(socket, type) || type != TC_ENDBLOCKDATA) {
+				return false;
+			}
 		}
 
 		return true;
 	}
 
-	bool readStart(int socket)
+	bool readStart(int socket) noexcept
 	{
 		// STREAM_MAGIC, STREAM_VERSION
 		unsigned char start[] = {
@@ -379,7 +375,7 @@ namespace log4cxx { namespace ext { namespace io {
 		const unsigned char* classDesc,
 		size_t classDescLen,
 		std::pair<std::string, unsigned int>& value
-	) {
+	) noexcept {
 		unsigned char typeClass = TC_CLASSDESC;
 		if (!readByte(socket, typeClass)) {
 			return false;
@@ -390,8 +386,8 @@ namespace log4cxx { namespace ext { namespace io {
 		case TC_CLASSDESC:
 			{
 				size_t size = classDescLen - sizeof(classDesc[0]);
-				std::vector<unsigned char> byteBuf(size);
-				if (!read(socket, &byteBuf[0], size)) {
+				std::vector<unsigned char> byteBuf;
+				if (!readBytes(socket, size , byteBuf)) {
 					return false;
 				}
 				int ret = memcmp(classDesc + 1, &byteBuf[0], size);
@@ -412,14 +408,14 @@ namespace log4cxx { namespace ext { namespace io {
 			}
 			break;
 		default:
-			_ASSERTE(!"type is invalid");
+			_ASSERTE(!"typeClass is invalid");
 			return false;
 		}
 
 		return true;
 	}
 
-	bool readLocationInfo(int socket, std::string& value)
+	bool readLocationInfo(int socket, std::string& value) noexcept
 	{
 		unsigned char typeClass = TC_NULL;
 		if (!readByte(socket, typeClass)) {
@@ -441,7 +437,7 @@ namespace log4cxx { namespace ext { namespace io {
 				}
 
 				std::string fullInfo;
-				if (!readUTFString(socket, fullInfo, false)) {
+				if (!readUTFString(socket, fullInfo)) {
 					return false;
 				}
 
@@ -449,12 +445,12 @@ namespace log4cxx { namespace ext { namespace io {
 			}
 			break;
 		default:
-			_ASSERTE(!"type is invalid");
+			_ASSERTE(!"typeClass is invalid");
 			return false;
 		}
 	}
 	
-	bool readMDC(int socket, MDC::Map& value)
+	bool readMDC(int socket, MDC::Map& value) noexcept
 	{
 		unsigned char typeClass = TC_NULL;
 		if (!readByte(socket, typeClass)) {
@@ -479,14 +475,14 @@ namespace log4cxx { namespace ext { namespace io {
 			}
 			break;
 		default:
-			_ASSERTE(!"type is invalid");
+			_ASSERTE(!"typeClass is invalid");
 			return false;
 		}
 
 		return true;
 	}
 
-	bool readNDC(int socket, LogString& value)
+	bool readNDC(int socket, LogString& value) noexcept
 	{
 		unsigned char typeClass = TC_NULL;
 		if (!readByte(socket, typeClass)) {
@@ -511,7 +507,7 @@ namespace log4cxx { namespace ext { namespace io {
 			}
 			break;
 		default:
-			_ASSERTE(!"type is invalid");
+			_ASSERTE(!"typeClass is invalid");
 			return false;
 		}
 
@@ -620,7 +616,7 @@ namespace log4cxx { namespace ext { namespace loader {
 	
 	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, timeStamp, log4cxx_time_t);
 	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, threadName, const LogString);
-	log4cxx::spi::LoggingEventPtr createLoggingEvent(int socket)
+	log4cxx::spi::LoggingEventPtr createLoggingEvent(int socket) noexcept
 	{
 		// <==> writeProlog(os, p);
 		{
@@ -661,7 +657,7 @@ namespace log4cxx { namespace ext { namespace loader {
 		// <==> os.writeObject(logger, p);
 		LogString logger;
 		{
-			if (!io::readLogString(socket, logger, false)) {
+			if (!io::readLogString(socket, logger)) {
 				return nullptr;
 			}
 		}
@@ -693,7 +689,7 @@ namespace log4cxx { namespace ext { namespace loader {
 		// <==> os.writeObject(message, p);
 		LogString message;
 		{
-			if (!io::readLogString(socket, message, false)) {
+			if (!io::readLogString(socket, message)) {
 				return nullptr;
 			}
 		}
@@ -701,7 +697,7 @@ namespace log4cxx { namespace ext { namespace loader {
 		// <==> os.writeObject(threadName, p);
 		LogString threadName;
 		{
-			if (!io::readLogString(socket, threadName, false)) {
+			if (!io::readLogString(socket, threadName)) {
 				return nullptr;
 			}
 		}

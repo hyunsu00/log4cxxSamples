@@ -143,7 +143,7 @@ namespace log4cxx { namespace ext { namespace classDesc {
 	};
 
 	// java.util.Hashtable
-	unsigned char HASH_TABLE[] = {
+	static unsigned char HASH_TABLE[] = {
 		0x72, 0x00, 0x13, 0x6A, 0x61, 0x76, 0x61,
 		0x2E, 0x75, 0x74, 0x69, 0x6C, 0x2E, 0x48, 0x61,
 		0x73, 0x68, 0x74, 0x61, 0x62, 0x6C, 0x65, 0x13,
@@ -703,7 +703,7 @@ namespace log4cxx { namespace ext { namespace io {
 
 namespace log4cxx { namespace ext { namespace loader {
 
-	auto getClassName = [](const std::string& fullInfo) -> std::string {
+	static auto getClassName = [](const std::string& fullInfo) -> std::string {
 
 		std::string className;
 		size_t iend = fullInfo.find_last_of('(');
@@ -723,7 +723,7 @@ namespace log4cxx { namespace ext { namespace loader {
 		return className;
 	};
 
-	auto getMethodName = [](const std::string& fullInfo) -> std::string {
+	static auto getMethodName = [](const std::string& fullInfo) -> std::string {
 
 		std::string methodName;
 		size_t iend = fullInfo.find_last_of('(');
@@ -739,7 +739,7 @@ namespace log4cxx { namespace ext { namespace loader {
 		return methodName;
 	};
 
-	auto getFileName = [](const std::string& fullInfo) -> std::string {
+	static auto getFileName = [](const std::string& fullInfo) -> std::string {
 
 		std::string fileName;
 		size_t iend = fullInfo.find_last_of(':');
@@ -755,7 +755,7 @@ namespace log4cxx { namespace ext { namespace loader {
 		return fileName;
 	};
 
-	auto getLineNumber = [](const std::string& fullInfo) -> std::string {
+	static auto getLineNumber = [](const std::string& fullInfo) -> std::string {
 
 		std::string lineNumber;
 		size_t iend = fullInfo.find_last_of(')');
