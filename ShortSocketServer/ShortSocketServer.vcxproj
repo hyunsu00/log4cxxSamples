@@ -19,11 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\common\ObjectLoader.cpp" />
-    <ClCompile Include="ShortSocketServer.cpp" />
+    <ClCompile Include="..\common\objectLoader.cpp" />
+    <ClCompile Include="shortSocketServer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ShortSocketServer.conf" />
+    <None Include="shortSocketServer.conf" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Extern\log4cxx-0.10.0\log4cxx.vcxproj">
@@ -31,13 +31,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\common\ObjectLoader.h" />
+    <ClInclude Include="..\common\objectLoader.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{1d1886d9-3716-443f-8e41-8ecb3d6e53ec}</ProjectGuid>
-    <RootNamespace>ShortSocketServer</RootNamespace>
+    <RootNamespace>shortSocketServer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -119,7 +119,7 @@
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy ".\ShortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+      <Command>xcopy ".\shortSocketServer.conf" "$(OutDir)\" /d /h /y /f
 xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -141,7 +141,7 @@ xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy ".\ShortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+      <Command>xcopy ".\shortSocketServer.conf" "$(OutDir)\" /d /h /y /f
 xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -159,7 +159,7 @@ xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy ".\ShortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+      <Command>xcopy ".\shortSocketServer.conf" "$(OutDir)\" /d /h /y /f
 xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -181,7 +181,7 @@ xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy ".\ShortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+      <Command>xcopy ".\shortSocketServer.conf" "$(OutDir)\" /d /h /y /f
 xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>

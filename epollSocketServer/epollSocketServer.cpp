@@ -17,10 +17,11 @@
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
 #include <log4cxx/helpers/exception.h> // log4cxx::helpers::InstantiationException, log4cxx::helpers::RuntimeException
 
-#define LISTEN_BACKLOG 15	//일반적인 connection의 setup은 client가 connect()를 사용하여 connection request를 전송하면 server는 accept()를 사용하여 connection을 받아들입니다. 
-							//그런데 만약 server가 다른 작업을 진행 중이면 accept()를 할 수 없는 경우가 발생하고 이 경우 connection request는 queue에서 대기하는데 backlog는 이와 같이 accept() 없이 대기 가능한 connection request의 최대 개수입니다. 
-							//보통 5정도의 value를 사용하며 만약 아주 큰 값을 사용하면 kernel의 resource를 소모합니다.
-							//따라서, 접속 가능한 클라이언트의 최대수가 아닌 연결을 기다리는 클라이언트의 최대수입니다
+#define LISTEN_BACKLOG 15	// 일반적인 connection의 setup은 client가 connect()를 사용하여 connection request를 전송하면 server는 accept()를 사용하여 connection을 받아들입니다. 
+							// 그런데 만약 server가 다른 작업을 진행 중이면 accept()를 할 수 없는 경우가 발생하고 이 경우 connection request는 queue에서 대기하는데 backlog는 
+							// 이와 같이 accept() 없이 대기 가능한 connection request의 최대 개수입니다. 
+							// 보통 5정도의 value를 사용하며 만약 아주 큰 값을 사용하면 kernel의 resource를 소모합니다.
+							// 따라서, 접속 가능한 클라이언트의 최대수가 아닌 연결을 기다리는 클라이언트의 최대수입니다
 
 int main(int argc, char* argv[])
 {
