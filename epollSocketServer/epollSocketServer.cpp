@@ -171,19 +171,19 @@ int main(int argc, char* argv[])
 				}
 			} else {
 				// epoll에 등록 된 클라이언트들의 send data 처리
-				int	str_len;
 				int	client_fd = epoll_events[i].data.fd;
-				char data[4096];
-				str_len	= read(client_fd, &data, sizeof(data));
+				const size_t BUF_LEN = 4096;
+				std::vector<char> readBuf(BUF_LEN, 0);
+				int readBytes = read(client_fd, &readBuf[0], readBuf.size());
 
-				if (str_len == 0) {
+				if (readBytes == 0) {
 					// 클라이언트 접속 종료 요청
 					printf("Client Disconnect [%d]\n", client_fd);
 					close(client_fd);
 					epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
 				} else {
 					// 접속 종료 요청이 아닌 경우 요청의 내용에 따라 처리.
-					printf("Recv Data from [%d] : recvByte = %d\n", client_fd, str_len);
+					printf("Recv Data from [%d] : readBytes = %d\n", client_fd, readBytes);
 				}
 			}
 		}
