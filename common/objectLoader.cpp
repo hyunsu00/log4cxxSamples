@@ -801,7 +801,7 @@ namespace log4cxx { namespace ext { namespace loader {
 	
 	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, timeStamp, log4cxx_time_t);
 	ALLOW_ACCESS(log4cxx::spi::LoggingEvent, threadName, const LogString);
-	log4cxx::spi::LoggingEventPtr createLoggingEvent(const ByteBuf& byteBuf, size_t& readBytes) /*throw(SmallBufferException, InvalidBufferException)*/
+	log4cxx::spi::LoggingEventPtr createLoggingEvent(ByteBuf& byteBuf) /*throw(SmallBufferException, InvalidBufferException)*/
 	{
 		const char* pBuf = &byteBuf[0];
 		size_t pos = 0;
@@ -934,7 +934,8 @@ namespace log4cxx { namespace ext { namespace loader {
 		}
 
 		_ASSERTE((byteBuf.size() >= pos) && "모든 값을 읽지 못했다.");
-		readBytes = pos;
+		size_t readBytes = pos;
+		byteBuf.erase(byteBuf.begin(), byteBuf.begin() + readBytes);
 
 		log4cxx::spi::LoggingEventPtr event(
 			new LoggingEventEx(

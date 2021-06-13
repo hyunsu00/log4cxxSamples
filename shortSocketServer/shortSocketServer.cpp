@@ -21,8 +21,8 @@ auto loadFiles = [](const std::string& sampleDir) -> bool {
 
 	auto forceLog = [](const std::vector<char>& byteBuf) -> bool {
 		try {
-			size_t readBytes = 0;
-			log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::createLoggingEvent(byteBuf, readBytes);
+			std::vector<char> copyByteBuf = byteBuf;
+			log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::createLoggingEvent(copyByteBuf);
 			log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
 			if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
 				log4cxx::helpers::Pool p;
@@ -118,18 +118,16 @@ auto runClient = [](SOCKET clientSocket, const std::string& clientInfo) {
 
 	// LoggingEvent
 	{
-#if 0
+#if 1
 		auto forceLog = [](std::vector<char>& byteBuf) -> bool {
 			while (!byteBuf.empty()) {
 				try {
-					size_t readBytes = 0;
-					log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::createLoggingEvent(byteBuf, readBytes);
+					log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::createLoggingEvent(byteBuf);
 					log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
 					if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
 						log4cxx::helpers::Pool p;
 						remoteLogger->callAppenders(event, p);
 					}
-					byteBuf.erase(byteBuf.begin(), byteBuf.begin() + readBytes);
 				} catch (log4cxx::ext::SmallBufferException& e) { // 무시
 					LOG4CXX_WARN(serverLogger(), e.what());
 					break;

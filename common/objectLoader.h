@@ -58,6 +58,6 @@ namespace log4cxx { namespace ext { namespace loader {
 
     using ByteBuf = io::ByteBuf;
 
-    log4cxx::spi::LoggingEventPtr createLoggingEvent(const ByteBuf& byteBuf, size_t& readBytes) /*throw(SmallBufferException, InvalidBufferException)*/;
+    log4cxx::spi::LoggingEventPtr createLoggingEvent(ByteBuf& byteBuf) /*throw(SmallBufferException, InvalidBufferException)*/;
 
 }}} // log4cxx::ext::loader
