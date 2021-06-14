@@ -311,41 +311,45 @@ namespace log4cxx { namespace ext { namespace io {
 		}
 
 		// == os->write(dataBuf, p);
-		const char data[] = {
-			0x3F, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05,
-			TC_BLOCKDATA, 0x08, 0x00, 0x00, 0x00, 0x07
-		};
-		size_t size = sizeof(data);
-		std::vector<unsigned char> byteBuf;
-		if (!readBytes(socket, size, byteBuf)) {
-			return false;
-		}
-		int ret = memcmp(data, &byteBuf[0], size);
-		_ASSERTE(ret == 0 && "memcmp() Failed");
-		if (ret != 0) {
-			return false;
+		{
+			const char data[] = {
+				0x3F, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05,
+				TC_BLOCKDATA, 0x08, 0x00, 0x00, 0x00, 0x07
+			};
+			size_t size = sizeof(data);
+			std::vector<unsigned char> byteBuf;
+			if (!readBytes(socket, size, byteBuf)) {
+				return false;
+			}
+			int ret = memcmp(data, &byteBuf[0], size);
+			_ASSERTE(ret == 0 && "memcmp() Failed");
+			if (ret != 0) {
+				return false;
+			}
 		}
 
 		// == os->write(sizeBuf, p);
-		int mapSize = 0;
-		if (!readInt(socket, mapSize)) {
-			return false;
-		}
-
-		for (int i = 0; i < mapSize; i++) {
-			LogString first, second;
-
-			// <==> writeObject(iter->first, p);
-			if (!readLogString(socket, first)) {
+		{
+			int mapSize = 0;
+			if (!readInt(socket, mapSize)) {
 				return false;
 			}
 
-			// <==> writeObject(iter->second, p);
-			if (!readLogString(socket, second)) {
-				return false;
-			}
+			for (int i = 0; i < mapSize; i++) {
+				LogString first, second;
 
-			value[first] = second;
+				// <==> writeObject(iter->first, p);
+				if (!readLogString(socket, first)) {
+					return false;
+				}
+
+				// <==> writeObject(iter->second, p);
+				if (!readLogString(socket, second)) {
+					return false;
+				}
+
+				value[first] = second;
+			}
 		}
 
 		// == writeByte(TC_ENDBLOCKDATA, p);
@@ -356,26 +360,6 @@ namespace log4cxx { namespace ext { namespace io {
 			}
 		}
 
-		return true;
-	}
-
-	bool readStart(int socket) noexcept
-	{
-		// STREAM_MAGIC, STREAM_VERSION
-		unsigned char start[] = {
-			0xAC, 0xED, 0x00, 0x05
-		};
-		size_t size = sizeof(start);
-		std::vector<unsigned char> byteBuf;
-		if (!readBytes(socket, size, byteBuf)) {
-			return false;
-		}
-		int ret = memcmp(start, &byteBuf[0], size);
-		_ASSERTE(ret == 0 && "memcmp() Failed");
-		if (ret != 0) {
-			return false;
-		}
-		
 		return true;
 	}
 
@@ -517,6 +501,26 @@ namespace log4cxx { namespace ext { namespace io {
 			break;
 		default:
 			_ASSERTE(!"typeClass is invalid");
+			return false;
+		}
+
+		return true;
+	}
+
+	bool readStart(int socket) noexcept
+	{
+		// STREAM_MAGIC, STREAM_VERSION
+		unsigned char start[] = {
+			0xAC, 0xED, 0x00, 0x05
+		};
+		size_t size = sizeof(start);
+		std::vector<unsigned char> byteBuf;
+		if (!readBytes(socket, size, byteBuf)) {
+			return false;
+		}
+		int ret = memcmp(start, &byteBuf[0], size);
+		_ASSERTE(ret == 0 && "memcmp() Failed");
+		if (ret != 0) {
 			return false;
 		}
 

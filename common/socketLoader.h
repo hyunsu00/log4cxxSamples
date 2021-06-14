@@ -15,9 +15,6 @@ namespace log4cxx { namespace ext { namespace io {
     bool readLogString(int socket, LogString& value, bool skipTypeClass = false) noexcept;
     bool readObject(int socket, MDC::Map& value, bool skipTypeClass = false) noexcept;
 
-    // 자바 스트림 프로토콜 반환
-    bool readStart(int socket) noexcept;
-
     bool readProlog(
         int socket,
         const unsigned char* classDesc,
@@ -27,6 +24,9 @@ namespace log4cxx { namespace ext { namespace io {
     bool readLocationInfo(int socket, std::string& value) noexcept;
     bool readMDC(int socket, MDC::Map& value) noexcept;
     bool readNDC(int socket, LogString& value) noexcept;
+
+    // 자바 스트림 프로토콜 반환
+    bool readStart(int socket) noexcept;
 
 }}} // log4cxx::ext::io
 

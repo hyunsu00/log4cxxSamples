@@ -517,32 +517,6 @@ namespace log4cxx { namespace ext { namespace io {
 		return readPos;
 	}
 
-	size_t readStart(const ByteBuf& byteBuf) /*throw(SmallBufferException, InvalidBufferException)*/
-	{
-		const size_t pos = 0;
-		const char* pBuf = &byteBuf[0] + pos;
-		const size_t byteBufSize = byteBuf.size();
-		size_t readPos = 0;
-
-		// STREAM_MAGIC, STREAM_VERSION
-		unsigned char start[] = {
-			0xAC, 0xED, 0x00, 0x05
-		};
-		size_t size = sizeof(start);
-		if (pos + readPos + size > byteBufSize) {
-			throw SmallBufferException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
-		}
-
-		int ret = memcmp(start, pBuf + readPos, size);
-		_ASSERTE(ret == 0 && "memcmp() Failed");
-		if (ret != 0) {
-			throw InvalidBufferException(LOG4CXX_STR("시작 데이터가 잘못 되었다."));
-		}
-		readPos += size;
-
-		return readPos;
-	}
-
 	size_t readProlog(
 		const ByteBuf& byteBuf,
 		size_t pos,
@@ -695,6 +669,32 @@ namespace log4cxx { namespace ext { namespace io {
 			return false;
 		}
 		
+		return readPos;
+	}
+
+	size_t readStart(const ByteBuf& byteBuf) /*throw(SmallBufferException, InvalidBufferException)*/
+	{
+		const size_t pos = 0;
+		const char* pBuf = &byteBuf[0] + pos;
+		const size_t byteBufSize = byteBuf.size();
+		size_t readPos = 0;
+
+		// STREAM_MAGIC, STREAM_VERSION
+		unsigned char start[] = {
+			0xAC, 0xED, 0x00, 0x05
+		};
+		size_t size = sizeof(start);
+		if (pos + readPos + size > byteBufSize) {
+			throw SmallBufferException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
+		}
+
+		int ret = memcmp(start, pBuf + readPos, size);
+		_ASSERTE(ret == 0 && "memcmp() Failed");
+		if (ret != 0) {
+			throw InvalidBufferException(LOG4CXX_STR("시작 데이터가 잘못 되었다."));
+		}
+		readPos += size;
+
 		return readPos;
 	}
 

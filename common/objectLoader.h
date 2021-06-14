@@ -39,9 +39,6 @@ namespace log4cxx { namespace ext { namespace io {
     size_t readLogString(const ByteBuf& byteBuf, size_t pos, LogString& value, bool skipTypeClass = false) /*throw(SmallBufferException, InvalidBufferException)*/;
     size_t readObject(const ByteBuf& byteBuf, size_t pos, MDC::Map& value, bool skipTypeClass = false) /*throw(SmallBufferException, InvalidBufferException)*/;
 
-    // 자바 스트림 프로토콜 반환
-    size_t readStart(const ByteBuf& byteBuf) /*throw(SmallBufferException, InvalidBufferException)*/;
-
     size_t readProlog(
         const ByteBuf& byteBuf,
         size_t pos, 
@@ -53,14 +50,9 @@ namespace log4cxx { namespace ext { namespace io {
     size_t readMDC(const ByteBuf& byteBuf, size_t pos, MDC::Map& value) /*throw(SmallBufferException, InvalidBufferException)*/;
     size_t readNDC(const ByteBuf& byteBuf, size_t pos, LogString& value) /*throw(SmallBufferException, InvalidBufferException)*/;
 
-    
-    
-    
-    
-    
-    
-    
-    
+    // 자바 스트림 프로토콜 반환
+    size_t readStart(const ByteBuf& byteBuf) /*throw(SmallBufferException, InvalidBufferException)*/;
+
 }}} // log4cxx::ext::io
 
 namespace log4cxx { namespace ext { namespace loader {
