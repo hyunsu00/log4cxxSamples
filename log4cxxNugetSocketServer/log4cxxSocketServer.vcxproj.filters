@@ -4,7 +4,7 @@
     <None Include="packages.config">
       <Filter>packages</Filter>
     </None>
-    <None Include="..\shortSocketServer\shortSocketServer.conf" />
+    <None Include="..\log4cxxSocketServer\log4cxxSocketServer.conf" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="packages">
@@ -15,28 +15,28 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\shortSocketServer\shortSocketServer.cpp" />
-    <ClCompile Include="..\common\objectLoader.cpp">
+    <ClCompile Include="..\log4cxxSocketServer\log4cxxSocketServer.cpp" />
+    <ClCompile Include="..\common\Loader\ByteBufInputStream.cpp">
       <Filter>Loader</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\byteBufInputStream.cpp">
+    <ClCompile Include="..\common\Loader\ObjectLoader.cpp">
       <Filter>Loader</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\socketInputStream.cpp">
+    <ClCompile Include="..\common\Loader\SocketInputStream.cpp">
       <Filter>Loader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\common\objectLoader.h">
+    <ClInclude Include="..\common\Loader\ByteBufInputStream.h">
       <Filter>Loader</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\byteBufInputStream.h">
+    <ClInclude Include="..\common\Loader\InputStreamDef.h">
       <Filter>Loader</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\inputStreamDef.h">
+    <ClInclude Include="..\common\Loader\ObjectLoader.h">
       <Filter>Loader</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\socketInputStream.h">
+    <ClInclude Include="..\common\Loader\SocketInputStream.h">
       <Filter>Loader</Filter>
     </ClInclude>
   </ItemGroup>

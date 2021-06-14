@@ -22,7 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{47808743-92C8-4878-B99E-1DD1869B28DC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>shortSocketServer</RootNamespace>
+    <RootNamespace>log4cxxSocketServer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -102,7 +102,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\common\Loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -110,7 +110,7 @@
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\shortSocketServer\shortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+      <Command>xcopy "$(SolutionDir)\log4cxxSocketServer\log4cxxSocketServer.conf" "$(OutDir)\" /d /h /y /f
 xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -123,7 +123,7 @@ xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\common\Loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,7 +131,7 @@ xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\shortSocketServer\shortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+      <Command>xcopy "$(SolutionDir)\log4cxxSocketServer\log4cxxSocketServer.conf" "$(OutDir)\" /d /h /y /f
 xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -146,7 +146,7 @@ xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\common\Loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -156,7 +156,7 @@ xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\shortSocketServer\shortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+      <Command>xcopy "$(SolutionDir)\log4cxxSocketServer\log4cxxSocketServer.conf" "$(OutDir)\" /d /h /y /f
 xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -171,7 +171,7 @@ xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\common\Loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -181,25 +181,25 @@ xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\shortSocketServer\shortSocketServer.conf" "$(OutDir)\" /d /h /y /f
+      <Command>xcopy "$(SolutionDir)\log4cxxSocketServer\log4cxxSocketServer.conf" "$(OutDir)\" /d /h /y /f
 xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\shortSocketServer\shortSocketServer.conf" />
+    <None Include="..\log4cxxSocketServer\log4cxxSocketServer.conf" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\common\byteBufInputStream.cpp" />
-    <ClCompile Include="..\common\objectLoader.cpp" />
-    <ClCompile Include="..\common\socketInputStream.cpp" />
-    <ClCompile Include="..\shortSocketServer\shortSocketServer.cpp" />
+    <ClCompile Include="..\common\Loader\ByteBufInputStream.cpp" />
+    <ClCompile Include="..\common\Loader\ObjectLoader.cpp" />
+    <ClCompile Include="..\common\Loader\SocketInputStream.cpp" />
+    <ClCompile Include="..\log4cxxSocketServer\log4cxxSocketServer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\common\byteBufInputStream.h" />
-    <ClInclude Include="..\common\inputStreamDef.h" />
-    <ClInclude Include="..\common\objectLoader.h" />
-    <ClInclude Include="..\common\socketInputStream.h" />
+    <ClInclude Include="..\common\Loader\ByteBufInputStream.h" />
+    <ClInclude Include="..\common\Loader\InputStreamDef.h" />
+    <ClInclude Include="..\common\Loader\ObjectLoader.h" />
+    <ClInclude Include="..\common\Loader\SocketInputStream.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

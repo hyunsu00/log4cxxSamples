@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31321.278
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shortSocketServer", "nugetShortSocketServer\shortSocketServer.vcxproj", "{47808743-92C8-4878-B99E-1DD1869B28DC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "log4cxxSocketServer", "log4cxxNugetSocketServer\log4cxxSocketServer.vcxproj", "{47808743-92C8-4878-B99E-1DD1869B28DC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{6CC575E9-DFFD-40B1-93AF-B47676EB321A}"
 	ProjectSection(SolutionItems) = preProject
