@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 	std::string exeDir = dirname(exePath);
 	free(exePath);
 	exeDir += "/";
-	std::string filePath = exeDir + "epollSocketServer.conf";
+	std::string filePath = exeDir + "log4cxxEpollSocketServer.conf";
 	log4cxx::PropertyConfigurator::configure(log4cxx::File(filePath));
 
     printf("hello from Leviathan_for_Linux!\n");
