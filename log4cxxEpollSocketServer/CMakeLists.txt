@@ -7,12 +7,15 @@ project ("log4cxxEpollSocketServer")
 message(STATUS "\${PROJECT_NAME} = ${PROJECT_NAME}")
 
 ###
-# 패키지 찾기 - log4cxxConfig.cmake 파일 인 클루드
+# pkg-config를 사용하여 log4cxx 패키지 찾기
 # sudo apt install liblog4cxx-dev -y (데비안)
 # sudo yum install liblog4cxx-devel -y (센트OS)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-message(STATUS "\${CMAKE_MODULE_PATH} = ${CMAKE_MODULE_PATH}")
-find_package(log4cxx REQUIRED)
+# 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LOG4CXX liblog4cxx REQUIRED)
+message(STATUS "\${LOG4CXX_LIBRARIES} = ${LOG4CXX_LIBRARIES}")
+message(STATUS "\${LOG4CXX_INCLUDE_DIRS} = ${LOG4CXX_INCLUDE_DIRS}")
+include_directories(${LOG4CXX_INCLUDE_DIRS})
 
 if (CMAKE_SIZEOF_VOID_P EQUAL 8)
 	set(TARGET_PLATFORM "x64")
@@ -46,7 +49,7 @@ add_executable (${PROJECT_NAME} "log4cxxEpollSocketServer.cpp" ${LOADER_FILES})
 
 ###
 # 실행파일 생성후에 지정
-target_link_libraries(${PROJECT_NAME} log4cxx)
+target_link_libraries(${PROJECT_NAME} ${LOG4CXX_LIBRARIES})
 
 add_custom_command(
 	TARGET ${PROJECT_NAME} PRE_BUILD
