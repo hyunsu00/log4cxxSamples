@@ -4,8 +4,20 @@
 #include <log4cxx/helpers/loglog.h>		  // log4cxx::helpers::LogLog
 #include <thread>						  // std::thread
 
+#ifdef _WIN32
 #include <winsock2.h>
 #include <WS2tcpip.h> // inet_ntop
+#else
+#include <sys/unistd.h>
+#include <sys/socket.h>
+#include <arpa/inet.h> // inet_ntop
+#define closesocket	close
+#define IPPROTO_TCP 	(0)
+#define INVALID_SOCKET (-1)
+#include <string.h>	// strdup
+#include <libgen.h>	// dirname
+#endif
+#include <memory.h> // memset
 
 #include "ByteBufInputStream.h"
 #include "ObjectLoader.h"
@@ -228,10 +240,12 @@ auto runServer = [](int port_num) -> void
 			break;
 		}
 
-		char clientInfo[20] = {
-			0,
-		};
+		char clientInfo[20] = {0, };
+#ifdef _WIN32		
 		inet_ntop(AF_INET, &clientAddr.sin_addr.S_un, clientInfo, sizeof(clientInfo));
+#else
+		inet_ntop(AF_INET, &clientAddr.sin_addr, clientInfo, sizeof(clientInfo));
+#endif
 		std::thread clientThread(runClient, clientSocket, clientInfo);
 		clientThread.detach();
 	}
@@ -244,6 +258,7 @@ int main(int argc, char *argv[])
 	setlocale(LC_ALL, "");
 
 	std::string exeDir;
+#ifdef _WIN32	
 	{
 		char drive[_MAX_DRIVE] = {
 			0,
@@ -254,19 +269,31 @@ int main(int argc, char *argv[])
 		_splitpath_s(argv[0], drive, _MAX_DRIVE, dir, _MAX_DIR, nullptr, 0, nullptr, 0);
 		exeDir = std::string(drive) + dir;
 	}
+#else
+	{
+		char *exePath = strdup(argv[0]);
+		exeDir = dirname(exePath);
+		free(exePath);
+		exeDir += "/";
+	}
+#endif
+
 	std::string filePath = exeDir + "log4cxxSocketServer.conf";
 	log4cxx::PropertyConfigurator::configure(log4cxx::File(filePath));
 
 	// loadFiles(exeDir + "samples\\");
-
+#ifdef _WIN32
 	WSADATA data;
 	::WSAStartup(MAKEWORD(2, 2), &data);
+#endif
 
 	{
 		runServer(4445);
 	}
 
+#ifdef _WIN32
 	::WSACleanup();
+#endif
 
 	return 0;
 }
