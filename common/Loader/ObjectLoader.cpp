@@ -12,6 +12,8 @@ typedef int SOCKET;
 #include "InputStreamDef.h"
 #include "ByteBufInputStream.h"
 #include "SocketInputStream.h"
+#include <memory> // std::unique_ptr
+#include <memory.h> // memcmp
 
 // https://stackoverflow.com/questions/424104/can-i-access-private-members-from-outside-the-class-without-using-friends
 namespace {

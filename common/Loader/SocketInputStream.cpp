@@ -3,6 +3,7 @@
 #	include <winsock2.h> // SOCKET, recv
 #	include <crtdbg.h> // _ASSERTE
 #else
+#include <unistd.h>
 typedef int SOCKET;
 #	include <assert.h>
 #	define _ASSERTE assert

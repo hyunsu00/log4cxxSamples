@@ -141,7 +141,7 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 
 	// LoggingEvent
 	{
-#if 0
+#if 1
 		auto forceLog = [](std::vector<char>& byteBuf) -> bool {
 			while (!byteBuf.empty()) {
 				try {
