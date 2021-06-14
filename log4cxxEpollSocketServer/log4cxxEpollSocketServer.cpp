@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 	std::string filePath = exeDir + "log4cxxEpollSocketServer.conf";
 	log4cxx::PropertyConfigurator::configure(log4cxx::File(filePath));
 
-    printf("hello from Leviathan_for_Linux!\n");
+    printf("run log4cxxEpollSocketServer\n");
 	int	error_check;
 
 	// 소켓 생성
