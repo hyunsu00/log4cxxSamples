@@ -4,7 +4,7 @@
     <None Include="packages.config">
       <Filter>packages</Filter>
     </None>
-    <None Include="..\shortSocketClient\shortSocketClient.conf" />
+    <None Include="..\log4cxxSocketClient\log4cxxSocketClient.conf" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="packages">
@@ -12,6 +12,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\shortSocketClient\shortSocketClient.cpp" />
+    <ClCompile Include="..\log4cxxSocketClient\log4cxxSocketClient.cpp" />
   </ItemGroup>
 </Project>

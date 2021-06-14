@@ -22,7 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{47808743-92C8-4878-B99E-1DD1869B28DC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>shortSocketClient</RootNamespace>
+    <RootNamespace>log4cxxSocketClient</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -110,7 +110,7 @@
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\shortSocketClient\shortSocketClient.conf" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy "$(SolutionDir)\log4cxxSocketClient\log4cxxSocketClient.conf" "$(OutDir)\" /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -130,7 +130,7 @@
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\shortSocketClient\shortSocketClient.conf" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy "$(SolutionDir)\log4cxxSocketClient\log4cxxSocketClient.conf" "$(OutDir)\" /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -154,7 +154,7 @@
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\shortSocketClient\shortSocketClient.conf" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy "$(SolutionDir)\log4cxxSocketClient\log4cxxSocketClient.conf" "$(OutDir)\" /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -178,15 +178,15 @@
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\shortSocketClient\shortSocketClient.conf" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy "$(SolutionDir)\log4cxxSocketClient\log4cxxSocketClient.conf" "$(OutDir)\" /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\shortSocketClient\shortSocketClient.conf" />
+    <None Include="..\log4cxxSocketClient\log4cxxSocketClient.conf" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\shortSocketClient\shortSocketClient.cpp" />
+    <ClCompile Include="..\log4cxxSocketClient\log4cxxSocketClient.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
