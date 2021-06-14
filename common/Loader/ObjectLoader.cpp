@@ -1,15 +1,17 @@
-﻿// objectLoader.cpp
-#include "inputStreamDef.h"
-#include "objectLoader.h"
-#include "byteBufInputStream.h"
-#include "socketInputStream.h"
-
+﻿// ObjectLoader.cpp
 #ifdef _WIN32
-#	include <crtdbg.h>
+#	include <winsock2.h> // SOCKET
+#	include <crtdbg.h> // _ASSERTE
 #else
+typedef int SOCKET;
 #	include <assert.h>
 #	define _ASSERTE assert
 #endif
+
+#include "ObjectLoader.h"
+#include "InputStreamDef.h"
+#include "ByteBufInputStream.h"
+#include "SocketInputStream.h"
 
 // https://stackoverflow.com/questions/424104/can-i-access-private-members-from-outside-the-class-without-using-friends
 namespace {
@@ -376,7 +378,7 @@ namespace log4cxx { namespace ext { namespace loader {
 		return event;
 	}
 
-	log4cxx::spi::LoggingEventPtr createLoggingEvent(int socket) noexcept
+	log4cxx::spi::LoggingEventPtr createLoggingEvent(SOCKET socket) noexcept
 	{
 		// <==> writeProlog(os, p);
 		{

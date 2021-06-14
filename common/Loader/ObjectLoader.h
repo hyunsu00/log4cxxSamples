@@ -1,4 +1,4 @@
-﻿// objectLoader.h
+﻿// ObjectLoader.h
 #pragma once
 #include <vector> // std::vector
 #include <log4cxx/spi/loggingevent.h> // log4cxx::spi::LoggingEventPtr
@@ -20,6 +20,6 @@ namespace log4cxx { namespace ext { namespace loader {
 
     // LoggingEvent 객체 생성
     log4cxx::spi::LoggingEventPtr createLoggingEvent(ByteBuf& byteBuf) /*throw(SmallBufferException, InvalidBufferException)*/;
-    log4cxx::spi::LoggingEventPtr createLoggingEvent(int socket) noexcept;
+    log4cxx::spi::LoggingEventPtr createLoggingEvent(SOCKET socket) noexcept;
 
 }}} // log4cxx::ext::loader

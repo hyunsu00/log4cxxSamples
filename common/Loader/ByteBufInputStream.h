@@ -1,4 +1,4 @@
-﻿// byteBufInputStream.h
+﻿// ByteBufInputStream.h
 #pragma once
 #include <vector> // std::vector
 #include <log4cxx/helpers/exception.h> // log4cxx::helpers::RuntimeException
@@ -31,7 +31,7 @@ namespace log4cxx { namespace ext { namespace io {
     size_t readByte(const ByteBuf& byteBuf, size_t pos, unsigned char& value) /*throw(SmallBufferException)*/;
     size_t readBytes(const ByteBuf& byteBuf, size_t pos, size_t bytes, std::vector<unsigned char>& value) /*throw(SmallBufferException)*/;
     size_t readInt(const ByteBuf& byteBuf, size_t pos, int& value) /*throw(SmallBufferException)*/;
-    size_t readLong(const ByteBuf& byteBuf, size_t pos, log4cxx_time_t& value) /*throw(SmallBufferException)*/;
+    size_t readLong(const ByteBuf& byteBuf, size_t pos, log4cxx_int64_t& value) /*throw(SmallBufferException)*/;
 
     size_t readUTFString(const ByteBuf& byteBuf, size_t pos, std::string& value, bool skipTypeClass = false) /*throw(SmallBufferException, InvalidBufferException)*/;
     size_t readLogString(const ByteBuf& byteBuf, size_t pos, LogString& value, bool skipTypeClass = false) /*throw(SmallBufferException, InvalidBufferException)*/;

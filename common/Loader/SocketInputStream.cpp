@@ -1,23 +1,23 @@
-﻿// socketInputStream.cpp
-#include <log4cxx/log4cxx.h>
-#include "inputStreamDef.h"
-#include "socketInputStream.h"
+﻿// SocketInputStream.cpp
+#ifdef _WIN32
+#	include <winsock2.h> // SOCKET, recv
+#	include <crtdbg.h> // _ASSERTE
+#else
+typedef int SOCKET;
+#	include <assert.h>
+#	define _ASSERTE assert
+#endif
+#include <log4cxx/log4cxx.h> // log4cxx_int64_t
+#include "InputStreamDef.h"
+#include "SocketInputStream.h"
 #include <log4cxx/helpers/charsetdecoder.h> // log4cxx::helpers::CharsetDecoder
 #include <log4cxx/helpers/bytebuffer.h> // log4cxx::helpers::ByteBuffer
 #include <memory> // std::unique_ptr
 #include <memory.h> // memcmp
 
-#ifdef _WIN32
-#	include <crtdbg.h> // _ASSERTE
-#	include <winsock2.h> // recv
-#else
-#	include <assert.h>
-#	define _ASSERTE assert
-#endif
-
 namespace log4cxx { namespace ext { namespace io {
 
-	bool read(int socket, void* buf, size_t len) noexcept
+	bool read(SOCKET socket, void* buf, size_t len) noexcept
 	{
 		int len_read = 0;
 		unsigned char* p = (unsigned char*)buf;
@@ -44,12 +44,12 @@ namespace log4cxx { namespace ext { namespace io {
 		return result;
 	}
 
-	bool readByte(int socket, unsigned char& value) noexcept
+	bool readByte(SOCKET socket, unsigned char& value) noexcept
 	{
 		return read(socket, &value, sizeof(unsigned char));
 	}
 
-	bool readBytes(int socket, size_t bytes, std::vector<unsigned char>& value) noexcept
+	bool readBytes(SOCKET socket, size_t bytes, std::vector<unsigned char>& value) noexcept
 	{
 		value = std::vector<unsigned char>(bytes, 0);
 		if (!read(socket, &value[0], bytes)) {
@@ -59,7 +59,7 @@ namespace log4cxx { namespace ext { namespace io {
 		return true;
 	}
 
-	bool readInt(int socket, int& value) noexcept
+	bool readInt(SOCKET socket, int& value) noexcept
 	{
 		_ASSERTE(sizeof(int) == 4 && "읽을 데이터의 크기는 4이여야 한다.");
 		if (!read(socket, &value, sizeof(int))) {
@@ -78,10 +78,10 @@ namespace log4cxx { namespace ext { namespace io {
 		return true;
 	}
 
-	bool readLong(int socket, log4cxx_time_t& value) noexcept
+	bool readLong(SOCKET socket, log4cxx_int64_t& value) noexcept
 	{
-		_ASSERTE(sizeof(log4cxx_time_t) == 8 && "읽을 데이터의 크기는 8이여야 한다.");
-		if (!read(socket, &value, sizeof(log4cxx_time_t))) {
+		_ASSERTE(sizeof(log4cxx_int64_t) == 8 && "읽을 데이터의 크기는 8이여야 한다.");
+		if (!read(socket, &value, sizeof(log4cxx_int64_t))) {
 			return false;
 		}
 
@@ -101,7 +101,7 @@ namespace log4cxx { namespace ext { namespace io {
 		return true;
 	}
 
-	bool readUTFString(int socket, std::string& value, bool skipTypeClass /*= false*/) noexcept
+	bool readUTFString(SOCKET socket, std::string& value, bool skipTypeClass /*= false*/) noexcept
 	{
 		if (!skipTypeClass) {
 			unsigned char typeClass = TC_STRING;
@@ -134,7 +134,7 @@ namespace log4cxx { namespace ext { namespace io {
 		return true;
 	}
 
-	bool readLogString(int socket, LogString& value, bool skipTypeClass /*= false*/) noexcept
+	bool readLogString(SOCKET socket, LogString& value, bool skipTypeClass /*= false*/) noexcept
 	{
 		if (!skipTypeClass) {
 			unsigned char typeClass = TC_STRING;
@@ -168,7 +168,7 @@ namespace log4cxx { namespace ext { namespace io {
 		return true;
 	}
 
-	bool readObject(int socket, MDC::Map& value, bool skipTypeClass /*= false*/) noexcept
+	bool readObject(SOCKET socket, MDC::Map& value, bool skipTypeClass /*= false*/) noexcept
 	{
 		if (!skipTypeClass) {
 			unsigned char typeClass = TC_OBJECT;
@@ -236,7 +236,7 @@ namespace log4cxx { namespace ext { namespace io {
 	}
 
 	bool readProlog(
-		int socket,
+		SOCKET socket,
 		const unsigned char* classDesc,
 		size_t classDescLen,
 		std::pair<std::string, unsigned int>& value
@@ -280,7 +280,7 @@ namespace log4cxx { namespace ext { namespace io {
 		return true;
 	}
 
-	bool readLocationInfo(int socket, std::string& value) noexcept
+	bool readLocationInfo(SOCKET socket, std::string& value) noexcept
 	{
 		unsigned char typeClass = TC_NULL;
 		if (!readByte(socket, typeClass)) {
@@ -315,7 +315,7 @@ namespace log4cxx { namespace ext { namespace io {
 		}
 	}
 	
-	bool readMDC(int socket, MDC::Map& value) noexcept
+	bool readMDC(SOCKET socket, MDC::Map& value) noexcept
 	{
 		unsigned char typeClass = TC_NULL;
 		if (!readByte(socket, typeClass)) {
@@ -347,7 +347,7 @@ namespace log4cxx { namespace ext { namespace io {
 		return true;
 	}
 
-	bool readNDC(int socket, LogString& value) noexcept
+	bool readNDC(SOCKET socket, LogString& value) noexcept
 	{
 		unsigned char typeClass = TC_NULL;
 		if (!readByte(socket, typeClass)) {

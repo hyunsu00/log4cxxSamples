@@ -1,19 +1,18 @@
-﻿// byteBufInputStream.cpp
-#include <log4cxx/log4cxx.h>
-#include "inputStreamDef.h"
-#include "byteBufInputStream.h"
+﻿// ByteBufInputStream.cpp
+#ifdef _WIN32
+#	include <crtdbg.h> // _ASSERTE
+#else
+#	include <assert.h>
+#	define _ASSERTE assert
+#endif
+#include <log4cxx/log4cxx.h> // log4cxx_int64_t
+#include "InputStreamDef.h"
+#include "ByteBufInputStream.h"
 #include <log4cxx/helpers/exception.h> // SmallBufferException, InvalidBufferException
 #include <log4cxx/helpers/charsetdecoder.h> // log4cxx::helpers::CharsetDecoder
 #include <log4cxx/helpers/bytebuffer.h> // log4cxx::helpers::ByteBuffer
 #include <memory> // std::unique_ptr
 #include <memory.h> // memcmp
-
-#ifdef _WIN32
-#	include <crtdbg.h>
-#else
-#	include <assert.h>
-#	define _ASSERTE assert
-#endif
 
 namespace log4cxx { namespace ext {
 
@@ -128,13 +127,13 @@ namespace log4cxx { namespace ext { namespace io {
 		return readPos;
 	}
 
-	size_t readLong(const ByteBuf& byteBuf, size_t pos, log4cxx_time_t& value) /*throw(SmallBufferException)*/
+	size_t readLong(const ByteBuf& byteBuf, size_t pos, log4cxx_int64_t& value) /*throw(SmallBufferException)*/
 	{
 		const char* pBuf = &byteBuf[0] + pos;
 		const size_t byteBufSize = byteBuf.size();
 		size_t readPos = 0;
 
-		_ASSERTE(sizeof(log4cxx_time_t) == 8 && "읽을 데이터의 크기는 8이여야 한다.");
+		_ASSERTE(sizeof(log4cxx_int64_t) == 8 && "읽을 데이터의 크기는 8이여야 한다.");
 		const size_t size = 8;
 		if (pos + readPos + size > byteBufSize) {
 			throw SmallBufferException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));

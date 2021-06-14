@@ -23,7 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Readme", "Readme", "{A6836C
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shortSocketServer", "shortSocketServer\shortSocketServer.vcxproj", "{1D1886D9-3716-443F-8E41-8ECB3D6E53EC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "log4cxxSocketServer", "log4cxxSocketServer\log4cxxSocketServer.vcxproj", "{1D1886D9-3716-443F-8E41-8ECB3D6E53EC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{26D0DD4B-647D-4387-B97B-8DD83BD727D9}"
 	ProjectSection(SolutionItems) = preProject

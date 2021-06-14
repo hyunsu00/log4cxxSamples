@@ -1,4 +1,4 @@
-﻿// inputStreamDef.h
+﻿// InputStreamDef.h
 #pragma once
 
 namespace log4cxx { namespace ext { namespace classDesc {
