@@ -7,8 +7,8 @@
 #include <winsock2.h>
 #include <WS2tcpip.h> // inet_ntop
 
+#include "byteBufInputStream.h"
 #include "objectLoader.h"
-#include "socketLoader.h"
 
 const char* const SERVER_LOGGER = "serverLogger";
 inline log4cxx::LoggerPtr serverLogger()
@@ -43,7 +43,7 @@ auto loadFiles = [](const std::string& sampleDir) -> bool {
 
 		size_t size = 0;
 		try {
-			size = log4cxx::ext::io::readStart(byteBuf);
+			size = log4cxx::ext::loader::readStart(byteBuf);
 		} catch (log4cxx::ext::SmallBufferException& e) {
 			LOG4CXX_WARN(serverLogger(), e.what());
 		} catch (log4cxx::ext::InvalidBufferException& e) {
@@ -109,7 +109,7 @@ auto runClient = [](SOCKET clientSocket, const std::string& clientInfo) {
 		} 
 
 		try {
-			log4cxx::ext::io::readStart(recvBuf);
+			log4cxx::ext::loader::readStart(recvBuf);
 		} catch (log4cxx::helpers::Exception& e) {
 			LOG4CXX_ERROR(serverLogger(), e.what());
 			goto CLEAN_UP;
@@ -118,7 +118,7 @@ auto runClient = [](SOCKET clientSocket, const std::string& clientInfo) {
 
 	// LoggingEvent
 	{
-#if 1
+#if 0
 		auto forceLog = [](std::vector<char>& byteBuf) -> bool {
 			while (!byteBuf.empty()) {
 				try {

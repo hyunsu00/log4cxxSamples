@@ -3,11 +3,14 @@
   <ItemGroup>
     <ClCompile Include="shortSocketServer.cpp" />
     <ClCompile Include="..\common\objectLoader.cpp" />
-    <ClCompile Include="..\common\socketLoader.cpp" />
+    <ClCompile Include="..\common\byteBufInputStream.cpp" />
+    <ClCompile Include="..\common\socketInputStream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\objectLoader.h" />
-    <ClInclude Include="..\common\socketLoader.h" />
+    <ClInclude Include="..\common\byteBufInputStream.h" />
+    <ClInclude Include="..\common\socketInputStream.h" />
+    <ClInclude Include="..\common\inputStreamDef.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shortSocketServer.conf" />

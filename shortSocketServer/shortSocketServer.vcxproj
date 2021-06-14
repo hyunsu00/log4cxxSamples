@@ -19,8 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\common\byteBufInputStream.cpp" />
     <ClCompile Include="..\common\objectLoader.cpp" />
-    <ClCompile Include="..\common\socketLoader.cpp" />
+    <ClCompile Include="..\common\socketInputStream.cpp" />
     <ClCompile Include="shortSocketServer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -32,8 +33,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\common\byteBufInputStream.h" />
+    <ClInclude Include="..\common\inputStreamDef.h" />
     <ClInclude Include="..\common\objectLoader.h" />
-    <ClInclude Include="..\common\socketLoader.h" />
+    <ClInclude Include="..\common\socketInputStream.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
