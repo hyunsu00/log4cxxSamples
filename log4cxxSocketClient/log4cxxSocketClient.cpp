@@ -51,7 +51,8 @@ int main(int argc, char* argv[])
 				LOG4CXX_ERROR(rootLogger, LOG4CXX_STR("[") << rootLogger->getName() << LOG4CXX_STR("(LogString)") << LOG4CXX_STR("] : ") << LOG4CXX_STR("ERROR 출력 こんにちは (Kon'nichiwa)..."));
 				LOG4CXX_FATAL(rootLogger, LOG4CXX_STR("[") << rootLogger->getName() << LOG4CXX_STR("(LogString)") << LOG4CXX_STR("] : ") << LOG4CXX_STR("FATAL 출력 你好 (Nǐ hǎo)..."));
 			}
-			std::this_thread::sleep_for(std::chrono::duration<int>(1));
+			// std::this_thread::sleep_for(std::chrono::seconds(1));
+			std::this_thread::yield();
 		}
 	} catch (const log4cxx::helpers::Exception& e) {
 		std::cout << "[ERROR] configure()\n" << e.what() << std::endl;
