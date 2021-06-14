@@ -316,6 +316,8 @@ namespace log4cxx { namespace ext { namespace io {
 			_ASSERTE(!"typeClass is invalid");
 			return false;
 		}
+
+		return true;
 	}
 	
 	bool readMDC(SOCKET socket, MDC::Map& value) noexcept

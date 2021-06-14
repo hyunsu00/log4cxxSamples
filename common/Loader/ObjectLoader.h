@@ -21,7 +21,7 @@ namespace log4cxx { namespace ext { namespace loader {
 
     // 자바 스트림 프로토콜 반환
     size_t readStart(const ByteBuf& byteBuf) /*throw(SmallBufferException, InvalidBufferException)*/;
-    bool readStart(int socket) noexcept;
+    bool readStart(SOCKET socket) noexcept;
 
     // LoggingEvent 객체 생성
     log4cxx::spi::LoggingEventPtr createLoggingEvent(ByteBuf& byteBuf) /*throw(SmallBufferException, InvalidBufferException)*/;

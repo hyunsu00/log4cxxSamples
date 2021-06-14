@@ -1,6 +1,7 @@
 ﻿// ByteBufInputStream.h
 #pragma once
 #include <vector> // std::vector
+class LOG4CXX_EXPORT std::exception; // C4275
 #include <log4cxx/helpers/exception.h> // log4cxx::helpers::RuntimeException
 #include <log4cxx/mdc.h> // log4cxx::MDC::Map
 

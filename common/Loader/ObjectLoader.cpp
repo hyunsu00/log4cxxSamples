@@ -198,7 +198,7 @@ namespace log4cxx { namespace ext { namespace loader {
 		return readPos;
 	}
 
-	bool readStart(int socket) noexcept
+	bool readStart(SOCKET socket) noexcept
 	{
 		// STREAM_MAGIC, STREAM_VERSION
 		unsigned char start[] = {
