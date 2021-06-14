@@ -1,13 +1,15 @@
 ﻿// SocketInputStream.cpp
+//
 #ifdef _WIN32
 #	include <winsock2.h> // SOCKET, recv
 #	include <crtdbg.h> // _ASSERTE
 #else
-#include <unistd.h>
+#	include <unistd.h> // read
 typedef int SOCKET;
-#	include <assert.h>
+#	include <assert.h> // assert
 #	define _ASSERTE assert
 #endif
+
 #include <log4cxx/log4cxx.h> // log4cxx_int64_t
 #include "InputStreamDef.h"
 #include "SocketInputStream.h"

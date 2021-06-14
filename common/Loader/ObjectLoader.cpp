@@ -1,10 +1,10 @@
 ﻿// ObjectLoader.cpp
+//
 #ifdef _WIN32
 #	include <winsock2.h> // SOCKET
 #	include <crtdbg.h> // _ASSERTE
 #else
-typedef int SOCKET;
-#	include <assert.h>
+#	include <assert.h> // assert
 #	define _ASSERTE assert
 #endif
 

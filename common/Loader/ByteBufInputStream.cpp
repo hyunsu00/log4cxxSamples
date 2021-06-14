@@ -1,10 +1,12 @@
 ﻿// ByteBufInputStream.cpp
+//
 #ifdef _WIN32
 #	include <crtdbg.h> // _ASSERTE
 #else
-#	include <assert.h>
+#	include <assert.h> // assert
 #	define _ASSERTE assert
 #endif
+
 #include <log4cxx/log4cxx.h> // log4cxx_int64_t
 #include "InputStreamDef.h"
 #include "ByteBufInputStream.h"
