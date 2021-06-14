@@ -4,16 +4,17 @@
 #include <log4cxx/helpers/loglog.h>		  // log4cxx::helpers::LogLog
 #include <thread>						  // std::thread
 
+#include "log4cxxSocket.h"
+
 #ifdef _WIN32
 #include <winsock2.h>
 #include <WS2tcpip.h> // inet_ntop
 #else
-#include <sys/unistd.h>
-#include <sys/socket.h>
-#include <arpa/inet.h> // inet_ntop
-#define closesocket	close
-#define IPPROTO_TCP 	(0)
-#define INVALID_SOCKET (-1)
+//#include <sys/unistd.h>
+//#include <sys/socket.h>
+//#include <arpa/inet.h> // inet_ntop
+//#define closesocket	close
+//#define IPPROTO_TCP 	(0)
 #include <string.h>	// strdup
 #include <libgen.h>	// dirname
 #endif
@@ -71,8 +72,8 @@ auto loadFiles = [](const std::string &sampleDir) -> bool
 		size_t count = byteBufSize / 100;
 		size_t remain = byteBufSize % 100;
 
-		for (int i = 0; i < count; i++) {
-			for (int j = 0; j < 100; j++) {
+		for (size_t i = 0; i < count; i++) {
+			for (size_t j = 0; j < 100; j++) {
 				copyBuf.push_back(byteBuf[j + 100 * i]);
 			}
 			// 로그 출력
@@ -80,7 +81,7 @@ auto loadFiles = [](const std::string &sampleDir) -> bool
 				return false;
 			}
 		}
-		for (int i = 0; i < remain; i++) {
+		for (size_t i = 0; i < remain; i++) {
 			copyBuf.push_back(byteBuf[i + 100 * count]);
 		}
 		// 로그 출력
@@ -117,9 +118,22 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 	std::vector<char> recvBuf(BUF_LEN, 0);
 	// 자바 스트림 프로토콜 확인
 	{
-		int ret = recv(clientSocket, &recvBuf[0], 4, 0);
-		LOG4CXX_ASSERT(serverLogger(), ret == 4, LOG4CXX_STR("자바 스트림 프로토콜 크기는 4byte 이여야 한다."));
-		if (ret != 4) {
+		// 4byte를 강제로 읽는다.
+		char* pBuf = &recvBuf[0];
+		const size_t len = 4;
+		size_t readBytes = 0;
+		while (readBytes < len) {
+			int len_read = ::recv(clientSocket, pBuf, len - readBytes, 0);
+			if (len_read <= 0) {
+				goto CLEAN_UP;
+			}
+
+			pBuf += len_read;
+			readBytes = static_cast<size_t>(pBuf - &recvBuf[0]);
+		}
+
+		LOG4CXX_ASSERT(serverLogger(), len == readBytes, LOG4CXX_STR("자바 스트림 프로토콜 크기는 4byte 이여야 한다."));
+		if (len != readBytes) {
 			goto CLEAN_UP;
 		}
 
@@ -199,13 +213,13 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 #endif
 
 CLEAN_UP:
-	closesocket(clientSocket);
+	log4cxx::ext::socket::Close(clientSocket);
 	LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 종료 - ") << clientInfo.c_str());
 }; // auto runClient
 
 auto runServer = [](int port_num) -> void
 {
-	SOCKET serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	SOCKET serverSocket = log4cxx::ext::socket::Create(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (serverSocket == INVALID_SOCKET) {
 		LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("소켓을 못열었다."));
 		return;
@@ -240,17 +254,13 @@ auto runServer = [](int port_num) -> void
 			break;
 		}
 
-		char clientInfo[20] = {0, };
-#ifdef _WIN32		
-		inet_ntop(AF_INET, &clientAddr.sin_addr.S_un, clientInfo, sizeof(clientInfo));
-#else
-		inet_ntop(AF_INET, &clientAddr.sin_addr, clientInfo, sizeof(clientInfo));
-#endif
+		std::string clientInfo = log4cxx::ext::socket::getClientInfo(clientAddr);
+
 		std::thread clientThread(runClient, clientSocket, clientInfo);
 		clientThread.detach();
 	}
 
-	closesocket(serverSocket);
+	log4cxx::ext::socket::Close(serverSocket);
 }; // auto runServer
 
 int main(int argc, char *argv[])
@@ -282,18 +292,14 @@ int main(int argc, char *argv[])
 	log4cxx::PropertyConfigurator::configure(log4cxx::File(filePath));
 
 	// loadFiles(exeDir + "samples\\");
-#ifdef _WIN32
-	WSADATA data;
-	::WSAStartup(MAKEWORD(2, 2), &data);
-#endif
+
+	log4cxx::ext::socket::Init();
 
 	{
 		runServer(4445);
 	}
 
-#ifdef _WIN32
-	::WSACleanup();
-#endif
+	log4cxx::ext::socket::Quit();
 
 	return 0;
 }

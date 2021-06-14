@@ -200,6 +200,7 @@ xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     <ClInclude Include="..\common\Loader\InputStreamDef.h" />
     <ClInclude Include="..\common\Loader\ObjectLoader.h" />
     <ClInclude Include="..\common\Loader\SocketInputStream.h" />
+    <ClInclude Include="..\log4cxxSocketServer\log4cxxSocket.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

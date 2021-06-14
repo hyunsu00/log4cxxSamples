@@ -39,5 +39,6 @@
     <ClInclude Include="..\common\Loader\SocketInputStream.h">
       <Filter>Loader</Filter>
     </ClInclude>
+    <ClInclude Include="..\log4cxxSocketServer\log4cxxSocket.h" />
   </ItemGroup>
 </Project>

@@ -37,6 +37,7 @@
     <ClInclude Include="..\common\Loader\InputStreamDef.h" />
     <ClInclude Include="..\common\Loader\ObjectLoader.h" />
     <ClInclude Include="..\common\Loader\SocketInputStream.h" />
+    <ClInclude Include="log4cxxSocket.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

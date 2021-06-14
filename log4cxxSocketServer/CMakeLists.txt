@@ -1,4 +1,4 @@
-﻿# CMakeList.txt: pdfiumSamples에 대한 CMake 프로젝트, 여기에 소스를 포함하고
+﻿# CMakeList.txt: log4cxxSocketServer 대한 CMake 프로젝트, 여기에 소스를 포함하고
 # 프로젝트 특정 논리를 정의합니다.
 #
 cmake_minimum_required (VERSION 2.8)
@@ -45,7 +45,7 @@ message(STATUS "\${LOADER_FILES} = ${LOADER_FILES}")
 
 ###
 # 이 프로젝트의 실행 파일에 소스를 추가합니다.
-add_executable (${PROJECT_NAME} "log4cxxSocketServer.cpp" ${LOADER_FILES})
+add_executable (${PROJECT_NAME} "log4cxxSocketServer.cpp" "log4cxxSocket.h" ${LOADER_FILES})
 
 ###
 # 실행파일 생성후에 지정
