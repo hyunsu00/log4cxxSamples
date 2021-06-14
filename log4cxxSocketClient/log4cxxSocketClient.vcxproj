@@ -22,7 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{1FDE8FE0-1066-4C6B-B8D9-E562CA769E9A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>shortSocketClient</RootNamespace>
+    <RootNamespace>log4cxxSocketClient</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -117,7 +117,7 @@
       </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>xcopy ".\shortSocketClient.conf" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy ".\log4cxxSocketClient.conf" "$(OutDir)\" /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -138,7 +138,7 @@
       <AdditionalDependencies>log4cxx.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy ".\shortSocketClient.conf" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy ".\log4cxxSocketClient.conf" "$(OutDir)\" /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -163,7 +163,7 @@
       <AdditionalDependencies>log4cxx.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy ".\shortSocketClient.conf" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy ".\log4cxxSocketClient.conf" "$(OutDir)\" /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -188,14 +188,14 @@
       <AdditionalDependencies>log4cxx.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy ".\shortSocketClient.conf" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy ".\log4cxxSocketClient.conf" "$(OutDir)\" /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="shortSocketClient.cpp" />
+    <ClCompile Include="log4cxxSocketClient.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shortSocketClient.conf" />
+    <None Include="log4cxxSocketClient.conf" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Extern\log4cxx-0.10.0\log4cxx.vcxproj">

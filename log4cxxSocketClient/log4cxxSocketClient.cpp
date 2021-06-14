@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 		_splitpath_s(argv[0], drive, _MAX_DRIVE, dir, _MAX_DIR, nullptr, 0, nullptr, 0);
 		exeDir = std::string(drive) + dir;
 	}
-	std::string filePath = exeDir + "shortSocketClient.conf";
+	std::string filePath = exeDir + "log4cxxSocketClient.conf";
 
 	try {
 		while (true) {
