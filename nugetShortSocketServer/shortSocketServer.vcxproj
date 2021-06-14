@@ -190,11 +190,16 @@ xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\common\byteBufInputStream.cpp" />
     <ClCompile Include="..\common\objectLoader.cpp" />
+    <ClCompile Include="..\common\socketInputStream.cpp" />
     <ClCompile Include="..\shortSocketServer\shortSocketServer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\common\byteBufInputStream.h" />
+    <ClInclude Include="..\common\inputStreamDef.h" />
     <ClInclude Include="..\common\objectLoader.h" />
+    <ClInclude Include="..\common\socketInputStream.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

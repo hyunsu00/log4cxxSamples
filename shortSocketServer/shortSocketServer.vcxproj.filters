@@ -2,17 +2,36 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="shortSocketServer.cpp" />
-    <ClCompile Include="..\common\objectLoader.cpp" />
-    <ClCompile Include="..\common\byteBufInputStream.cpp" />
-    <ClCompile Include="..\common\socketInputStream.cpp" />
+    <ClCompile Include="..\common\byteBufInputStream.cpp">
+      <Filter>Loader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\objectLoader.cpp">
+      <Filter>Loader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\socketInputStream.cpp">
+      <Filter>Loader</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\common\objectLoader.h" />
-    <ClInclude Include="..\common\byteBufInputStream.h" />
-    <ClInclude Include="..\common\socketInputStream.h" />
-    <ClInclude Include="..\common\inputStreamDef.h" />
+    <ClInclude Include="..\common\byteBufInputStream.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\inputStreamDef.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\objectLoader.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\socketInputStream.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shortSocketServer.conf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Loader">
+      <UniqueIdentifier>{13ae466c-90e2-4077-8222-bb705f67a5c1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

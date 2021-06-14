@@ -10,12 +10,34 @@
     <Filter Include="packages">
       <UniqueIdentifier>{78c32e65-a57e-4d1a-aa4e-276a21368d24}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Loader">
+      <UniqueIdentifier>{f4835de9-2eb4-4605-b7ab-99115582ab26}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\shortSocketServer\shortSocketServer.cpp" />
-    <ClCompile Include="..\common\objectLoader.cpp" />
+    <ClCompile Include="..\common\objectLoader.cpp">
+      <Filter>Loader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\byteBufInputStream.cpp">
+      <Filter>Loader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\socketInputStream.cpp">
+      <Filter>Loader</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\common\objectLoader.h" />
+    <ClInclude Include="..\common\objectLoader.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\byteBufInputStream.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\inputStreamDef.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\socketInputStream.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
