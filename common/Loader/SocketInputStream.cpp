@@ -27,7 +27,28 @@ namespace log4cxx { namespace ext { namespace io {
 
 		while ((size_t)(p - (unsigned char*)buf) < len) {
 #ifdef _WIN32
+			// 소켓 핸들일 경우(파일 핸들이 들어올 경우에는 실패 한다.)
+#if 1
 			len_read = ::recv(socket, (char*)p, (int)(len - (p - (unsigned char*)buf)), 0);
+#else
+			// == 동기 소켓 ::recv와 동일한 코드(문서화 되지 않음)
+			OVERLAPPED ov = { 0, };
+			if (!::ReadFile((HANDLE)socket, (char*)p, (int)(len - (p - (unsigned char*)buf)), 0, &ov)) {
+				return false;
+			}
+			DWORD dwNumberOfBytesTransferred = 0;
+			if (::GetOverlappedResult((HANDLE)socket, &ov, &dwNumberOfBytesTransferred, TRUE)) {
+				len_read = static_cast<int>(dwNumberOfBytesTransferred);
+			}
+#endif
+/*
+			// [참고] 파일 핸들일 경우
+			DWORD dwNumberOfBytesRead = 0;
+			if (!::ReadFile((HANDLE)socket, (char*)p, (int)(len - (p - (unsigned char*)buf)), &dwNumberOfBytesRead, 0)) {
+				return false;
+			}
+			len_read = static_cast<int>(dwNumberOfBytesRead);
+*/			
 #else
 			len_read = ::read(socket, p, len - (p - (unsigned char*)buf));
 #endif

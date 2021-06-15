@@ -261,16 +261,14 @@ int main(int argc, char *argv[])
 	setlocale(LC_ALL, "");
 
 	std::string exeDir;
+	std::string sampleDir;
 #ifdef _WIN32	
 	{
-		char drive[_MAX_DRIVE] = {
-			0,
-		}; // 드라이브 명
-		char dir[_MAX_DIR] = {
-			0,
-		}; // 디렉토리 경로
+		char drive[_MAX_DRIVE] = {0, }; // 드라이브 명
+		char dir[_MAX_DIR] = {0, }; // 디렉토리 경로
 		_splitpath_s(argv[0], drive, _MAX_DRIVE, dir, _MAX_DIR, nullptr, 0, nullptr, 0);
 		exeDir = std::string(drive) + dir;
+		sampleDir = exeDir + "samples\\";
 	}
 #else
 	{
@@ -278,13 +276,14 @@ int main(int argc, char *argv[])
 		exeDir = dirname(exePath);
 		free(exePath);
 		exeDir += "/";
+		sampleDir = exeDir + "samples/";
 	}
 #endif
 
 	std::string filePath = exeDir + "log4cxxSocketServer.conf";
 	log4cxx::PropertyConfigurator::configure(log4cxx::File(filePath));
 
-	// loadFiles(exeDir + "samples\\");
+	// loadFiles(sampleDir);
 
 	log4cxx::ext::socket::Init();
 
