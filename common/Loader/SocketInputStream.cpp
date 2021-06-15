@@ -27,21 +27,20 @@ namespace log4cxx { namespace ext { namespace io {
 
 		while ((size_t)(p - (unsigned char*)buf) < len) {
 #ifdef _WIN32
-			len_read = ::recv(socket, (char*)p, static_cast<int>(len - (p - (unsigned char*)buf)), 0);
+			len_read = ::recv(socket, (char*)p, (int)(len - (p - (unsigned char*)buf)), 0);
 #else
 			len_read = ::read(socket, p, len - (p - (unsigned char*)buf));
 #endif
-			if (len_read < 0) {
-				return false;
-			}
-			if (len_read == 0) {
+			// len_read == 0 일 경우 -> 정상적인 종료
+			// len_read == SOCKET_ERROR(-1) 일 경우 -> 소켓에러 WSAGetLastError() 호출하여 오류코드 검색 가능
+			if (len_read <= 0) {
 				return false;
 			}
 
 			p += len_read;
 		}
 
-		bool result = (len == (p - (const unsigned char*)buf)) ? true : false;
+		bool result = (len == (p - (unsigned char*)buf)) ? true : false;
 		_ASSERTE(result && "len 사이즈 만큼 읽어야만 한다.");
 
 		return result;
