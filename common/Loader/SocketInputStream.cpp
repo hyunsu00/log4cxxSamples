@@ -42,7 +42,7 @@ namespace log4cxx { namespace ext { namespace io {
 			}
 #endif
 /*
-			// [참고] 파일 핸들일 경우
+			// [참고] 파일 핸들일 경우 (소켓 핸들이 들어올 경우에는 실패 한다.)
 			DWORD dwNumberOfBytesRead = 0;
 			if (!::ReadFile((HANDLE)socket, (char*)p, (int)(len - (p - (unsigned char*)buf)), &dwNumberOfBytesRead, 0)) {
 				return false;
