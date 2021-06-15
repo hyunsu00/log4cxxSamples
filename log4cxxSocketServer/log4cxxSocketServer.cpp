@@ -186,6 +186,7 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 			goto CLEAN_UP;
 		}
 	}
+
 	// LoggingEvent
 	{
 		while (true) {

@@ -45,11 +45,9 @@ namespace log4cxx { namespace ext { namespace socket {
 	{
 		int status = 0;
 #ifdef _WIN32
-		status = shutdown(socket, SD_BOTH);
-		if (status == 0) { status = closesocket(socket); }
+		status = closesocket(socket);
 #else
-		status = shutdown(socket, SHUT_RDWR);
-		if (status == 0) { status = close(socket); }
+		status = close(socket);
 #endif
 		return status;
 	}
