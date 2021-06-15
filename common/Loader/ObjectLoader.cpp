@@ -22,16 +22,34 @@ namespace {
 	#define CONCATE(X, Y) CONCATE_(X, Y)
 
 	#define ALLOW_ACCESS(CLASS, MEMBER, ...) \
-	  template<typename T, __VA_ARGS__ CLASS::*Member> \
-	  struct CONCATE(MEMBER, __LINE__) { friend __VA_ARGS__ CLASS::*Access(T*) { return Member; } }; \
-	  template<typename> struct T_##MEMBER; \
-	  template<> struct T_##MEMBER<CLASS> { friend __VA_ARGS__ CLASS::*Access(T_##MEMBER<CLASS>*); }; \
-	  template struct CONCATE(MEMBER, __LINE__)<T_##MEMBER<CLASS>, &CLASS::MEMBER>
+		template<typename T, __VA_ARGS__ CLASS::*Member> \
+		struct CONCATE(MEMBER, __LINE__) { friend __VA_ARGS__ CLASS::*Access(T*) { return Member; } }; \
+		template<typename> struct T_##MEMBER; \
+		template<> struct T_##MEMBER<CLASS> { friend __VA_ARGS__ CLASS::*Access(T_##MEMBER<CLASS>*); }; \
+		template struct CONCATE(MEMBER, __LINE__)<T_##MEMBER<CLASS>, &CLASS::MEMBER>
 
 	#define ACCESS(OBJECT, MEMBER) \
-	(OBJECT).*Access((T_##MEMBER<std::remove_reference<decltype(OBJECT)>::type>*)nullptr)
+		(OBJECT).*Access((T_##MEMBER<std::remove_reference<decltype(OBJECT)>::type>*)nullptr)
 
 } // namespace
+/*
+1.
+ALLOW_ACCESS(log4cxx::spi::LoggingEvent, timeStamp, log4cxx_time_t);
+// ==
+using timeStampPtr = log4cxx_time_t log4cxx::spi::LoggingEvent::*;
+timeStampPtr _timeStampFromLoggingEvent();
+template<timeStampPtr timeStamp>
+struct _LoggingEvent {
+	friend timeStampPtr _timeStampFromLoggingEvent() {
+		return timeStamp;
+	}
+};
+template struct _LoggingEvent<&log4cxx::spi::LoggingEvent::timeStamp>;
+2.
+ACCESS(*event, timeStamp) = timeStamp;
+// ==
+(*event).*_timeStampFromLoggingEvent() = timeStamp;
+*/
 
 namespace log4cxx { namespace ext { namespace io {
 
