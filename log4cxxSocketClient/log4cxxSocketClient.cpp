@@ -11,6 +11,12 @@
 #include <log4cxx/helpers/exception.h> // log4cxx::helpers::Exception
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
 
+#ifdef _WIN32
+#else
+#	include <string.h>	// strdup
+#	include <libgen.h>	// dirname
+#endif
+
 int main(int argc, char* argv[])
 {
 #ifdef _WIN32
@@ -20,12 +26,25 @@ int main(int argc, char* argv[])
 	setlocale(LC_ALL, "");
 
 	std::string exeDir;
+#ifdef _WIN32	
 	{
-		char drive[_MAX_DRIVE] = { 0, }; // 드라이브 명
-		char dir[_MAX_DIR] = { 0, }; // 디렉토리 경로
+		char drive[_MAX_DRIVE] = {
+			0,
+		}; // 드라이브 명
+		char dir[_MAX_DIR] = {
+			0,
+		}; // 디렉토리 경로
 		_splitpath_s(argv[0], drive, _MAX_DRIVE, dir, _MAX_DIR, nullptr, 0, nullptr, 0);
 		exeDir = std::string(drive) + dir;
 	}
+#else
+	{
+		char* exePath = strdup(argv[0]);
+		exeDir = dirname(exePath);
+		free(exePath);
+		exeDir += "/";
+	}
+#endif
 	std::string filePath = exeDir + "log4cxxSocketClient.conf";
 
 	try {

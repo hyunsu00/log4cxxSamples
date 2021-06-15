@@ -7,18 +7,10 @@
 #include "log4cxxSocket.h"
 
 #ifdef _WIN32
-#include <winsock2.h>
-#include <WS2tcpip.h> // inet_ntop
 #else
-//#include <sys/unistd.h>
-//#include <sys/socket.h>
-//#include <arpa/inet.h> // inet_ntop
-//#define closesocket	close
-//#define IPPROTO_TCP 	(0)
-#include <string.h>	// strdup
-#include <libgen.h>	// dirname
+#	include <string.h>	// strdup
+#	include <libgen.h>	// dirname
 #endif
-#include <memory.h> // memset
 
 #include "ByteBufInputStream.h"
 #include "ObjectLoader.h"
