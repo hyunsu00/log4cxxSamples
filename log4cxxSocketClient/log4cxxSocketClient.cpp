@@ -7,7 +7,11 @@
 #include <iostream> // std::cout
 #include <thread> // std::this_thread::sleep_for
 #include <chrono> // std::chrono::duration
+#include <stdexcept> // std::exception
 #include <log4cxx/basicconfigurator.h> // log4cxx::BasicConfigurator
+#ifdef _WIN32
+class LOG4CXX_EXPORT std::exception; // C4275
+#endif
 #include <log4cxx/helpers/exception.h> // log4cxx::helpers::Exception
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
 
@@ -70,8 +74,8 @@ int main(int argc, char* argv[])
 				LOG4CXX_ERROR(rootLogger, LOG4CXX_STR("[") << rootLogger->getName() << LOG4CXX_STR("(LogString)") << LOG4CXX_STR("] : ") << LOG4CXX_STR("ERROR 출력 こんにちは (Kon'nichiwa)..."));
 				LOG4CXX_FATAL(rootLogger, LOG4CXX_STR("[") << rootLogger->getName() << LOG4CXX_STR("(LogString)") << LOG4CXX_STR("] : ") << LOG4CXX_STR("FATAL 출력 你好 (Nǐ hǎo)..."));
 			}
-			// std::this_thread::sleep_for(std::chrono::seconds(1));
-			std::this_thread::yield();
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+			//std::this_thread::yield();
 		}
 	} catch (const log4cxx::helpers::Exception& e) {
 		std::cout << "[ERROR] configure()\n" << e.what() << std::endl;

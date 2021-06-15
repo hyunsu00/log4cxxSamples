@@ -289,7 +289,7 @@ int main(int argc, char *argv[])
 	log4cxx::ext::socket::Init();
 
 	{
-		runServer(4445);
+		runServer(9988);
 	}
 
 	log4cxx::ext::socket::Quit();

@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 	struct sockaddr_in mSockAddr;
 	memset(&mSockAddr, 0, sizeof(mSockAddr));
 	mSockAddr.sin_family = AF_INET;
-	mSockAddr.sin_port = htons(4445);
+	mSockAddr.sin_port = htons(9988);
 	mSockAddr.sin_addr.s_addr = htonl(INADDR_ANY); // INADDR_ANY : 사용가능한 랜카드 IP 사용
 
 	// 소켓 속성과 소켓 fd 연결
