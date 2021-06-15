@@ -13,7 +13,7 @@
 
 #include "ObjectLoader.h"
 #include <string.h> // strdup
-#include <libgen.h>	// dirname
+#include <libgen.h> // dirname
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
 #include <log4cxx/helpers/exception.h>	  // log4cxx::helpers::InstantiationException, log4cxx::helpers::RuntimeException
 
