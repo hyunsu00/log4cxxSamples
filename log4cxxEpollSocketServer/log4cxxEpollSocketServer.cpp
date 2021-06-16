@@ -10,6 +10,8 @@
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <arpa/inet.h>
+#include <sys/ioctl.h> // ioctl
+#include <assert.h> // assert
 
 #include "ObjectLoader.h"
 #include <string.h> // strdup
@@ -23,6 +25,7 @@
                           // 보통 5정도의 value를 사용하며 만약 아주 큰 값을 사용하면 kernel의 resource를 소모합니다.
                           // 따라서, 접속 가능한 클라이언트의 최대수가 아닌 연결을 기다리는 클라이언트의 최대수입니다
 
+//#define EDGE_TRIGGER	// 에지 트리거 정의
 int main(int argc, char *argv[])
 {
 	char *exePath = strdup(argv[0]);
@@ -99,8 +102,13 @@ int main(int argc, char *argv[])
 	// 보면 더이상의 상태 변화가 없기 때문이죠..LT 또는 ET는 쉽게 옵션으로 설정 가능합니다.
 	// 참고로 select / poll은 레벨트리거만 지원합니다.
 	struct epoll_event events;
-	// events.events = EPOLLIN | EPOLLET;
+#ifdef EDGE_TRIGGER 
+	// 에지 트리거(Edge Trigger, ET)
+	events.events = EPOLLIN | EPOLLET;
+#else
+	// 레벨 트리거(Level Trigger, LT)
 	events.events = EPOLLIN;
+#endif
 	events.data.fd = server_fd;
 
 	/* server events set(read for accept) */
@@ -130,7 +138,7 @@ int main(int argc, char *argv[])
 	int clientCount = 0;
 	while (true) {
 		event_count = epoll_wait(epoll_fd, epoll_events, MAX_EVENTS, timeout);
-		// printf("event count[%d]\n", event_count);
+		printf("event count[%d]\n", event_count);
 
 		if (event_count < 0) {
 			if (errno == EINTR) { // 신호처리기(gdb)에 의해 중단됨
@@ -148,7 +156,7 @@ int main(int argc, char *argv[])
 				int client_len;
 				struct sockaddr_in client_addr;
 
-				// printf("User Accept\n");
+				printf("User Accept\n");
 				client_len = sizeof(client_addr);
 				client_fd = accept(server_fd, (struct sockaddr *)&client_addr, (socklen_t *)&client_len);
 
@@ -167,8 +175,13 @@ int main(int argc, char *argv[])
 
 				// 클라이언트 fd, epoll 에 등록
 				struct epoll_event events;
-				// events.events = EPOLLIN | EPOLLET;
+#ifdef EDGE_TRIGGER 
+				// 에지 트리거(Edge Trigger, ET)
+				events.events = EPOLLIN | EPOLLET;
+#else
+				// 레벨 트리거(Level Trigger, LT)
 				events.events = EPOLLIN;
+#endif
 				events.data.fd = client_fd;
 
 				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &events) < 0) {
@@ -181,19 +194,100 @@ int main(int argc, char *argv[])
 			} else {
 				// epoll에 등록 된 클라이언트들의 send data 처리
 				int client_fd = epoll_events[i].data.fd;
-				const size_t BUF_LEN = 4096;
-				std::vector<char> readBuf(BUF_LEN, 0);
-				int readBytes = read(client_fd, &readBuf[0], readBuf.size());
 
-				if (readBytes == 0) {
-					// 클라이언트 접속 종료 요청
-					printf("Client Disconnect client_fd[%d], clientCount[%d]\n", client_fd, --clientCount);
+#ifdef EDGE_TRIGGER 
+				// 엣지 트리거 모드
+	#if 1
+				int readBytes = 0;
+				int result = ioctl(client_fd, FIONREAD, &readBytes);
+				if (result < 0) { // 에러
+					printf("client_fd[%d] : readBytes = %d, result = %d, ioctl()함수가 실패하여 소켓을 종료한다. (errno = %d)\n", client_fd, readBytes, result, errno);
 					close(client_fd);
 					epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+				} else if (result == 0) { // 성공
+					readBytes = std::max<int>(readBytes, 1);
+					std::vector<char> readBuf(readBytes, 0);
+					int resultBytes = read(client_fd, &readBuf[0], readBuf.size());
+					if (resultBytes < 0) { // 에러
+						switch (errno)
+						{
+						case EWOULDBLOCK: // read 버퍼가 비어있음
+							printf("client_fd[%d] : resultBytes = %d, read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)\n", client_fd, resultBytes);
+							break;
+						default:
+							printf("client_fd[%d] : resultBytes = %d, read()함수가 실패하여 소켓을 종료한다. (error = %d)\n", client_fd, resultBytes, errno);
+							close(client_fd);
+							epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+						}
+						break;
+					} else if (resultBytes == 0) { // 클라이언트 접속 끊김
+						printf("client_fd[%d] : resultBytes = %d, 클라이언트의 접속이 끊겨 소켓을 종료한다.\n", client_fd, resultBytes);
+						close(client_fd);
+						epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+						break;
+					} else { // 클라이언트 데이터 수신됨
+						assert(resultBytes == readBytes && "소켓버퍼의 사이즈 만큼 읽어와야 한다.");
+						printf("client_fd[%d] : resultBytes = %d, 클라이언트 데이터 수신됨\n", client_fd, resultBytes);
+					}
 				} else {
-					// 접속 종료 요청이 아닌 경우 요청의 내용에 따라 처리.
-					// printf("Recv Data from [%d] : readBytes = %d\n", client_fd, readBytes);
+					assert(!"이곳은 들어올수 없다.");
+					printf("client_fd[%d] : readByte = %d, result = %d, ioctl()함수의 반환값이 0보다 커서 소켓을 종료한다.\n", client_fd, readBytes, result);
+					close(client_fd);
+					epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+				}		
+	#else
+				const size_t BUFFER_LEN = 4096;
+				std::vector<char> readBuf(BUFFER_LEN, 0);
+				while (true) {
+					int resultBytes = read(client_fd, &readBuf[0], readBuf.size());
+					if (resultBytes < 0) { // 에러
+						switch (errno)
+						{
+						case EWOULDBLOCK: // read 버퍼가 비어있음
+							printf("client_fd[%d] : resultBytes = %d, read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)\n", client_fd, resultBytes);
+							break;
+						default:
+							printf("client_fd[%d] : resultBytes = %d, read()함수가 실패하여 소켓을 종료한다. (error = %d)\n", client_fd, resultBytes, errno);
+							close(client_fd);
+							epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+						}
+						break;
+					} else if (resultBytes == 0) { // 클라이언트 접속 끊김
+						printf("client_fd[%d] : resultBytes = %d, 클라이언트의 접속이 끊겨 소켓을 종료한다.\n", client_fd, resultBytes);
+						close(client_fd);
+						epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+						break;
+					} else { // 클라이언트 데이터 수신됨
+						printf("client_fd[%d] : resultBytes = %d, 클라이언트 데이터 수신됨\n", client_fd, resultBytes);
+					}
+				} 
+	#endif
+#else
+				// 레벨 트리거 코드
+				const size_t readBytes = 4096;
+				std::vector<char> readBuf(readBytes, 0);
+				int resultBytes = read(client_fd, &readBuf[0], readBuf.size());
+				if (resultBytes < 0) { // 에러
+					switch (errno)
+					{
+					case EWOULDBLOCK: // read 버퍼가 비어있음
+						printf("client_fd[%d] : resultBytes = %d, read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)\n", client_fd, resultBytes);
+						break;
+					default:
+						printf("client_fd[%d] : resultBytes = %d, read()함수가 실패하여 소켓을 종료한다. (error = %d)\n", client_fd, resultBytes, errno);
+						close(client_fd);
+						epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+					}
+					break;
+				} else if (resultBytes == 0) { // 클라이언트 접속 끊김
+					printf("client_fd[%d] : resultBytes = %d, 클라이언트의 접속이 끊겨 소켓을 종료한다.\n", client_fd, resultBytes);
+					close(client_fd);
+					epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+					break;
+				} else { // 클라이언트 데이터 수신됨
+					printf("client_fd[%d] : resultBytes = %d, 클라이언트 데이터 수신됨\n", client_fd, resultBytes);
 				}
+#endif
 			}
 		}
 	}
