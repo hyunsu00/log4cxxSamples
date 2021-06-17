@@ -1,9 +1,9 @@
-# CMakeList.txt: log4cxxEpollSocketServer 대한 CMake 프로젝트, 여기에 소스를 포함하고
+# CMakeList.txt: log4cxxSelectSocketServer 대한 CMake 프로젝트, 여기에 소스를 포함하고
 # 프로젝트 특정 논리를 정의합니다.
 #
 cmake_minimum_required (VERSION 2.8)
 
-project ("log4cxxEpollSocketServer")
+project ("log4cxxSelectSocketServer")
 message(STATUS "\${PROJECT_NAME} = ${PROJECT_NAME}")
 
 ###
@@ -45,7 +45,7 @@ message(STATUS "\${LOADER_FILES} = ${LOADER_FILES}")
 
 ###
 # 이 프로젝트의 실행 파일에 소스를 추가합니다.
-add_executable (${PROJECT_NAME} "log4cxxEpollSocketServer.cpp" ${LOADER_FILES})
+add_executable (${PROJECT_NAME} "log4cxxSelectSocketServer.cpp" ${LOADER_FILES})
 
 ###
 # 실행파일 생성후에 지정
@@ -54,14 +54,14 @@ target_link_libraries(${PROJECT_NAME} ${LOG4CXX_LIBRARIES})
 add_custom_command(
 	TARGET ${PROJECT_NAME} PRE_BUILD
 	COMMENT "conf 파일을 복사합니다."
-	COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/log4cxxEpollSocketServer.conf" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/"
+	COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/log4cxxSelectSocketServer.conf" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/"
 )
 message(STATUS "\${CMAKE_COMMAND} = ${CMAKE_COMMAND}")
 
 ###
 # 인스톨
 install(TARGETS ${PROJECT_NAME} DESTINATION ${PROJECT_NAME})
-install(FILES "${PROJECT_SOURCE_DIR}/log4cxxEpollSocketServer.conf" DESTINATION ${PROJECT_NAME})
+install(FILES "${PROJECT_SOURCE_DIR}/log4cxxSelectSocketServer.conf" DESTINATION ${PROJECT_NAME})
 
 ###
 # cpack

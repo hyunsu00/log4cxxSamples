@@ -1,0 +1,22 @@
+﻿# EditorConfig is awesome: https://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+# Unix-style newlines with a newline ending every file
+#[*]
+#end_of_line = lf
+#insert_final_newline = true
+
+# CMakeLists.txt utf-8 생성
+[CMakeLists.txt]
+charset = utf-8
+
+# C++ 파일 utf-8-bom 생성
+[*.{h,cpp}]
+charset = utf-8-bom
+
+# space indentation
+#[*.{h,cpp}]
+#indent_style = space
+#indent_size = 4
