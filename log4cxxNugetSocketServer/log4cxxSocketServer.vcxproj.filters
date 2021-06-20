@@ -13,6 +13,9 @@
     <Filter Include="Loader">
       <UniqueIdentifier>{f4835de9-2eb4-4605-b7ab-99115582ab26}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Socket">
+      <UniqueIdentifier>{a05fa1b9-8b09-40f3-aa43-538541c552ed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\log4cxxSocketServer\log4cxxSocketServer.cpp" />
@@ -39,6 +42,8 @@
     <ClInclude Include="..\common\Loader\SocketInputStream.h">
       <Filter>Loader</Filter>
     </ClInclude>
-    <ClInclude Include="..\log4cxxSocketServer\log4cxxSocket.h" />
+    <ClInclude Include="..\common\Socket\log4cxxSocket.h">
+      <Filter>Socket</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

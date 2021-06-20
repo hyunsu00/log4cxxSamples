@@ -19,6 +19,9 @@
     <Filter Include="Loader">
       <UniqueIdentifier>{13ae466c-90e2-4077-8222-bb705f67a5c1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Socket">
+      <UniqueIdentifier>{e39f6fa5-5e0d-46f9-be73-4d3530bfe275}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\Loader\ByteBufInputStream.h">
@@ -33,6 +36,8 @@
     <ClInclude Include="..\common\Loader\SocketInputStream.h">
       <Filter>Loader</Filter>
     </ClInclude>
-    <ClInclude Include="log4cxxSocket.h" />
+    <ClInclude Include="..\common\Socket\log4cxxSocket.h">
+      <Filter>Socket</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

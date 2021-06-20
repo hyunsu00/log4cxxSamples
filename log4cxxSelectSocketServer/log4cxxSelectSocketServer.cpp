@@ -12,6 +12,7 @@
 
 #ifdef _WIN32
 #else
+#   include <fcntl.h> // fcntl
 #	include <string.h>	// strdup
 #	include <libgen.h>	// dirname
 #endif
@@ -122,15 +123,10 @@ int set_nonblock(SOCKET fd)
    return ioctlsocket(fd, FIONBIO, &flags);
 #else
     int flags;
-#if defined(O_NONBLOCK)
     if (-1 == (flags = fcntl(fd, F_GETFL, 0))) {
         flags = 0;
     }
     return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-#else
-    flags = 1;
-    return ioctl(fd, FIOBIO, &flags);
-#endif
 #endif
 }
 
@@ -195,7 +191,6 @@ int main(int argc, char* argv[])
         exeDir = dirname(exePath);
         free(exePath);
         exeDir += "/";
-        sampleDir = exeDir + "samples/";
     }
 #endif
     std::string filePath = exeDir + "log4cxxSelectSocketServer.conf";

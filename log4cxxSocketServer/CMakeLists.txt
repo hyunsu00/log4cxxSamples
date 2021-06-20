@@ -30,6 +30,10 @@ set (LOADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../common/Loader)
 message(STATUS "\${LOADER_DIR} = ${LOADER_DIR}")
 include_directories(${LOADER_DIR})
 
+set (SOCKET_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../common/Socket)
+message(STATUS "\${SOCKET_DIR} = ${SOCKET_DIR}")
+include_directories(${SOCKET_DIR})
+
 ###
 # 소스 파일 설정
 set(LOADER_FILES 
@@ -43,9 +47,14 @@ set(LOADER_FILES
 )
 message(STATUS "\${LOADER_FILES} = ${LOADER_FILES}")
 
+set(SOCKET_FILES 
+	"${SOCKET_DIR}/log4cxxSocket.h" 
+)
+message(STATUS "\${SOCKET_FILES} = ${SOCKET_FILES}")
+
 ###
 # 이 프로젝트의 실행 파일에 소스를 추가합니다.
-add_executable (${PROJECT_NAME} "log4cxxSocketServer.cpp" "log4cxxSocket.h" ${LOADER_FILES})
+add_executable (${PROJECT_NAME} "log4cxxSocketServer.cpp" ${LOADER_FILES} ${SOCKET_FILES})
 
 ###
 # 실행파일 생성후에 지정
