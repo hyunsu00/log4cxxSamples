@@ -22,6 +22,9 @@
       <Filter>Loader</Filter>
     </ClCompile>
     <ClCompile Include="log4cxxSelectSocketServer.cpp" />
+    <ClCompile Include="..\common\Socket\log4cxxClient.cpp">
+      <Filter>Socket</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\Loader\ByteBufInputStream.h">
@@ -37,6 +40,9 @@
       <Filter>Loader</Filter>
     </ClInclude>
     <ClInclude Include="..\common\Socket\log4cxxSocket.h">
+      <Filter>Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\Socket\log4cxxClient.h">
       <Filter>Socket</Filter>
     </ClInclude>
   </ItemGroup>

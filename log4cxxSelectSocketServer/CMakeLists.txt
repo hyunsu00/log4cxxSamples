@@ -48,7 +48,9 @@ set(LOADER_FILES
 message(STATUS "\${LOADER_FILES} = ${LOADER_FILES}")
 
 set(SOCKET_FILES 
-	"${SOCKET_DIR}/log4cxxSocket.h" 
+	"${SOCKET_DIR}/log4cxxSocket.h"
+	"${SOCKET_DIR}/log4cxxClient.h"
+	"${SOCKET_DIR}/log4cxxClient.cpp"
 )
 message(STATUS "\${SOCKET_FILES} = ${SOCKET_FILES}")
 

@@ -185,6 +185,7 @@
     <ClCompile Include="..\common\Loader\ByteBufInputStream.cpp" />
     <ClCompile Include="..\common\Loader\ObjectLoader.cpp" />
     <ClCompile Include="..\common\Loader\SocketInputStream.cpp" />
+    <ClCompile Include="..\common\Socket\log4cxxClient.cpp" />
     <ClCompile Include="log4cxxSelectSocketServer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -192,6 +193,7 @@
     <ClInclude Include="..\common\Loader\InputStreamDef.h" />
     <ClInclude Include="..\common\Loader\ObjectLoader.h" />
     <ClInclude Include="..\common\Loader\SocketInputStream.h" />
+    <ClInclude Include="..\common\Socket\log4cxxClient.h" />
     <ClInclude Include="..\common\Socket\log4cxxSocket.h" />
   </ItemGroup>
   <ItemGroup>

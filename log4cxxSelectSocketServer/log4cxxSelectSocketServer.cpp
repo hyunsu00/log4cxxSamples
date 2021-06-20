@@ -9,6 +9,7 @@
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
 #include <log4cxx/helpers/loglog.h>		  // log4cxx::helpers::LogLog
 #include "log4cxxSocket.h"
+#include "log4cxxClient.h"
 
 #ifdef _WIN32
 #else
@@ -16,9 +17,6 @@
 #	include <string.h>	// strdup
 #	include <libgen.h>	// dirname
 #endif
-
-#include "ByteBufInputStream.h"
-#include "ObjectLoader.h"
 
 const char* const SERVER_LOGGER = "serverLogger";
 inline log4cxx::LoggerPtr serverLogger()
@@ -28,93 +26,9 @@ inline log4cxx::LoggerPtr serverLogger()
 using LogLog = log4cxx::helpers::LogLog;
 
 namespace {
-
     const int kPort = 9988;
     const int kReadBufferSize = 8192;
-
 } // namespace
-
-class log4cxxClient
-{
-public:
-    log4cxxClient(SOCKET socket)
-    : m_Socket(socket)
-    , m_Start(true)
-    , m_ByteBuf()
-    {
-    }
-    bool operator<(const log4cxxClient& other) const {
-        return m_Socket < other.m_Socket;
-    }
-    operator SOCKET() const {
-        return m_Socket;
-    }
-
-public:
-    // 복사 생성자 / 대입연산자는 막는다.
-    log4cxxClient(const log4cxxClient& other) {
-        m_Socket = other.m_Socket;
-        m_Start = other.m_Start;
-        m_ByteBuf = other.m_ByteBuf;
-    }
-    log4cxxClient& operator=(const log4cxxClient& other) {
-        if (this != &other) {
-            m_Socket = other.m_Socket;
-            m_Start = other.m_Start;
-            m_ByteBuf = other.m_ByteBuf;
-        }
-
-        return* this;
-    }
-
-public:
-    bool forceLog(const std::array<char, kReadBufferSize>& byteBuf, size_t size) const
-    {
-        m_ByteBuf.insert(m_ByteBuf.end(), byteBuf.begin(), byteBuf.begin() + size);
-        if (m_Start) {
-            size_t readBytes = 0;
-            try {
-                readBytes = log4cxx::ext::loader::readStart(m_ByteBuf);
-            } catch (log4cxx::ext::SmallBufferException& e) { // 무시
-                LOG4CXX_WARN(serverLogger(), e.what());
-                return true;
-            } catch (log4cxx::ext::InvalidBufferException& e) { // 종료
-                LOG4CXX_ERROR(serverLogger(), e.what());
-                return false;
-            }
-            m_ByteBuf.erase(m_ByteBuf.begin(), m_ByteBuf.begin() + readBytes);
-
-            m_Start = false;
-        }
-
-        if (!m_Start) {
-            while (!m_ByteBuf.empty()) {
-                try {
-                    log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::createLoggingEvent(m_ByteBuf);
-                    log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
-                    if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
-                        log4cxx::helpers::Pool p;
-                        remoteLogger->callAppenders(event, p);
-                    }
-                } catch (log4cxx::ext::SmallBufferException& e) { // 무시
-                    LOG4CXX_WARN(serverLogger(), e.what());
-                    break;
-                } catch (log4cxx::ext::InvalidBufferException& e) { // 종료
-                    LOG4CXX_ERROR(serverLogger(), e.what());
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-private:
-    SOCKET m_Socket;
-    mutable bool m_Start;
-    mutable std::vector<char> m_ByteBuf;
-}; // class log4cxxClient 
-
 
 int set_nonblock(SOCKET fd)
 {
@@ -130,7 +44,7 @@ int set_nonblock(SOCKET fd)
 #endif
 }
 
-SOCKET maxSocketId(SOCKET serverSocket, const std::set<log4cxxClient>& clientSockets)
+SOCKET maxSocketId(SOCKET serverSocket, const std::set<log4cxx::ext::socket::Client>& clientSockets)
 {
     if (clientSockets.empty()) {
         return serverSocket;
@@ -196,8 +110,6 @@ int main(int argc, char* argv[])
     std::string filePath = exeDir + "log4cxxSelectSocketServer.conf";
     log4cxx::PropertyConfigurator::configure(log4cxx::File(filePath));
 
-
-
     printf("run log4cxxSelectSocketServer\n");
 
     log4cxx::ext::socket::Init();
@@ -208,7 +120,8 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    std::set<log4cxxClient> clientSockets;
+    log4cxx::ext::socket::Client::setLogger(SERVER_LOGGER);
+    std::set<log4cxx::ext::socket::Client> clientSockets;
 
     fd_set fds;
 
@@ -234,6 +147,9 @@ int main(int argc, char* argv[])
         while (it != clientSockets.end()) {
             SOCKET sock = *it;
             if (FD_ISSET(sock, &fds)) {
+                //
+                eventCount--;
+
                 std::array<char, kReadBufferSize> buf;
                 //int nRead = recv(sock, buf.data(), kReadBufferSize, MSG_NOSIGNAL);
                 int nRead = recv(sock, buf.data(), kReadBufferSize, 0);
@@ -276,29 +192,29 @@ int main(int argc, char* argv[])
                     printf("client_fd[%d], clientCount[%d] : resultBytes = %d, 클라이언트의 접속이 끊겨 소켓을 종료한다.\n", sock, (int)clientSockets.size(), nRead);
 					break;
 				} else { // 클라이언트 데이터 수신됨
-                    (*it).forceLog(buf, nRead);
+                    (*it).forceLog(&buf[0], nRead);
                     ++it;
                     //
                     printf("client_fd[%d] : resultBytes = %d, 클라이언트 데이터 수신됨\n", sock, nRead);
 				}
-
-                eventCount--;
 #endif
             } else {
                 ++it;
             }
         }
         if (FD_ISSET(serverSocket, &fds)) {
+            //
+            eventCount--;
+
             int sock = accept(serverSocket, 0, 0);
             if (sock == -1) {
                 std::cerr << "accept error\n";
                 return -1;
             }
             set_nonblock(sock);
-            clientSockets.insert(sock);
+            clientSockets.emplace(sock);
             //
             printf("Client Accept client_fd[%d], clientCount[%d]\n", sock, (int)clientSockets.size());
-            eventCount--;
         }
 
         printf("처리되지 않은 eventCount = %d\n", eventCount);
