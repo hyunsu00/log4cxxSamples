@@ -70,6 +70,10 @@ add_custom_command(
 message(STATUS "\${CMAKE_COMMAND} = ${CMAKE_COMMAND}")
 
 ###
+# C++ 11 사용
+SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11")
+
+###
 # 인스톨
 install(TARGETS ${PROJECT_NAME} DESTINATION ${PROJECT_NAME})
 install(FILES "${PROJECT_SOURCE_DIR}/log4cxxSelectSocketServer.conf" DESTINATION ${PROJECT_NAME})
