@@ -36,6 +36,9 @@ void runServer(int port_num) {
         }
     };
 
+    log4cxx::ext::socket::Client::setLogger(SERVER_LOGGER);
+    std::set<log4cxx::ext::socket::Client> clientSockets;
+
     // 소켓 생성
     SOCKET serverSocket = log4cxx::ext::socket::Create(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (serverSocket == INVALID_SOCKET) {
@@ -43,21 +46,11 @@ void runServer(int port_num) {
         return;
     }
 
-    struct sockaddr_in serverAddr;
-    memset(&serverAddr, 0x00, sizeof(serverAddr));
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); // 소켓 주소 자동 할당
-    serverAddr.sin_port = htons(port_num);			// 서버 포트 설정
-
-    log4cxx::ext::socket::Client::setLogger(SERVER_LOGGER);
-    std::set<log4cxx::ext::socket::Client> clientSockets;
-
-    // 옵션 플래그
+    // 소켓 옵션 설정.
+    // Option -> SO_REUSEADDR : 비정상 종료시 해당 포트 재사용 가능하도록 설정
     int option = 1;
-
-    // 소켓 바인딩
-    if (bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
-        LOG4CXX_FATAL(sLogger, LOG4CXX_STR("바인딩 실패."));
+    if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&option, sizeof(option)) < 0) {
+        LOG4CXX_FATAL(sLogger, LOG4CXX_STR("소켓옵션(SO_REUSEADDR) 실패."));
         goto CLEAN_UP;
     }
 
@@ -67,9 +60,15 @@ void runServer(int port_num) {
         goto CLEAN_UP;
     }
 
-    // 소켓 옵션 설정 (SO_REUSEADDR : 비정상 종료시 해당 포트 재사용 가능하도록 설정)
-    if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&option, sizeof(option)) < 0) {
-        LOG4CXX_FATAL(sLogger, LOG4CXX_STR("소켓옵션(SO_REUSEADDR) 실패."));
+    struct sockaddr_in serverAddr;
+    memset(&serverAddr, 0x00, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); // 소켓 주소 자동 할당
+    serverAddr.sin_port = htons(port_num);			// 서버 포트 설정
+
+    // 소켓 바인딩
+    if (bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
+        LOG4CXX_FATAL(sLogger, LOG4CXX_STR("바인딩 실패."));
         goto CLEAN_UP;
     }
 
@@ -149,13 +148,11 @@ void runServer(int port_num) {
                         //
                         LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [clientCount = ") << clientSockets.size() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
 					}
-					break;
 				} else if (recvBytes == 0) { // 클라이언트 접속 끊김
                     log4cxx::ext::socket::Close(clientSocket);
                     it = clientSockets.erase(it);
                     //
                     LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [clientCount = ") << clientSockets.size() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 클라이언트의 접속이 끊겨 소켓을 종료한다."));
-					break;
 				} else { // 클라이언트 데이터 수신됨
                     bool result = (*it).forceLog(&buf[0], recvBytes);
                     LOG4CXX_ASSERT(sLogger, result, LOG4CXX_STR("(*it).forceLog() Failed"));
@@ -183,16 +180,16 @@ void runServer(int port_num) {
             SOCKET clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddr, (socklen_t*)&len);
             if (clientSocket < 0) {
                 LOG4CXX_FATAL(sLogger, LOG4CXX_STR("accept 시도 실패."));
-                break;
+                continue;
             }
-            clientSockets.emplace(clientSocket);
-
             // 논블록킹 소켓 설정
             if (log4cxx::ext::socket::setNonblock(clientSocket) < 0) {
+                log4cxx::ext::socket::Close(clientSocket);
                 LOG4CXX_FATAL(sLogger, LOG4CXX_STR("논블로킹 소켓 설정 실패."));
-                break;
+                continue;
             }
 
+            clientSockets.emplace(clientSocket);
             std::string clientInfo = log4cxx::ext::socket::getClientInfo(clientAddr);
             LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 접속 - ") << clientInfo.c_str());
         }
@@ -202,9 +199,7 @@ void runServer(int port_num) {
     } // while
 
 CLEAN_UP:
-    auto it = clientSockets.begin();
-    while (it != clientSockets.end()) {
-        SOCKET clientSocket = *it;
+    for (auto& clientSocket : clientSockets) {
         log4cxx::ext::socket::Close(clientSocket);
     }
     log4cxx::ext::socket::Close(serverSocket);
