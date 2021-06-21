@@ -91,62 +91,61 @@ void runServer(int port_num) {
             LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("select() failed : eventCount = ") << eventCount << LOG4CXX_STR(", select()함수가 실패하여 프로그램을 종료한다."));
             break;
         }
-        LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("select() : eventCount = ") << eventCount);
+        LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("select() succeeded : eventCount = ") << eventCount);
 
         auto it = clientSockets.begin();
         while (it != clientSockets.end()) {
-            SOCKET sock = *it;
-            if (FD_ISSET(sock, &fds)) {
+            SOCKET clientSocket = *it;
+            if (FD_ISSET(clientSocket, &fds)) {
                 //
                 eventCount--;
 
+                std::string clientInfo = log4cxx::ext::socket::getClientInfo(clientSocket);
                 std::array<char, DEFAULT_BUFFER_LEN> buf;
-                //int nRead = recv(sock, buf.data(), kReadBufferSize, MSG_NOSIGNAL);
-                int nRead = recv(sock, buf.data(), DEFAULT_BUFFER_LEN, 0);
+                //int recvBytes = recv(sock, buf.data(), kReadBufferSize, MSG_NOSIGNAL);
+                int recvBytes = recv(clientSocket, buf.data(), DEFAULT_BUFFER_LEN, 0);
 #if 0                
-                if (nRead <= 0 && errno != EAGAIN) {
-                    shutdown(sock, SHUT_RDWR);
-                    close(sock);
+                if (recvBytes <= 0 && errno != EWOULDBLOCK) {
+                    shutdown(clientSocket, SHUT_RDWR);
+                    close(clientSocket);
                     it = clientSockets.erase(it);
                     //
-                    printf("client_fd[%d], clientCount[%d] : resultBytes = %d, recv()함수가 실패하여 소켓을 종료한다.\n", sock, (int)clientSockets.size(), nRead);
-                } else if (nRead > 0) {
+                    LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [clientCount = ") << clientSockets.size() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
+                } else if (recvBytes > 0) {
                     ++it;
                     //
-                    printf("client_fd[%d] : resultBytes = %d, 클라이언트 데이터 수신됨\n", sock, nRead);
+                    LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 클라이언트 데이터 수신됨"));
                 } else {
                     ++it;
-                    printf("client_fd[%d] : resultBytes = %d, read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)\n", sock, nRead);
+                    LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)"));
                 }
-                eventCount--;
 #else
-                if (nRead < 0) { // 에러
+                if (recvBytes < 0) { // 에러
 					switch (errno)
 					{
 					case EWOULDBLOCK: // read 버퍼가 비어있음
                         ++it;
                         //
-                        printf("client_fd[%d] : resultBytes = %d, read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)\n", sock, nRead);
+                        LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)"));
 						break;
 					default:
-                        log4cxx::ext::socket::Close(sock);
+                        log4cxx::ext::socket::Close(clientSocket);
                         it = clientSockets.erase(it);
                         //
-                        printf("client_fd[%d], clientCount[%d] : resultBytes = %d, read()함수가 실패하여 소켓을 종료한다. (error = %d)\n", sock, (int)clientSockets.size(), nRead, errno);
-                        //LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 종료 - ") << clientInfo.c_str());
+                        LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [clientCount = ") << clientSockets.size() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
 					}
 					break;
-				} else if (nRead == 0) { // 클라이언트 접속 끊김
-                    log4cxx::ext::socket::Close(sock);
+				} else if (recvBytes == 0) { // 클라이언트 접속 끊김
+                    log4cxx::ext::socket::Close(clientSocket);
                     it = clientSockets.erase(it);
                     //
-                    printf("client_fd[%d], clientCount[%d] : resultBytes = %d, 클라이언트의 접속이 끊겨 소켓을 종료한다.\n", sock, (int)clientSockets.size(), nRead);
+                    LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [clientCount = ") << clientSockets.size() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 클라이언트의 접속이 끊겨 소켓을 종료한다."));
 					break;
 				} else { // 클라이언트 데이터 수신됨
-                    (*it).forceLog(&buf[0], nRead);
+                    (*it).forceLog(&buf[0], recvBytes);
                     ++it;
                     //
-                    printf("client_fd[%d] : resultBytes = %d, 클라이언트 데이터 수신됨\n", sock, nRead);
+                    LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 클라이언트 데이터 수신됨"));
 				}
 #endif
             } else {
@@ -158,20 +157,21 @@ void runServer(int port_num) {
             //
             eventCount--;
 
-            int sock = accept(serverSocket, 0, 0);
-            if (sock == -1) {
+            struct sockaddr_in clientAddr;
+            int len = sizeof(clientAddr);
+            SOCKET clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddr, (socklen_t*)&len);
+            if (clientSocket < 0) {
                 LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("accept 시도 실패."));
                 break;
             }
-            log4cxx::ext::socket::setNonblock(sock);
-            clientSockets.emplace(sock);
-            //
-            printf("Client Accept client_fd[%d], clientCount[%d]\n", sock, (int)clientSockets.size());
+            log4cxx::ext::socket::setNonblock(clientSocket);
+            clientSockets.emplace(clientSocket);
 
-            //LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 접속 - ") << clientInfo.c_str());
+            std::string clientInfo = log4cxx::ext::socket::getClientInfo(clientAddr);
+            LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 접속 - ") << clientInfo.c_str());
         }
 
-        LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("처리되지 않은 eventCount = ") << eventCount);
+        LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("select() unprocessed : eventCount = ") << eventCount);
 
     } // while
 };

@@ -64,6 +64,21 @@ namespace log4cxx { namespace ext { namespace socket {
 		return clientInfo;
 	}
 
+	inline std::string getClientInfo(SOCKET socket)
+	{
+		struct sockaddr_in clientAddr;
+#ifdef _WIN32
+		int len = sizeof(clientAddr);
+#else
+		socklen_t len = sizeof(clientAddr);
+#endif
+		if (getsockname(socket, (struct sockaddr*)&clientAddr, &len) < 0) {
+			return std::string();
+		}
+
+		return getClientInfo(clientAddr);
+	}
+
 	inline int setNonblock(SOCKET socket)
 	{
 #ifdef _WIN32
