@@ -209,8 +209,8 @@ auto runServer = [](int port_num) -> void {
 				int readBytes = 0;
 				int ioResult = ioctl(client_fd, FIONREAD, &readBytes);
 				if (ioResult < 0) { // 에러
-					close(client_fd);
 					epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+					close(client_fd);
 					delete pClient;
 
 					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [readBytes = ") << readBytes << LOG4CXX_STR("] , [ioResult = ") << ioResult << LOG4CXX_STR(" ] ioctl()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
@@ -226,16 +226,16 @@ auto runServer = [](int port_num) -> void {
 							break;
 						default:
 							{
-								close(client_fd);
 								epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+								close(client_fd);
 								delete pClient;
 
 								LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR("] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
 							}
 						}
 					} else if (resultBytes == 0) { // 클라이언트 접속 끊김
-						close(client_fd);
 						epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+						close(client_fd);
 						delete pClient;
 
 						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트의 접속이 끊겨 소켓을 종료한다."));
@@ -247,8 +247,8 @@ auto runServer = [](int port_num) -> void {
 					}
 				} else {
 					LOG4CXX_ASSERT(sLogger, false, LOG4CXX_STR("이곳은 들어올수 없다."));
-					close(client_fd);
 					epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+					close(client_fd);
 					delete pClient;
 
 					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [readBytes = ") << readBytes << LOG4CXX_STR("] , [ioResult = ") << ioResult << LOG4CXX_STR(" ] ioctl()함수의 반환값이 0보다 커서 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
@@ -265,8 +265,8 @@ auto runServer = [](int port_num) -> void {
 							break;
 						default:
 							{
-								close(client_fd);
 								epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+								close(client_fd);
 								delete pClient;
 
 								LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
@@ -274,8 +274,8 @@ auto runServer = [](int port_num) -> void {
 						}
 						break;
 					} else if (resultBytes == 0) { // 클라이언트 접속 끊김
-						close(client_fd);
 						epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+						close(client_fd);
 						delete pClient;
 
 						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트의 접속이 끊겨 소켓을 종료한다."));
@@ -298,15 +298,15 @@ auto runServer = [](int port_num) -> void {
 						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)"));
 						break;
 					default:
-						close(client_fd);
 						epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+						close(client_fd);
 						delete pClient;
 
 						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
 					}
 				} else if (resultBytes == 0) { // 클라이언트 접속 끊김
-					close(client_fd);
 					epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+					close(client_fd);
 					delete pClient;
 
 					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트의 접속이 끊겨 소켓을 종료한다."));
