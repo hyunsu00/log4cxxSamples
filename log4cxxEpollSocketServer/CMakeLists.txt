@@ -56,7 +56,7 @@ message(STATUS "\${SOCKET_FILES} = ${SOCKET_FILES}")
 
 ###
 # 이 프로젝트의 실행 파일에 소스를 추가합니다.
-add_executable (${PROJECT_NAME} "log4cxxEpollSocketServer.cpp" ${LOADER_FILES} ${SOCKET_FILES})
+add_executable (${PROJECT_NAME} "BuildConfig.h" "log4cxxEpollSocketServer.cpp" ${LOADER_FILES} ${SOCKET_FILES})
 
 ###
 # 실행파일 생성후에 지정

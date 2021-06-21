@@ -1,25 +1,24 @@
 ﻿// log4cxxEpollSocketServer.cpp : 애플리케이션의 진입점을 정의합니다.
 //
+#include "BuildConfig.h"
 #include <array>
-#include <cstdio>
-#include <iostream>
-#include <string.h>
-#include <fcntl.h>
+#include <set>
 
 #include <sys/unistd.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
+
 #include <sys/ioctl.h> // ioctl
-#include <assert.h> // assert
-
-
 #include <string.h> // strdup
 #include <libgen.h> // dirname
+
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
 #include <log4cxx/helpers/loglog.h>		  // log4cxx::helpers::LogLog
 #include "log4cxxSocket.h"
 #include "log4cxxClient.h"
+
 
 #define LISTEN_BACKLOG 15 // 일반적인 connection의 setup은 client가 connect()를 사용하여 connection request를 전송하면 server는 accept()를 사용하여 connection을 받아들입니다.
                           // 그런데 만약 server가 다른 작업을 진행 중이면 accept()를 할 수 없는 경우가 발생하고 이 경우 connection request는 queue에서 대기하는데 backlog는
@@ -36,10 +35,16 @@ namespace {
 	const int DEFAULT_BUFFER_LEN = 8192;
 } // namespace
 
-//#define EDGE_TRIGGER	// 에지 트리거 정의
 auto runServer = [](int port_num) -> void {
 
 	log4cxx::ext::socket::Client::setLogger(SERVER_LOGGER);
+	std::set<log4cxx::ext::socket::Client> clientSockets;
+
+	auto epoll_ctl_del = [&clientSockets](int epoll_fd, int client_fd) {
+		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+		close(client_fd);
+		clientSockets.erase(client_fd);
+	};
 
 	// 소켓 생성
 	int server_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -67,14 +72,14 @@ auto runServer = [](int port_num) -> void {
 	}
 
 	// 소켓 속성 설정
-	struct sockaddr_in mSockAddr;
-	memset(&mSockAddr, 0, sizeof(mSockAddr));
-	mSockAddr.sin_family = AF_INET;
-	mSockAddr.sin_port = htons(port_num);
-	mSockAddr.sin_addr.s_addr = htonl(INADDR_ANY); // INADDR_ANY : 사용가능한 랜카드 IP 사용
+	struct sockaddr_in server_addr;
+	memset(&server_addr, 0, sizeof(server_addr));
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_port = htons(port_num);
+	server_addr.sin_addr.s_addr = htonl(INADDR_ANY); // INADDR_ANY : 사용가능한 랜카드 IP 사용
 
 	// 소켓 속성과 소켓 fd 연결
-	if (bind(server_fd, (struct sockaddr*)&mSockAddr, sizeof(mSockAddr)) < 0) {
+	if (bind(server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
 		close(server_fd);
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("바인딩 실패."));
 		return;
@@ -150,7 +155,7 @@ auto runServer = [](int port_num) -> void {
 			goto CLEAN_UP;
 		}
 
-		LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("epoll_wait() succeeded : eventCount = ") << event_count);
+		LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("epoll_wait() succeeded : event_count = ") << event_count);
 		for (int i = 0; i < event_count; i++) {
 			// Accept
 			if (epoll_events[i].data.fd == server_fd) {
@@ -181,37 +186,31 @@ auto runServer = [](int port_num) -> void {
 				// 레벨 트리거(Level Trigger, LT)
 				client_event.events = EPOLLIN;
 #endif
-				//client_event.data.fd = client_fd;
-				//
-				client_event.data.ptr = new log4cxx::ext::socket::Client(client_fd);
+				client_event.data.fd = client_fd;
 
 				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &client_event) < 0) {
 					close(client_fd);
 					LOG4CXX_FATAL(sLogger, LOG4CXX_STR("epoll_ctl() 함수 실패"));
 					continue;
 				}
+				clientSockets.emplace(client_fd);
 
 				std::string client_info = log4cxx::ext::socket::getClientInfo(client_addr);
 				LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 접속 - ") << client_info.c_str());
 
 			} else {
 				// epoll에 등록 된 클라이언트들의 send data 처리
-				//int client_fd = epoll_events[i].data.fd;
-				//
-				log4cxx::ext::socket::Client* pClient = (log4cxx::ext::socket::Client*)epoll_events[i].data.ptr;
-				int client_fd = *pClient;
+				int client_fd = epoll_events[i].data.fd;
 
 				std::string client_info = log4cxx::ext::socket::getClientInfo(client_fd);
 
 #ifdef EDGE_TRIGGER 
 				// 엣지 트리거 모드
-	#if 0
+	#if 1
 				int readBytes = 0;
 				int ioResult = ioctl(client_fd, FIONREAD, &readBytes);
 				if (ioResult < 0) { // 에러
-					epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
-					close(client_fd);
-					delete pClient;
+					epoll_ctl_del(epoll_fd, client_fd);
 
 					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [readBytes = ") << readBytes << LOG4CXX_STR("] , [ioResult = ") << ioResult << LOG4CXX_STR(" ] ioctl()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
 				} else if (ioResult == 0) { // 성공
@@ -226,30 +225,28 @@ auto runServer = [](int port_num) -> void {
 							break;
 						default:
 							{
-								epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
-								close(client_fd);
-								delete pClient;
+								epoll_ctl_del(epoll_fd, client_fd);
 
 								LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR("] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
 							}
 						}
 					} else if (resultBytes == 0) { // 클라이언트 접속 끊김
-						epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
-						close(client_fd);
-						delete pClient;
+						epoll_ctl_del(epoll_fd, client_fd);
 
 						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트의 접속이 끊겨 소켓을 종료한다."));
 					} else { // 클라이언트 데이터 수신됨
 						LOG4CXX_ASSERT(sLogger, resultBytes == readBytes, LOG4CXX_STR("소켓버퍼의 사이즈 만큼 읽어와야 한다."));
-						pClient->forceLog(&readBuf[0], resultBytes);
+						auto it = clientSockets.find(client_fd);
+						LOG4CXX_ASSERT(sLogger, it != clientSockets.end(), LOG4CXX_STR("clientSockets.find() != clientSockets.end()"));
+						if (it != clientSockets.end()) {
+							it->forceLog(&readBuf[0], resultBytes);
+						}
 
 						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트 데이터 수신됨"));
 					}
 				} else {
 					LOG4CXX_ASSERT(sLogger, false, LOG4CXX_STR("이곳은 들어올수 없다."));
-					epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
-					close(client_fd);
-					delete pClient;
+					epoll_ctl_del(epoll_fd, client_fd);
 
 					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [readBytes = ") << readBytes << LOG4CXX_STR("] , [ioResult = ") << ioResult << LOG4CXX_STR(" ] ioctl()함수의 반환값이 0보다 커서 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
 				} // if		
@@ -265,23 +262,23 @@ auto runServer = [](int port_num) -> void {
 							break;
 						default:
 							{
-								epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
-								close(client_fd);
-								delete pClient;
+								epoll_ctl_del(epoll_fd, client_fd);
 
 								LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
 							}
 						}
 						break;
 					} else if (resultBytes == 0) { // 클라이언트 접속 끊김
-						epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
-						close(client_fd);
-						delete pClient;
+						epoll_ctl_del(epoll_fd, client_fd);
 
 						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트의 접속이 끊겨 소켓을 종료한다."));
 						break;
 					} else { // 클라이언트 데이터 수신됨
-						pClient->forceLog(&readBuf[0], resultBytes);
+						auto it = clientSockets.find(client_fd);
+						LOG4CXX_ASSERT(sLogger, it != clientSockets.end(), LOG4CXX_STR("clientSockets.find() != clientSockets.end()"));
+						if (it != clientSockets.end()) {
+							it->forceLog(&readBuf[0], resultBytes);
+						}
 
 						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트 데이터 수신됨"));
 					} // if
@@ -298,20 +295,20 @@ auto runServer = [](int port_num) -> void {
 						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)"));
 						break;
 					default:
-						epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
-						close(client_fd);
-						delete pClient;
+						epoll_ctl_del(epoll_fd, client_fd);
 
 						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
 					}
 				} else if (resultBytes == 0) { // 클라이언트 접속 끊김
-					epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
-					close(client_fd);
-					delete pClient;
+					epoll_ctl_del(epoll_fd, client_fd);
 
 					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트의 접속이 끊겨 소켓을 종료한다."));
 				} else { // 클라이언트 데이터 수신됨
-					pClient->forceLog(&readBuf[0], resultBytes);
+					auto it = clientSockets.find(client_fd);
+					LOG4CXX_ASSERT(sLogger, it != clientSockets.end(), LOG4CXX_STR("clientSockets.find() != clientSockets.end()"));
+					if (it != clientSockets.end()) {
+						it->forceLog(&readBuf[0], resultBytes);
+					}
 
 					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트 데이터 수신됨"));
 				} // if
@@ -321,6 +318,9 @@ auto runServer = [](int port_num) -> void {
 	} // while
 
 CLEAN_UP:
+	for (auto& clientSocket : clientSockets) {
+		log4cxx::ext::socket::Close(clientSocket);
+	}
 	close(server_fd);
 	close(epoll_fd);
 };
