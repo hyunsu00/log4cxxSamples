@@ -1,6 +1,6 @@
 ﻿// log4cxxEpollSocketServer.cpp : 애플리케이션의 진입점을 정의합니다.
 //
-
+#include <array>
 #include <cstdio>
 #include <iostream>
 #include <string.h>
@@ -13,7 +13,7 @@
 #include <sys/ioctl.h> // ioctl
 #include <assert.h> // assert
 
-#include "ObjectLoader.h"
+
 #include <string.h> // strdup
 #include <libgen.h> // dirname
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
@@ -27,72 +27,71 @@
                           // 보통 5정도의 value를 사용하며 만약 아주 큰 값을 사용하면 kernel의 resource를 소모합니다.
                           // 따라서, 접속 가능한 클라이언트의 최대수가 아닌 연결을 기다리는 클라이언트의 최대수입니다
 
+const char* const SERVER_LOGGER = "serverLogger";
+static log4cxx::LoggerPtr sLogger = log4cxx::Logger::getRootLogger();
+using LogLog = log4cxx::helpers::LogLog;
+
+namespace {
+	const int DEFAULT_PORT = 9988;
+	const int DEFAULT_BUFFER_LEN = 8192;
+} // namespace
+
 //#define EDGE_TRIGGER	// 에지 트리거 정의
-int main(int argc, char *argv[])
-{
-	char *exePath = strdup(argv[0]);
-	std::string exeDir = dirname(exePath);
-	free(exePath);
-	exeDir += "/";
-	std::string filePath = exeDir + "log4cxxEpollSocketServer.conf";
-	log4cxx::PropertyConfigurator::configure(log4cxx::File(filePath));
-
-	printf("run log4cxxEpollSocketServer\n");
-	int error_check;
-
+auto runServer = [](int port_num) -> void {
 	// 소켓 생성
-	int server_fd = socket(PF_INET, SOCK_STREAM, 0);
+	int server_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (server_fd < 0) {
-		printf("socket() error\n");
-		return 0;
+		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("소켓을 못열었다."));
+		return;
 	}
 
 	// server fd Non-Blocking Socket으로 설정. Edge Trigger 사용하기 위해 설정.
 	int flags = fcntl(server_fd, F_GETFL);
 	flags |= O_NONBLOCK;
 	if (fcntl(server_fd, F_SETFL, flags) < 0) {
-		printf("server_fd fcntl() error\n");
-		return 0;
+		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("논블로킹 소켓 설정 실패."));
+		close(server_fd);
+		return;
 	}
 
 	// 소켓 옵션 설정.
 	// Option -> SO_REUSEADDR : 비정상 종료시 해당 포트 재사용 가능하도록 설정
-	int option = true;
-	error_check = setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
-	if (error_check < 0) {
-		printf("setsockopt() error[%d]\n", error_check);
+	int option = 1;
+	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0) {
+		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("소켓옵션(SO_REUSEADDR) 실패."));
 		close(server_fd);
-		return 0;
+		return;
 	}
 
 	// 소켓 속성 설정
 	struct sockaddr_in mSockAddr;
 	memset(&mSockAddr, 0, sizeof(mSockAddr));
 	mSockAddr.sin_family = AF_INET;
-	mSockAddr.sin_port = htons(9988);
+	mSockAddr.sin_port = htons(port_num);
 	mSockAddr.sin_addr.s_addr = htonl(INADDR_ANY); // INADDR_ANY : 사용가능한 랜카드 IP 사용
 
 	// 소켓 속성과 소켓 fd 연결
-	error_check = bind(server_fd, (struct sockaddr *)&mSockAddr, sizeof(mSockAddr));
-	if (error_check < 0) {
-		printf("bind() error[%d]\n", error_check);
+	if (bind(server_fd, (struct sockaddr*)&mSockAddr, sizeof(mSockAddr)) < 0) {
+		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("바인딩 실패."));
 		close(server_fd);
-		return 0;
+		return;
 	}
 
 	// 응답 대기
 	if (listen(server_fd, LISTEN_BACKLOG) < 0) {
-		printf("listen() error\n");
+		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("리슨 실패."));
 		close(server_fd);
-		return 0;
+		return;
 	}
+	LOG4CXX_INFO(sLogger, LOG4CXX_STR("포트 = ") << port_num);
+	LOG4CXX_INFO(sLogger, LOG4CXX_STR("클라이언트 접속 요청 대기중..."));
 
 	// Epoll fd 생성
 	int epoll_fd = epoll_create(1024); // size 만큼의 커널 폴링 공간을 만드는 함수
 	if (epoll_fd < 0) {
-		printf("epoll_create() error\n");
+		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("epoll_create() 함수 실패"));
 		close(server_fd);
-		return 0;
+		return;
 	}
 
 	// server fd, epoll에 등록
@@ -103,26 +102,26 @@ int main(int argc, char *argv[])
 	// 에지트리거에서는 600바이트만 읽었다 하더라도 더 이상 이벤트가 발생하지 않습니다.왜냐하면 읽은 시점을 기준으로
 	// 보면 더이상의 상태 변화가 없기 때문이죠..LT 또는 ET는 쉽게 옵션으로 설정 가능합니다.
 	// 참고로 select / poll은 레벨트리거만 지원합니다.
-	struct epoll_event events;
+	struct epoll_event server_event;
 #ifdef EDGE_TRIGGER 
 	// 에지 트리거(Edge Trigger, ET)
-	events.events = EPOLLIN | EPOLLET;
+	server_event.events = EPOLLIN | EPOLLET;
 #else
 	// 레벨 트리거(Level Trigger, LT)
-	events.events = EPOLLIN;
+	server_event.events = EPOLLIN;
 #endif
-	events.data.fd = server_fd;
+	server_event.data.fd = server_fd;
 
 	/* server events set(read for accept) */
 	// epoll_ctl : epoll이 관심을 가져주기 바라는 FD와 그 FD에서 발생하는 event를 등록하는 인터페이스.
 	// EPOLL_CTL_ADD : 관심있는 파일디스크립트 추가
 	// EPOLL_CTL_MOD : 기존 파일 디스크립터를 수정
 	// EPOLL_CTL_DEL : 기존 파일 디스크립터를 관심 목록에서 삭제
-	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, server_fd, &events) < 0) {
-		printf("epoll_ctl() error\n");
+	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, server_fd, &server_event) < 0) {
+		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("epoll_ctl() 함수 실패"));
 		close(server_fd);
 		close(epoll_fd);
-		return 0;
+		return;
 	}
 
 	// epoll wait.
@@ -132,69 +131,65 @@ int main(int argc, char *argv[])
 	// timeout  -1      --> 영원히 사건 기다림(blocking)
 	//           0      --> 사건 기다리지 않음.
 	//           0 < n  --> (n)ms 만큼 대기
-	int MAX_EVENTS = 1024;
+	const int MAX_EVENTS = 1024;
 	struct epoll_event epoll_events[MAX_EVENTS];
 	int event_count;
 	int timeout = -1;
 
-	int clientCount = 0;
 	while (true) {
 		event_count = epoll_wait(epoll_fd, epoll_events, MAX_EVENTS, timeout);
-		printf("event count[%d]\n", event_count);
 
 		if (event_count < 0) {
 			if (errno == EINTR) { // 신호처리기(gdb)에 의해 중단됨
 				continue;
 			}
-
-			printf("epoll_wait() error [%d]\n", event_count);
-			return 0;
+			LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("epoll_wait() failed : event_count = ") << event_count);
+			return;
 		}
 
+		LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("epoll_wait() succeeded : eventCount = ") << event_count);
 		for (int i = 0; i < event_count; i++) {
 			// Accept
 			if (epoll_events[i].data.fd == server_fd) {
-				int client_fd;
-				int client_len;
-				struct sockaddr_in client_addr;
 
-				printf("User Accept\n");
-				client_len = sizeof(client_addr);
-				client_fd = accept(server_fd, (struct sockaddr *)&client_addr, (socklen_t *)&client_len);
+				struct sockaddr_in client_addr;
+				int client_len = sizeof(client_addr);
+				int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, (socklen_t *)&client_len);
+				if (client_fd < 0) {
+					LOG4CXX_FATAL(sLogger, LOG4CXX_STR("accept 시도 실패."));
+					continue;
+				}
 
 				// client fd Non-Blocking Socket으로 설정. Edge Trigger 사용하기 위해 설정.
 				int flags = fcntl(client_fd, F_GETFL);
 				flags |= O_NONBLOCK;
 				if (fcntl(client_fd, F_SETFL, flags) < 0) {
-					printf("client_fd[%d] fcntl() error\n", client_fd);
-					return 0;
-				}
-
-				if (client_fd < 0) {
-					printf("accept() error [%d]\n", client_fd);
-					continue;
+					LOG4CXX_FATAL(sLogger, LOG4CXX_STR("논블로킹 소켓 설정 실패."));
+					return;
 				}
 
 				// 클라이언트 fd, epoll 에 등록
-				struct epoll_event events;
+				struct epoll_event client_event;
 #ifdef EDGE_TRIGGER 
 				// 에지 트리거(Edge Trigger, ET)
-				events.events = EPOLLIN | EPOLLET;
+				client_event.events = EPOLLIN | EPOLLET;
 #else
 				// 레벨 트리거(Level Trigger, LT)
-				events.events = EPOLLIN;
+				client_event.events = EPOLLIN;
 #endif
-				//events.data.fd = client_fd;
+				//client_event.data.fd = client_fd;
 				//
-				events.data.ptr = new log4cxx::ext::socket::Client(client_fd);
+				client_event.data.ptr = new log4cxx::ext::socket::Client(client_fd);
 
-				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &events) < 0) {
-					printf("client epoll_ctl() error\n");
+				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &client_event) < 0) {
+					LOG4CXX_FATAL(sLogger, LOG4CXX_STR("epoll_ctl() 함수 실패"));
 					close(client_fd);
 					continue;
 				}
 
-				printf("Client Accept client_fd[%d], clientCount[%d]\n", client_fd, ++clientCount);
+				std::string client_info = log4cxx::ext::socket::getClientInfo(client_addr);
+				LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 접속 - ") << client_info.c_str());
+
 			} else {
 				// epoll에 등록 된 클라이언트들의 send data 처리
 				//int client_fd = epoll_events[i].data.fd;
@@ -202,13 +197,15 @@ int main(int argc, char *argv[])
 				log4cxx::ext::socket::Client* pClient = (log4cxx::ext::socket::Client*)epoll_events[i].data.ptr;
 				int client_fd = *pClient;
 
+				std::string client_info = log4cxx::ext::socket::getClientInfo(client_fd);
+
 #ifdef EDGE_TRIGGER 
 				// 엣지 트리거 모드
 	#if 1
 				int readBytes = 0;
 				int result = ioctl(client_fd, FIONREAD, &readBytes);
 				if (result < 0) { // 에러
-					printf("client_fd[%d] : readBytes = %d, result = %d, ioctl()함수가 실패하여 소켓을 종료한다. (errno = %d)\n", client_fd, readBytes, result, errno);
+					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [readBytes = ") << readBytes << LOG4CXX_STR("] , [result = ") << result << LOG4CXX_STR(" ] ioctl()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
 					close(client_fd);
 					epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
 				} else if (result == 0) { // 성공
@@ -219,69 +216,70 @@ int main(int argc, char *argv[])
 						switch (errno)
 						{
 						case EWOULDBLOCK: // read 버퍼가 비어있음
-							printf("client_fd[%d] : resultBytes = %d, read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)\n", client_fd, resultBytes);
+							LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)"));
 							break;
 						default:
-							printf("client_fd[%d] : resultBytes = %d, read()함수가 실패하여 소켓을 종료한다. (error = %d)\n", client_fd, resultBytes, errno);
+							LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR("] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
 							close(client_fd);
 							epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
 						}
 						break;
 					} else if (resultBytes == 0) { // 클라이언트 접속 끊김
-						printf("client_fd[%d] : resultBytes = %d, 클라이언트의 접속이 끊겨 소켓을 종료한다.\n", client_fd, resultBytes);
+						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트의 접속이 끊겨 소켓을 종료한다."));
 						close(client_fd);
 						epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
 						break;
 					} else { // 클라이언트 데이터 수신됨
-						assert(resultBytes == readBytes && "소켓버퍼의 사이즈 만큼 읽어와야 한다.");
-						printf("client_fd[%d] : resultBytes = %d, 클라이언트 데이터 수신됨\n", client_fd, resultBytes);
+						LOG4CXX_ASSERT(sLogger, resultBytes == readBytes, LOG4CXX_STR("소켓버퍼의 사이즈 만큼 읽어와야 한다."));
+
+						pClient->forceLog(&readBuf[0], resultBytes);
+						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트 데이터 수신됨"));
 					}
 				} else {
-					assert(!"이곳은 들어올수 없다.");
-					printf("client_fd[%d] : readByte = %d, result = %d, ioctl()함수의 반환값이 0보다 커서 소켓을 종료한다.\n", client_fd, readBytes, result);
+					LOG4CXX_ASSERT(sLogger, false, LOG4CXX_STR("이곳은 들어올수 없다."));
+					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [readBytes = ") << readBytes << LOG4CXX_STR("] , [result = ") << result << LOG4CXX_STR(" ] ioctl()함수의 반환값이 0보다 커서 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
 					close(client_fd);
 					epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
-				}		
+				} // if		
 	#else
-				const size_t BUFFER_LEN = 4096;
-				std::vector<char> readBuf(BUFFER_LEN, 0);
+				std::array<char, DEFAULT_BUFFER_LEN> readBuf;
 				while (true) {
-					int resultBytes = read(client_fd, &readBuf[0], readBuf.size());
+					int resultBytes = read(client_fd, readBuf.data(), DEFAULT_BUFFER_LEN);
 					if (resultBytes < 0) { // 에러
 						switch (errno)
 						{
 						case EWOULDBLOCK: // read 버퍼가 비어있음
-							printf("client_fd[%d] : resultBytes = %d, read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)\n", client_fd, resultBytes);
+							LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)"));
 							break;
 						default:
-							printf("client_fd[%d] : resultBytes = %d, read()함수가 실패하여 소켓을 종료한다. (error = %d)\n", client_fd, resultBytes, errno);
+							LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
 							close(client_fd);
 							epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
 						}
 						break;
 					} else if (resultBytes == 0) { // 클라이언트 접속 끊김
-						printf("client_fd[%d] : resultBytes = %d, 클라이언트의 접속이 끊겨 소켓을 종료한다.\n", client_fd, resultBytes);
+						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트의 접속이 끊겨 소켓을 종료한다."));
 						close(client_fd);
 						epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
 						break;
 					} else { // 클라이언트 데이터 수신됨
-						printf("client_fd[%d] : resultBytes = %d, 클라이언트 데이터 수신됨\n", client_fd, resultBytes);
-					}
-				} 
+						pClient->forceLog(&readBuf[0], resultBytes);
+						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트 데이터 수신됨"));
+					} // if
+				} // while
 	#endif
 #else
 				// 레벨 트리거 코드
-				const size_t readBytes = 4096;
-				std::vector<char> readBuf(readBytes, 0);
-				int resultBytes = read(client_fd, &readBuf[0], readBuf.size());
+				std::array<char, DEFAULT_BUFFER_LEN> readBuf;
+				int resultBytes = read(client_fd, readBuf.data(), DEFAULT_BUFFER_LEN);
 				if (resultBytes < 0) { // 에러
 					switch (errno)
 					{
 					case EWOULDBLOCK: // read 버퍼가 비어있음
-						printf("client_fd[%d] : resultBytes = %d, read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)\n", client_fd, resultBytes);
+						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)"));
 						break;
 					default:
-						printf("client_fd[%d] : resultBytes = %d, read()함수가 실패하여 소켓을 종료한다. (error = %d)\n", client_fd, resultBytes, errno);
+						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
 						close(client_fd);
 						epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
 						//
@@ -289,7 +287,7 @@ int main(int argc, char *argv[])
 					}
 					break;
 				} else if (resultBytes == 0) { // 클라이언트 접속 끊김
-					printf("client_fd[%d] : resultBytes = %d, 클라이언트의 접속이 끊겨 소켓을 종료한다.\n", client_fd, resultBytes);
+					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트의 접속이 끊겨 소켓을 종료한다."));
 					close(client_fd);
 					epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
 					//
@@ -297,10 +295,35 @@ int main(int argc, char *argv[])
 					break;
 				} else { // 클라이언트 데이터 수신됨
 					pClient->forceLog(&readBuf[0], resultBytes);
-					printf("client_fd[%d] : resultBytes = %d, 클라이언트 데이터 수신됨\n", client_fd, resultBytes);
-				}
+					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트 데이터 수신됨"));
+				} // if
 #endif
-			}
-		}
+			} // if
+		} // for
+	} // while
+
+//CLEAN_UP:
+
+};
+
+int main(int argc, char *argv[])
+{
+	setlocale(LC_ALL, "");
+
+	std::string exeDir;
+	{
+		char* exePath = strdup(argv[0]);
+		exeDir = dirname(exePath);
+		free(exePath);
+		exeDir += "/";
 	}
+	std::string filePath = exeDir + "log4cxxEpollSocketServer.conf";
+	log4cxx::PropertyConfigurator::configure(log4cxx::File(filePath));
+	sLogger = log4cxx::Logger::getLogger(SERVER_LOGGER);
+
+	{
+		runServer(DEFAULT_PORT);
+	}
+	
+	return 0;
 }

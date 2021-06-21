@@ -36,6 +36,7 @@ void runServer(int port_num) {
         }
     };
 
+    // 소켓 생성
     SOCKET serverSocket = log4cxx::ext::socket::Create(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (serverSocket == INVALID_SOCKET) {
         LOG4CXX_FATAL(sLogger, LOG4CXX_STR("소켓을 못열었다."));
