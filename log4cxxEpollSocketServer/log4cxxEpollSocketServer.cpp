@@ -17,7 +17,9 @@
 #include <string.h> // strdup
 #include <libgen.h> // dirname
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
-#include <log4cxx/helpers/exception.h>	  // log4cxx::helpers::InstantiationException, log4cxx::helpers::RuntimeException
+#include <log4cxx/helpers/loglog.h>		  // log4cxx::helpers::LogLog
+#include "log4cxxSocket.h"
+#include "log4cxxClient.h"
 
 #define LISTEN_BACKLOG 15 // 일반적인 connection의 setup은 client가 connect()를 사용하여 connection request를 전송하면 server는 accept()를 사용하여 connection을 받아들입니다.
                           // 그런데 만약 server가 다른 작업을 진행 중이면 accept()를 할 수 없는 경우가 발생하고 이 경우 connection request는 queue에서 대기하는데 backlog는
@@ -182,7 +184,9 @@ int main(int argc, char *argv[])
 				// 레벨 트리거(Level Trigger, LT)
 				events.events = EPOLLIN;
 #endif
-				events.data.fd = client_fd;
+				//events.data.fd = client_fd;
+				//
+				events.data.ptr = new log4cxx::ext::socket::Client(client_fd);
 
 				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &events) < 0) {
 					printf("client epoll_ctl() error\n");
@@ -193,7 +197,10 @@ int main(int argc, char *argv[])
 				printf("Client Accept client_fd[%d], clientCount[%d]\n", client_fd, ++clientCount);
 			} else {
 				// epoll에 등록 된 클라이언트들의 send data 처리
-				int client_fd = epoll_events[i].data.fd;
+				//int client_fd = epoll_events[i].data.fd;
+				//
+				log4cxx::ext::socket::Client* pClient = (log4cxx::ext::socket::Client*)epoll_events[i].data.ptr;
+				int client_fd = *pClient;
 
 #ifdef EDGE_TRIGGER 
 				// 엣지 트리거 모드
@@ -277,14 +284,19 @@ int main(int argc, char *argv[])
 						printf("client_fd[%d] : resultBytes = %d, read()함수가 실패하여 소켓을 종료한다. (error = %d)\n", client_fd, resultBytes, errno);
 						close(client_fd);
 						epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+						//
+						delete pClient;
 					}
 					break;
 				} else if (resultBytes == 0) { // 클라이언트 접속 끊김
 					printf("client_fd[%d] : resultBytes = %d, 클라이언트의 접속이 끊겨 소켓을 종료한다.\n", client_fd, resultBytes);
 					close(client_fd);
 					epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+					//
+					delete pClient;
 					break;
 				} else { // 클라이언트 데이터 수신됨
+					pClient->forceLog(&readBuf[0], resultBytes);
 					printf("client_fd[%d] : resultBytes = %d, 클라이언트 데이터 수신됨\n", client_fd, resultBytes);
 				}
 #endif
