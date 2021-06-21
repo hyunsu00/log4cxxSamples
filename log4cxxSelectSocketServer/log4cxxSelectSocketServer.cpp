@@ -57,14 +57,14 @@ void runServer(int port_num) {
         return;
     }
 
-    int ret = log4cxx::ext::socket::setNonblock(serverSocket);
-    if (ret == -1) {
+    // 논블록킹 소켓 설정
+    if (log4cxx::ext::socket::setNonblock(serverSocket) < 0) {
         LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("논블로킹 소켓 설정 실패."));
         return;
     }
 
     // 소켓 리슨
-    if (listen(serverSocket, 5) < 0) {
+    if (listen(serverSocket, SOMAXCONN) < 0) {
         LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("리슨 실패."));
         return;
     }
@@ -107,7 +107,7 @@ void runServer(int port_num) {
 #if 0                
                 if (recvBytes <= 0 && errno != EWOULDBLOCK) {
                     shutdown(clientSocket, SHUT_RDWR);
-                    close(clientSocket);
+                    log4cxx::ext::socket::Close(clientSocket);
                     it = clientSockets.erase(it);
                     //
                     LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [clientCount = ") << clientSockets.size() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
@@ -117,6 +117,7 @@ void runServer(int port_num) {
                     LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 클라이언트 데이터 수신됨"));
                 } else {
                     ++it;
+                    //
                     LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)"));
                 }
 #else
@@ -164,8 +165,13 @@ void runServer(int port_num) {
                 LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("accept 시도 실패."));
                 break;
             }
-            log4cxx::ext::socket::setNonblock(clientSocket);
             clientSockets.emplace(clientSocket);
+
+            // 논블록킹 소켓 설정
+            if (log4cxx::ext::socket::setNonblock(clientSocket) < 0) {
+                LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("논블로킹 소켓 설정 실패."));
+                break;
+            }
 
             std::string clientInfo = log4cxx::ext::socket::getClientInfo(clientAddr);
             LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 접속 - ") << clientInfo.c_str());
@@ -174,6 +180,12 @@ void runServer(int port_num) {
         LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("select() unprocessed : eventCount = ") << eventCount);
 
     } // while
+
+    auto it = clientSockets.begin();
+    while (it != clientSockets.end()) {
+        SOCKET clientSocket = *it;
+        log4cxx::ext::socket::Close(clientSocket);
+    }
 };
 
 int main(int argc, char* argv[])
