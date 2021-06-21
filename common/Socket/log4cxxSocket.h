@@ -11,6 +11,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>  /* Needed for getaddrinfo() and freeaddrinfo() */
 #include <unistd.h> /* Needed for close() */
+#include <fcntl.h> /* fcntl */
 typedef int SOCKET;
 #define INVALID_SOCKET (-1)
 #endif
@@ -61,6 +62,20 @@ namespace log4cxx { namespace ext { namespace socket {
 		inet_ntop(AF_INET, &clientAddr.sin_addr, clientInfo, sizeof(clientInfo));
 #endif
 		return clientInfo;
+	}
+
+	inline int setNonblock(SOCKET socket)
+	{
+#ifdef _WIN32
+		u_long flags = 1;
+		return ioctlsocket(socket, FIONBIO, &flags);
+#else
+		int flags;
+		if (-1 == (flags = fcntl(socket, F_GETFL, 0))) {
+			flags = 0;
+		}
+		return fcntl(socket, F_SETFL, flags | O_NONBLOCK);
+#endif
 	}
 
 }}} // log4cxx::ext::socket

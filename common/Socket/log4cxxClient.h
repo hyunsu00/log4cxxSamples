@@ -11,6 +11,7 @@ namespace log4cxx { namespace ext { namespace socket {
 
     public:
         Client(SOCKET socket);
+        ~Client();
         bool operator<(const Client& other) const;
         operator SOCKET() const;
 

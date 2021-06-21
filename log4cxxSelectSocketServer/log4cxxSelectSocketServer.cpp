@@ -13,7 +13,6 @@
 
 #ifdef _WIN32
 #else
-#   include <fcntl.h> // fcntl
 #	include <string.h>	// strdup
 #	include <libgen.h>	// dirname
 #endif
@@ -26,105 +25,56 @@ inline log4cxx::LoggerPtr serverLogger()
 using LogLog = log4cxx::helpers::LogLog;
 
 namespace {
-    const int kPort = 9988;
-    const int kReadBufferSize = 8192;
+    const int DEFAULT_PORT = 9988;
+    const int DEFAULT_BUFFER_LEN = 8192;
 } // namespace
 
-int set_nonblock(SOCKET fd)
-{
-#ifdef _WIN32
-    u_long flags = 1;
-   return ioctlsocket(fd, FIONBIO, &flags);
-#else
-    int flags;
-    if (-1 == (flags = fcntl(fd, F_GETFL, 0))) {
-        flags = 0;
-    }
-    return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-#endif
-}
+//auto runServer = [](int port_num) -> void {
+void runServer(int port_num) {
+    auto maxSocketId = [](SOCKET serverSocket, const std::set<log4cxx::ext::socket::Client>& clientSockets) -> SOCKET {
+        if (clientSockets.empty()) {
+            return serverSocket;
+        } else {
+            return std::max<SOCKET>(serverSocket, (SOCKET)*clientSockets.rbegin());
+        }
+    };
 
-SOCKET maxSocketId(SOCKET serverSocket, const std::set<log4cxx::ext::socket::Client>& clientSockets)
-{
-    if (clientSockets.empty()) {
-        return serverSocket;
-    } else {
-        return std::max<SOCKET>(serverSocket, (SOCKET)*clientSockets.rbegin());
-    }
-}
-
-// returns server socket descriptor
-SOCKET startListening(int port)
-{
-    SOCKET serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (serverSocket == -1) {
-        std::cerr << "cannot open socket\n";
-        return -1;
+    SOCKET serverSocket = log4cxx::ext::socket::Create(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (serverSocket == INVALID_SOCKET) {
+        LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("소켓을 못열었다."));
+        return;
     }
 
-    struct sockaddr_in sockAddr;
-    sockAddr.sin_family = AF_INET;
-    sockAddr.sin_port = htons(port);
-    sockAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    struct sockaddr_in serverAddr;
+    memset(&serverAddr, 0x00, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); // 소켓 주소 자동 할당
+    serverAddr.sin_port = htons(port_num);			// 서버 포트 설정
 
-    int ret = bind(serverSocket, (struct sockaddr *)(&sockAddr), sizeof(sockAddr));
+    // 소켓 바인딩
+    if (bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
+        LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("바인딩 실패."));
+        return;
+    }
+
+    int ret = log4cxx::ext::socket::setNonblock(serverSocket);
     if (ret == -1) {
-        std::cerr << "failed to bind socket\n";
-        return -1;
+        LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("논블로킹 소켓 설정 실패."));
+        return;
     }
 
-    ret = set_nonblock(serverSocket);
-    if (ret == -1) {
-        std::cerr << "failed to set non-blocking mode\n";
-        return -1;
+    // 소켓 리슨
+    if (listen(serverSocket, 5) < 0) {
+        LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("리슨 실패."));
+        return;
     }
-
-    ret = listen(serverSocket, SOMAXCONN);
-    if (ret == -1) {
-        std::cerr << "failed to set non-blocking mode\n";
-        return -1;
-    }
-    return serverSocket;
-}
-
-int main(int argc, char* argv[])
-{
-    setlocale(LC_ALL, "");
-
-    std::string exeDir;
-#ifdef _WIN32	
-    {
-        char drive[_MAX_DRIVE] = { 0, }; // 드라이브 명
-        char dir[_MAX_DIR] = { 0, }; // 디렉토리 경로
-        _splitpath_s(argv[0], drive, _MAX_DRIVE, dir, _MAX_DIR, nullptr, 0, nullptr, 0);
-        exeDir = std::string(drive) + dir;
-    }
-#else
-    {
-        char* exePath = strdup(argv[0]);
-        exeDir = dirname(exePath);
-        free(exePath);
-        exeDir += "/";
-    }
-#endif
-    std::string filePath = exeDir + "log4cxxSelectSocketServer.conf";
-    log4cxx::PropertyConfigurator::configure(log4cxx::File(filePath));
-
-    printf("run log4cxxSelectSocketServer\n");
-
-    log4cxx::ext::socket::Init();
-
-    SOCKET serverSocket = startListening(kPort);
-    if (serverSocket == -1) {
-        std::cerr << "invalid socket\n";
-        return -1;
-    }
+    LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("포트 = ") << port_num);
+    LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 접속 요청 대기중..."));
 
     log4cxx::ext::socket::Client::setLogger(SERVER_LOGGER);
     std::set<log4cxx::ext::socket::Client> clientSockets;
 
     fd_set fds;
-
     while (true) {
         FD_ZERO(&fds);
         FD_SET(serverSocket, &fds);
@@ -138,10 +88,10 @@ int main(int argc, char* argv[])
         if (eventCount <= 0) {
             // eventCount == 0 : 타임아웃
             // evnetCount < 0 : 함수 실패
-            printf("select() failed : eventCount = %d, select()함수가 실패하여 프로그램을 종료한다.\n", eventCount);
+            LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("select() failed : eventCount = ") << eventCount << LOG4CXX_STR(", select()함수가 실패하여 프로그램을 종료한다."));
             break;
         }
-        printf("select() : eventCount = %d\n", eventCount);
+        LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("select() : eventCount = ") << eventCount);
 
         auto it = clientSockets.begin();
         while (it != clientSockets.end()) {
@@ -150,9 +100,9 @@ int main(int argc, char* argv[])
                 //
                 eventCount--;
 
-                std::array<char, kReadBufferSize> buf;
+                std::array<char, DEFAULT_BUFFER_LEN> buf;
                 //int nRead = recv(sock, buf.data(), kReadBufferSize, MSG_NOSIGNAL);
-                int nRead = recv(sock, buf.data(), kReadBufferSize, 0);
+                int nRead = recv(sock, buf.data(), DEFAULT_BUFFER_LEN, 0);
 #if 0                
                 if (nRead <= 0 && errno != EAGAIN) {
                     shutdown(sock, SHUT_RDWR);
@@ -183,6 +133,7 @@ int main(int argc, char* argv[])
                         it = clientSockets.erase(it);
                         //
                         printf("client_fd[%d], clientCount[%d] : resultBytes = %d, read()함수가 실패하여 소켓을 종료한다. (error = %d)\n", sock, (int)clientSockets.size(), nRead, errno);
+                        //LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 종료 - ") << clientInfo.c_str());
 					}
 					break;
 				} else if (nRead == 0) { // 클라이언트 접속 끊김
@@ -201,25 +152,60 @@ int main(int argc, char* argv[])
             } else {
                 ++it;
             }
-        }
+        } // while
+
         if (FD_ISSET(serverSocket, &fds)) {
             //
             eventCount--;
 
             int sock = accept(serverSocket, 0, 0);
             if (sock == -1) {
-                std::cerr << "accept error\n";
-                return -1;
+                LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("accept 시도 실패."));
+                break;
             }
-            set_nonblock(sock);
+            log4cxx::ext::socket::setNonblock(sock);
             clientSockets.emplace(sock);
             //
             printf("Client Accept client_fd[%d], clientCount[%d]\n", sock, (int)clientSockets.size());
+
+            //LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 접속 - ") << clientInfo.c_str());
         }
 
-        printf("처리되지 않은 eventCount = %d\n", eventCount);
+        LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("처리되지 않은 eventCount = ") << eventCount);
+
+    } // while
+};
+
+int main(int argc, char* argv[])
+{
+    setlocale(LC_ALL, "");
+
+    std::string exeDir;
+#ifdef _WIN32	
+    {
+        char drive[_MAX_DRIVE] = { 0, }; // 드라이브 명
+        char dir[_MAX_DIR] = { 0, }; // 디렉토리 경로
+        _splitpath_s(argv[0], drive, _MAX_DRIVE, dir, _MAX_DIR, nullptr, 0, nullptr, 0);
+        exeDir = std::string(drive) + dir;
+    }
+#else
+    {
+        char* exePath = strdup(argv[0]);
+        exeDir = dirname(exePath);
+        free(exePath);
+        exeDir += "/";
+    }
+#endif
+    std::string filePath = exeDir + "log4cxxSelectSocketServer.conf";
+    log4cxx::PropertyConfigurator::configure(log4cxx::File(filePath));
+
+    log4cxx::ext::socket::Init();
+
+    {
+        runServer(DEFAULT_PORT);
     }
 
     log4cxx::ext::socket::Quit();
+
     return 0;
 }

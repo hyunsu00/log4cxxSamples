@@ -21,10 +21,18 @@ namespace log4cxx { namespace ext { namespace socket {
     , m_ByteBuf()
     {
     }
-    bool Client::operator<(const Client& other) const {
+
+    Client::~Client()
+    {
+    }
+
+    bool Client::operator<(const Client& other) const 
+    {
         return m_Socket < other.m_Socket;
     }
-    Client::operator SOCKET() const {
+
+    Client::operator SOCKET() const 
+    {
         return m_Socket;
     }
 
