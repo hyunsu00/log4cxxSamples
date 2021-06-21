@@ -18,10 +18,7 @@
 #endif
 
 const char* const SERVER_LOGGER = "serverLogger";
-inline log4cxx::LoggerPtr serverLogger()
-{
-    return log4cxx::Logger::getLogger(SERVER_LOGGER);
-}
+static log4cxx::LoggerPtr sLogger = log4cxx::Logger::getRootLogger();
 using LogLog = log4cxx::helpers::LogLog;
 
 namespace {
@@ -41,7 +38,7 @@ void runServer(int port_num) {
 
     SOCKET serverSocket = log4cxx::ext::socket::Create(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (serverSocket == INVALID_SOCKET) {
-        LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("소켓을 못열었다."));
+        LOG4CXX_FATAL(sLogger, LOG4CXX_STR("소켓을 못열었다."));
         return;
     }
 
@@ -51,28 +48,37 @@ void runServer(int port_num) {
     serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); // 소켓 주소 자동 할당
     serverAddr.sin_port = htons(port_num);			// 서버 포트 설정
 
+    log4cxx::ext::socket::Client::setLogger(SERVER_LOGGER);
+    std::set<log4cxx::ext::socket::Client> clientSockets;
+
+    // 옵션 플래그
+    int option = 1;
+
     // 소켓 바인딩
     if (bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
-        LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("바인딩 실패."));
-        return;
+        LOG4CXX_FATAL(sLogger, LOG4CXX_STR("바인딩 실패."));
+        goto CLEAN_UP;
     }
 
     // 논블록킹 소켓 설정
     if (log4cxx::ext::socket::setNonblock(serverSocket) < 0) {
-        LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("논블로킹 소켓 설정 실패."));
-        return;
+        LOG4CXX_FATAL(sLogger, LOG4CXX_STR("논블로킹 소켓 설정 실패."));
+        goto CLEAN_UP;
+    }
+
+    // 소켓 옵션 설정 (SO_REUSEADDR : 비정상 종료시 해당 포트 재사용 가능하도록 설정)
+    if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&option, sizeof(option)) < 0) {
+        LOG4CXX_FATAL(sLogger, LOG4CXX_STR("소켓옵션(SO_REUSEADDR) 실패."));
+        goto CLEAN_UP;
     }
 
     // 소켓 리슨
     if (listen(serverSocket, SOMAXCONN) < 0) {
-        LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("리슨 실패."));
-        return;
+        LOG4CXX_FATAL(sLogger, LOG4CXX_STR("리슨 실패."));
+        goto CLEAN_UP;
     }
-    LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("포트 = ") << port_num);
-    LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 접속 요청 대기중..."));
-
-    log4cxx::ext::socket::Client::setLogger(SERVER_LOGGER);
-    std::set<log4cxx::ext::socket::Client> clientSockets;
+    LOG4CXX_INFO(sLogger, LOG4CXX_STR("포트 = ") << port_num);
+    LOG4CXX_INFO(sLogger, LOG4CXX_STR("클라이언트 접속 요청 대기중..."));
 
     fd_set fds;
     while (true) {
@@ -88,10 +94,10 @@ void runServer(int port_num) {
         if (eventCount <= 0) {
             // eventCount == 0 : 타임아웃
             // evnetCount < 0 : 함수 실패
-            LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("select() failed : eventCount = ") << eventCount << LOG4CXX_STR(", select()함수가 실패하여 프로그램을 종료한다."));
+            LOG4CXX_FATAL(sLogger, LOG4CXX_STR("select() failed : eventCount = ") << eventCount << LOG4CXX_STR(", select()함수가 실패하여 프로그램을 종료한다."));
             break;
         }
-        LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("select() succeeded : eventCount = ") << eventCount);
+        LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("select() succeeded : eventCount = ") << eventCount);
 
         auto it = clientSockets.begin();
         while (it != clientSockets.end()) {
@@ -110,15 +116,22 @@ void runServer(int port_num) {
                     log4cxx::ext::socket::Close(clientSocket);
                     it = clientSockets.erase(it);
                     //
-                    LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [clientCount = ") << clientSockets.size() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
+                    LOG4CXX_DEBUG(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [clientCount = ") << clientSockets.size() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
                 } else if (recvBytes > 0) {
-                    ++it;
+                    bool result = (*it).forceLog(&buf[0], recvBytes);
+                    LOG4CXX_ASSERT(sLogger, result, LOG4CXX_STR("(*it).forceLog() Failed"));
+                    if (!result) {
+                        log4cxx::ext::socket::Close(clientSocket);
+                        it = clientSockets.erase(it);
+                    } else {
+                        ++it;
+                    }
                     //
-                    LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 클라이언트 데이터 수신됨"));
+                    LOG4CXX_DEBUG(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 클라이언트 데이터 수신됨"));
                 } else {
                     ++it;
                     //
-                    LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)"));
+                    LOG4CXX_DEBUG(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)"));
                 }
 #else
                 if (recvBytes < 0) { // 에러
@@ -127,26 +140,32 @@ void runServer(int port_num) {
 					case EWOULDBLOCK: // read 버퍼가 비어있음
                         ++it;
                         //
-                        LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)"));
+                        LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)"));
 						break;
 					default:
                         log4cxx::ext::socket::Close(clientSocket);
                         it = clientSockets.erase(it);
                         //
-                        LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [clientCount = ") << clientSockets.size() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
+                        LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [clientCount = ") << clientSockets.size() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
 					}
 					break;
 				} else if (recvBytes == 0) { // 클라이언트 접속 끊김
                     log4cxx::ext::socket::Close(clientSocket);
                     it = clientSockets.erase(it);
                     //
-                    LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [clientCount = ") << clientSockets.size() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 클라이언트의 접속이 끊겨 소켓을 종료한다."));
+                    LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [clientCount = ") << clientSockets.size() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 클라이언트의 접속이 끊겨 소켓을 종료한다."));
 					break;
 				} else { // 클라이언트 데이터 수신됨
-                    (*it).forceLog(&buf[0], recvBytes);
-                    ++it;
+                    bool result = (*it).forceLog(&buf[0], recvBytes);
+                    LOG4CXX_ASSERT(sLogger, result, LOG4CXX_STR("(*it).forceLog() Failed"));
+                    if (!result) {
+                        log4cxx::ext::socket::Close(clientSocket);
+                        it = clientSockets.erase(it);
+                    } else {
+                        ++it;
+                    }
                     //
-                    LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 클라이언트 데이터 수신됨"));
+                    LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 클라이언트 데이터 수신됨"));
 				}
 #endif
             } else {
@@ -162,30 +181,32 @@ void runServer(int port_num) {
             int len = sizeof(clientAddr);
             SOCKET clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddr, (socklen_t*)&len);
             if (clientSocket < 0) {
-                LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("accept 시도 실패."));
+                LOG4CXX_FATAL(sLogger, LOG4CXX_STR("accept 시도 실패."));
                 break;
             }
             clientSockets.emplace(clientSocket);
 
             // 논블록킹 소켓 설정
             if (log4cxx::ext::socket::setNonblock(clientSocket) < 0) {
-                LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("논블로킹 소켓 설정 실패."));
+                LOG4CXX_FATAL(sLogger, LOG4CXX_STR("논블로킹 소켓 설정 실패."));
                 break;
             }
 
             std::string clientInfo = log4cxx::ext::socket::getClientInfo(clientAddr);
-            LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 접속 - ") << clientInfo.c_str());
+            LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 접속 - ") << clientInfo.c_str());
         }
 
-        LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("select() unprocessed : eventCount = ") << eventCount);
+        LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("select() unprocessed : eventCount = ") << eventCount);
 
     } // while
 
+CLEAN_UP:
     auto it = clientSockets.begin();
     while (it != clientSockets.end()) {
         SOCKET clientSocket = *it;
         log4cxx::ext::socket::Close(clientSocket);
     }
+    log4cxx::ext::socket::Close(serverSocket);
 };
 
 int main(int argc, char* argv[])
@@ -210,6 +231,7 @@ int main(int argc, char* argv[])
 #endif
     std::string filePath = exeDir + "log4cxxSelectSocketServer.conf";
     log4cxx::PropertyConfigurator::configure(log4cxx::File(filePath));
+    sLogger = log4cxx::Logger::getLogger(SERVER_LOGGER);
 
     log4cxx::ext::socket::Init();
 
