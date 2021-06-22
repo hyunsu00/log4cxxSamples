@@ -45,6 +45,7 @@
     <ClInclude Include="..\common\Socket\log4cxxClient.h">
       <Filter>Socket</Filter>
     </ClInclude>
+    <ClInclude Include="BuildConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
