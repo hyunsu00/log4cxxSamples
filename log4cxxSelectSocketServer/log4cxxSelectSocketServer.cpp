@@ -110,30 +110,6 @@ void runServer(int port_num) {
                 std::array<char, DEFAULT_BUFFER_LEN> buf;
                 //int recvBytes = recv(sock, buf.data(), kReadBufferSize, MSG_NOSIGNAL);
                 int recvBytes = recv(clientSocket, buf.data(), DEFAULT_BUFFER_LEN, 0);
-#if 0                
-                if (recvBytes <= 0 && errno != EWOULDBLOCK) {
-                    shutdown(clientSocket, SHUT_RDWR);
-                    log4cxx::ext::socket::Close(clientSocket);
-                    it = clientSockets.erase(it);
-                    //
-                    LOG4CXX_DEBUG(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [clientCount = ") << clientSockets.size() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
-                } else if (recvBytes > 0) {
-                    bool result = (*it).forceLog(&buf[0], recvBytes);
-                    LOG4CXX_ASSERT(sLogger, result, LOG4CXX_STR("(*it).forceLog() Failed"));
-                    if (!result) {
-                        log4cxx::ext::socket::Close(clientSocket);
-                        it = clientSockets.erase(it);
-                    } else {
-                        ++it;
-                    }
-                    //
-                    LOG4CXX_DEBUG(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 클라이언트 데이터 수신됨"));
-                } else {
-                    ++it;
-                    //
-                    LOG4CXX_DEBUG(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)"));
-                }
-#else
                 if (recvBytes < 0) { // 에러
 					switch (errno)
 					{
@@ -165,7 +141,6 @@ void runServer(int port_num) {
                     //
                     LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 클라이언트 데이터 수신됨"));
 				}
-#endif
             } else {
                 ++it;
             }

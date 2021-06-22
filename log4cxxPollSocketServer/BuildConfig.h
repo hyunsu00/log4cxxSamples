@@ -1,0 +1,2 @@
+﻿// BuildConfig.h
+#pragma once
