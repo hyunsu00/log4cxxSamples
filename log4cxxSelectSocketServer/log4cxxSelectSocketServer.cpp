@@ -102,48 +102,48 @@ void runServer(int port_num) {
         auto it = clientSockets.begin();
         while (it != clientSockets.end()) {
             SOCKET clientSocket = *it;
-            if (FD_ISSET(clientSocket, &fds)) {
-                //
-                eventCount--;
+            if (!FD_ISSET(clientSocket, &fds)) {
+                ++it;
+                continue;
+            }
+            //
+            eventCount--;
 
-                std::string clientInfo = log4cxx::ext::socket::getClientInfo(clientSocket);
-                std::array<char, DEFAULT_BUFFER_LEN> buf;
-                //int recvBytes = recv(sock, buf.data(), kReadBufferSize, MSG_NOSIGNAL);
-                int recvBytes = recv(clientSocket, buf.data(), DEFAULT_BUFFER_LEN, 0);
-                if (recvBytes < 0) { // 에러
-					switch (errno)
-					{
-					case EWOULDBLOCK: // read 버퍼가 비어있음
-                        ++it;
-                        //
-                        LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)"));
-						break;
-					default:
-                        log4cxx::ext::socket::Close(clientSocket);
-                        it = clientSockets.erase(it);
-                        //
-                        LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [clientCount = ") << clientSockets.size() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
-					}
-				} else if (recvBytes == 0) { // 클라이언트 접속 끊김
+            std::string clientInfo = log4cxx::ext::socket::getClientInfo(clientSocket);
+            std::array<char, DEFAULT_BUFFER_LEN> readBuf;
+            //int resultBytes = recv(sock, readBuf.data(), DEFAULT_BUFFER_LEN, MSG_NOSIGNAL);
+            int resultBytes = recv(clientSocket, readBuf.data(), DEFAULT_BUFFER_LEN, 0);
+            if (resultBytes < 0) { // 에러
+				switch (errno)
+				{
+				case EWOULDBLOCK: // read 버퍼가 비어있음
+                    ++it;
+                    //
+                    LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] recv()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)"));
+					break;
+				default:
                     log4cxx::ext::socket::Close(clientSocket);
                     it = clientSockets.erase(it);
                     //
-                    LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [clientCount = ") << clientSockets.size() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 클라이언트의 접속이 끊겨 소켓을 종료한다."));
-				} else { // 클라이언트 데이터 수신됨
-                    bool result = (*it).forceLog(&buf[0], recvBytes);
-                    LOG4CXX_ASSERT(sLogger, result, LOG4CXX_STR("(*it).forceLog() Failed"));
-                    if (!result) {
-                        log4cxx::ext::socket::Close(clientSocket);
-                        it = clientSockets.erase(it);
-                    } else {
-                        ++it;
-                    }
-                    //
-                    LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 클라이언트 데이터 수신됨"));
+                    LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] recv()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
 				}
-            } else {
-                ++it;
-            }
+			} else if (resultBytes == 0) { // 클라이언트 접속 끊김
+                log4cxx::ext::socket::Close(clientSocket);
+                it = clientSockets.erase(it);
+                //
+                LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트의 접속이 끊겨 소켓을 종료한다."));
+			} else { // 클라이언트 데이터 수신됨
+                bool result = (*it).forceLog(&readBuf[0], resultBytes);
+                LOG4CXX_ASSERT(sLogger, result, LOG4CXX_STR("(*it).forceLog() Failed"));
+                if (!result) {
+                    log4cxx::ext::socket::Close(clientSocket);
+                    it = clientSockets.erase(it);
+                } else {
+                    ++it;
+                }
+                //
+                LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트 데이터 수신됨"));
+			}
         } // while
 
         if (FD_ISSET(serverSocket, &fds)) {

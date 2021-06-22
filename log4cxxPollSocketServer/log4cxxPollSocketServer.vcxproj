@@ -20,9 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{CCCA1D3D-B200-4E1A-92AE-A5348FE1F43A}</ProjectGuid>
+    <ProjectGuid>{80E05114-2465-495A-B960-3045E9686C11}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>log4cxxSelectSocketServer</RootNamespace>
+    <RootNamespace>log4cxxPollSocketServer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -110,7 +110,7 @@
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy ".\log4cxxSelectSocketServer.conf" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy ".\log4cxxPollSocketServer.conf" "$(OutDir)\" /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -130,7 +130,7 @@
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy ".\log4cxxSelectSocketServer.conf" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy ".\log4cxxPollSocketServer.conf" "$(OutDir)\" /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -154,7 +154,7 @@
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy ".\log4cxxSelectSocketServer.conf" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy ".\log4cxxPollSocketServer.conf" "$(OutDir)\" /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -178,7 +178,7 @@
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy ".\log4cxxSelectSocketServer.conf" "$(OutDir)\" /d /h /y /f</Command>
+      <Command>xcopy ".\log4cxxPollSocketServer.conf" "$(OutDir)\" /d /h /y /f</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -186,7 +186,7 @@
     <ClCompile Include="..\common\Loader\ObjectLoader.cpp" />
     <ClCompile Include="..\common\Loader\SocketInputStream.cpp" />
     <ClCompile Include="..\common\Socket\log4cxxClient.cpp" />
-    <ClCompile Include="log4cxxSelectSocketServer.cpp" />
+    <ClCompile Include="log4cxxPollSocketServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\Loader\ByteBufInputStream.h" />
@@ -197,7 +197,7 @@
     <ClInclude Include="..\common\Socket\log4cxxSocket.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="log4cxxSelectSocketServer.conf" />
+    <None Include="log4cxxPollSocketServer.conf" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
