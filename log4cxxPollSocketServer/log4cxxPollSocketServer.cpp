@@ -3,6 +3,7 @@
 #include "BuildConfig.h"
 #include <array>
 #include <set>
+#include <algorithm> // std::find_if
 
 #include <sys/unistd.h>
 #include <sys/socket.h>
@@ -33,45 +34,40 @@ using LogLog = log4cxx::helpers::LogLog;
 namespace {
 	const int DEFAULT_PORT = 9988;
 	const int DEFAULT_BUFFER_LEN = 8192;
-	const int NUM_FDS = 5;
 } // namespace
 
 auto runServer = [](int port_num) -> void {
 
 	log4cxx::ext::socket::Client::setLogger(SERVER_LOGGER);
+
+	std::vector<pollfd> pollfds;
 	std::set<log4cxx::ext::socket::Client> clientSockets;
 
-	struct pollfd pollfds[NUM_FDS] = { 0, };
-	int pollnum = 0;
+	auto pollfds_add = [&pollfds, &clientSockets](int fd) -> void {
 
-	auto pollfds_add = [&pollnum, &pollfds](int fd) -> int {
-		int i = 0;
-		if (pollnum < NUM_FDS) {
-			i = pollnum++;
-		} else {
-			for (i = 0; i < NUM_FDS; i++) {
-				if (pollfds[i].fd < 0) {
-					goto found;
-				}
+		auto it = std::find_if(pollfds.begin(), pollfds.end(),
+			[&fd](const pollfd& event) -> bool {
+				return event.fd == fd;
 			}
-
-			return -1;
+		);
+		if (it == pollfds.end()) {
+			pollfd event = { fd, POLLIN, 0 };
+			pollfds.push_back(event);
 		}
 
-	found:
-		pollfds[i].fd = fd;
-		pollfds[i].events = POLLIN;
-
-		return 0;
+		clientSockets.emplace(fd);
 	};
 
-	auto pollfds_del = [&pollnum, &pollfds, &clientSockets](int fd) -> void {
-		for (int i = 0; i < pollnum; i++) {
-			if (pollfds[i].fd == fd) {
-				pollfds[i].fd = -1;
-				break;
+	auto pollfds_del = [&pollfds, &clientSockets](int fd) -> void {
+		auto it = std::find_if(pollfds.begin(), pollfds.end(),
+			[&fd](const pollfd& event) -> bool {
+				return event.fd == fd;
 			}
+		);
+		if (it != pollfds.end()) {
+			pollfds.erase(it);
 		}
+
 		close(fd);
 		clientSockets.erase(fd);
 	};
@@ -128,7 +124,7 @@ auto runServer = [](int port_num) -> void {
 
 	int event_count = 0;
 	while (true) {
-		event_count = poll(pollfds, pollnum, -1);
+		event_count = poll(&pollfds[0], pollfds.size(), -1);
 
 		if (event_count <= 0) {
 			// event_count == 0 : 타임아웃
@@ -137,11 +133,8 @@ auto runServer = [](int port_num) -> void {
 			goto CLEAN_UP;
 		}
 
-		for (int i = 0; i < pollnum; i++) {
+		for (int i = 0; i < pollfds.size(); i++) {
 
-			if (pollfds[i].revents == 0) {
-				continue;
-			}
 			if (pollfds[i].revents != POLLIN) {
 				continue;
 			}
@@ -163,13 +156,8 @@ auto runServer = [](int port_num) -> void {
 					continue;
 				}
 
-				if (pollfds_add(client_fd) < 0) {
-					log4cxx::ext::socket::Close(client_fd);
-					LOG4CXX_FATAL(sLogger, LOG4CXX_STR("클라이언트 최대 연결을 초과하여 종료한다."));
-					continue;
-				}
+				pollfds_add(client_fd);
 
-				clientSockets.emplace(client_fd);
 				std::string clientInfo = log4cxx::ext::socket::getClientInfo(clientAddr);
 				LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 접속 - ") << clientInfo.c_str());
 			} else {
