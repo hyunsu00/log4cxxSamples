@@ -44,17 +44,28 @@ namespace log4cxx { namespace ext { namespace socket {
 		return ::socket(af, type, protocol);
 	}
 
-	inline int Close(SOCKET socket)
+	inline int Close(SOCKET socket, bool isShutdown = false)
 	{
-		int status = 0;
 #ifdef _WIN32
-		//shutdown(socket, SD_BOTH);
-		status = closesocket(socket);
+		if (isShutdown) {
+			shutdown(socket, SD_BOTH);
+		}
+		return closesocket(socket);
 #else
-		//shutdown(sock, SHUT_RDWR);
-		status = close(socket);
+		if (isShutdown) {
+			shutdown(socket, SHUT_RDWR);
+		}
+		return close(socket);
 #endif
-		return status;
+	}
+
+	inline int Read(SOCKET socket, char* buf, int len)
+	{
+#ifdef _WIN32
+		return recv(socket, buf, len, 0);
+#else
+		return read(socket, buf, len);
+#endif
 	}
 
 	inline std::string getClientInfo(const struct sockaddr_in& clientAddr)

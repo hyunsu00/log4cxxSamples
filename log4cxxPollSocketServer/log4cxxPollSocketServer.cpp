@@ -12,9 +12,10 @@
 
 #ifdef _WIN32
 #else
-#include <sys/poll.h> // poll
-#include <string.h> // strdup
-#include <libgen.h> // dirname
+#	include <sys/poll.h> // poll
+#	include <netinet/tcp.h> // TCP_NODELAY
+#	include <string.h> // strdup
+#	include <libgen.h> // dirname
 #endif
 
 const char* const SERVER_LOGGER = "serverLogger";
@@ -45,7 +46,7 @@ auto runServer = [](int port_num) -> void {
 #ifdef _WIN32
 		if (fd.revents & POLLRDNORM || fd.revents & POLLHUP) {
 #else
-		if (fd.revents == POLLIN) {
+		if (fd.revents & POLLIN) {
 #endif
 			return true;
 		}
@@ -101,6 +102,12 @@ auto runServer = [](int port_num) -> void {
 		goto CLEAN_UP;
 	}
 
+	// Nagle 알고리즘 끄기
+	if (setsockopt(serverSocket, IPPROTO_TCP, TCP_NODELAY, (const char*)&option, sizeof(option)) < 0) {
+		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("Nagle 알고리즘 OFF(TCP_NODELAY) 실패."));
+		goto CLEAN_UP;
+	}
+
 	// 논블록킹 소켓 설정
 	if (log4cxx::ext::socket::setNonblock(serverSocket) < 0) {
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("논블로킹 소켓 설정 실패."));
@@ -139,7 +146,7 @@ auto runServer = [](int port_num) -> void {
 			LOG4CXX_FATAL(sLogger, LOG4CXX_STR("poll() failed : eventCount = ") << eventCount << LOG4CXX_STR(", poll()함수가 실패하여 프로그램을 종료한다."));
 			break;
 		}
-		LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("poll() succeeded : eventCount = ") << eventCount);
+		LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("[BEGIN] poll() succeeded : eventCount = ") << eventCount);
 
 		auto it = pollfds.begin() + 1;
 		while (it != pollfds.end()) {
@@ -153,7 +160,7 @@ auto runServer = [](int port_num) -> void {
 
 			std::string clientInfo = log4cxx::ext::socket::getClientInfo(clientSocket);
 			std::array<char, DEFAULT_BUFFER_LEN> readBuf;
-			int resultBytes = recv(clientSocket, readBuf.data(), DEFAULT_BUFFER_LEN, 0);
+			int resultBytes = log4cxx::ext::socket::Read(clientSocket, readBuf.data(), DEFAULT_BUFFER_LEN);
             if (resultBytes < 0) { // 에러
 				switch (log4cxx::ext::socket::getError())
 				{
@@ -217,7 +224,7 @@ auto runServer = [](int port_num) -> void {
 			LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 접속 - ") << clientInfo.c_str());
 		}
 
-		LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("poll() unprocessed : eventCount = ") << eventCount);
+		LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("[END  ] poll() unprocessed : eventCount = ") << eventCount);
 
 	} // while
 

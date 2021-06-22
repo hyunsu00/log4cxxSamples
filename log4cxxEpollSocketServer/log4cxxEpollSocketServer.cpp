@@ -9,8 +9,8 @@
 #include <sys/epoll.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <netinet/tcp.h> // TCP_NODELAY
 
-#include <sys/ioctl.h> // ioctl
 #include <string.h> // strdup
 #include <libgen.h> // dirname
 
@@ -68,6 +68,13 @@ auto runServer = [](int port_num) -> void {
 	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0) {
 		close(server_fd);
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("소켓옵션(SO_REUSEADDR) 실패."));
+		return;
+	}
+
+	// Nagle 알고리즘 끄기
+	if (setsockopt(server_fd, IPPROTO_TCP, TCP_NODELAY, (const char*)&option, sizeof(option)) < 0) {
+		close(server_fd);
+		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("Nagle 알고리즘 OFF(TCP_NODELAY) 실패."));
 		return;
 	}
 
@@ -145,17 +152,17 @@ auto runServer = [](int port_num) -> void {
 	int timeout = -1;
 
 	while (true) {
-		event_count = epoll_wait(epoll_fd, epoll_events, MAX_EVENTS, timeout);
 
+		event_count = epoll_wait(epoll_fd, epoll_events, MAX_EVENTS, timeout);
 		if (event_count < 0) {
 			if (errno == EINTR) { // 신호처리기(gdb)에 의해 중단됨
 				continue;
 			}
 			LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("epoll_wait() failed : event_count = ") << event_count);
-			goto CLEAN_UP;
+			break;
 		}
+		LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("[BEGIN] epoll_wait() succeeded : event_count = ") << event_count);
 
-		LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("epoll_wait() succeeded : event_count = ") << event_count);
 		for (int i = 0; i < event_count; i++) {
 			// Accept
 			if (epoll_events[i].data.fd == server_fd) {
@@ -315,6 +322,9 @@ auto runServer = [](int port_num) -> void {
 #endif
 			} // if
 		} // for
+
+		LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("[END  ] epoll_wait() unprocessed : eventCount = ") << 0);
+
 	} // while
 
 CLEAN_UP:

@@ -16,6 +16,7 @@
 #else
 #	include <string.h>	// strdup
 #	include <libgen.h>	// dirname
+#   include <netinet/tcp.h> // TCP_NODELAY
 #endif
 
 const char* const SERVER_LOGGER = "serverLogger";
@@ -54,6 +55,12 @@ void runServer(int port_num) {
     int option = 1;
     if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&option, sizeof(option)) < 0) {
         LOG4CXX_FATAL(sLogger, LOG4CXX_STR("소켓옵션(SO_REUSEADDR) 실패."));
+        goto CLEAN_UP;
+    }
+
+    // Nagle 알고리즘 끄기
+    if (setsockopt(serverSocket, IPPROTO_TCP, TCP_NODELAY, (const char*)&option, sizeof(option)) < 0) {
+        LOG4CXX_FATAL(sLogger, LOG4CXX_STR("Nagle 알고리즘 OFF(TCP_NODELAY) 실패."));
         goto CLEAN_UP;
     }
 
@@ -115,7 +122,7 @@ void runServer(int port_num) {
             std::string clientInfo = log4cxx::ext::socket::getClientInfo(clientSocket);
             std::array<char, DEFAULT_BUFFER_LEN> readBuf;
             //int resultBytes = recv(sock, readBuf.data(), DEFAULT_BUFFER_LEN, MSG_NOSIGNAL);
-            int resultBytes = recv(clientSocket, readBuf.data(), DEFAULT_BUFFER_LEN, 0);
+            int resultBytes = log4cxx::ext::socket::Read(clientSocket, readBuf.data(), DEFAULT_BUFFER_LEN);
             if (resultBytes < 0) { // 에러
 				switch (log4cxx::ext::socket::getError())
 				{
