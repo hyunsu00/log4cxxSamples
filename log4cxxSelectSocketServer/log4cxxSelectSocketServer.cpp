@@ -29,11 +29,13 @@ namespace {
 
 //auto runServer = [](int port_num) -> void {
 void runServer(int port_num) {
-    auto maxSocketId = [](SOCKET serverSocket, const std::set<log4cxx::ext::socket::Client>& clientSockets) -> SOCKET {
+
+    auto getMaxId = [=](SOCKET serverSocket, const std::set<log4cxx::ext::socket::Client>& clientSockets) -> int {
         if (clientSockets.empty()) {
-            return serverSocket;
+            return static_cast<int>(serverSocket);
         } else {
-            return std::max<SOCKET>(serverSocket, (SOCKET)*clientSockets.rbegin());
+            SOCKET maxSocketId = std::max<SOCKET>(serverSocket, (SOCKET)*clientSockets.rbegin());
+            return static_cast<int>(maxSocketId);
         }
     };
 
@@ -90,8 +92,8 @@ void runServer(int port_num) {
             FD_SET(sock, &fds);
         }
 
-        SOCKET max = maxSocketId(serverSocket, clientSockets);
-        int eventCount = select(static_cast<int>(max + 1), &fds, nullptr, nullptr, nullptr);
+        int maxId = getMaxId(serverSocket, clientSockets);
+        int eventCount = select(maxId + 1, &fds, nullptr, nullptr, nullptr);
         if (eventCount <= 0) {
             // eventCount == 0 : 타임아웃
             // evnetCount < 0 : 함수 실패
