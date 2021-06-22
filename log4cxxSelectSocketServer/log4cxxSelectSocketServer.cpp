@@ -100,7 +100,7 @@ void runServer(int port_num) {
             LOG4CXX_FATAL(sLogger, LOG4CXX_STR("select() failed : eventCount = ") << eventCount << LOG4CXX_STR(", select()함수가 실패하여 프로그램을 종료한다."));
             break;
         }
-        LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("select() succeeded : eventCount = ") << eventCount);
+        LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("[BEGIN] select() succeeded : eventCount = ") << eventCount);
 
         auto it = clientSockets.begin();
         while (it != clientSockets.end()) {
@@ -172,7 +172,7 @@ void runServer(int port_num) {
             LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 접속 - ") << clientInfo.c_str());
         }
 
-        LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("select() unprocessed : eventCount = ") << eventCount);
+        LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("[END  ] select() unprocessed : eventCount = ") << eventCount);
 
     } // while
 
