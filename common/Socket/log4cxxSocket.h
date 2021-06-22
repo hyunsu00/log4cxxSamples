@@ -12,8 +12,10 @@
 #include <netdb.h>  /* Needed for getaddrinfo() and freeaddrinfo() */
 #include <unistd.h> /* Needed for close() */
 #include <fcntl.h> /* fcntl */
+#include <cstring> // std::strerror
 typedef int SOCKET;
 #define INVALID_SOCKET (-1)
+#define WSAEWOULDBLOCK  EWOULDBLOCK
 #endif
 
 namespace log4cxx { namespace ext { namespace socket {
@@ -92,6 +94,29 @@ namespace log4cxx { namespace ext { namespace socket {
 			flags = 0;
 		}
 		return fcntl(socket, F_SETFL, flags | O_NONBLOCK);
+#endif
+	}
+
+	inline unsigned long getError()
+	{
+#ifdef _WIN32
+		return WSAGetLastError();
+#else
+		return errno;
+#endif
+	}
+
+	inline std::string getErrorText()
+	{
+#ifdef _WIN32
+		char message[256] = { 0,  };
+		FormatMessageA(
+			FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			0, WSAGetLastError(), 0, message, 256, 0);
+		char* nl = strrchr(message, '\n');
+		if (nl) *nl = 0;
+#else 
+		return std::strerror(errno);
 #endif
 	}
 

@@ -221,7 +221,7 @@ auto runServer = [](int port_num) -> void {
 						switch (errno)
 						{
 						case EWOULDBLOCK: // read 버퍼가 비어있음
-							LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)"));
+							LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK(EAGAIN))"));
 							break;
 						default:
 							{
@@ -258,7 +258,7 @@ auto runServer = [](int port_num) -> void {
 						switch (errno)
 						{
 						case EWOULDBLOCK: // read 버퍼가 비어있음
-							LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)"));
+							LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK(EAGAIN))"));
 							break;
 						default:
 							{
@@ -292,7 +292,7 @@ auto runServer = [](int port_num) -> void {
 					switch (errno)
 					{
 					case EWOULDBLOCK: // read 버퍼가 비어있음
-						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK)"));
+						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK(EAGAIN))"));
 						break;
 					default:
 						epoll_ctl_del(epoll_fd, client_fd);
