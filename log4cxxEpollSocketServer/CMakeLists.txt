@@ -6,6 +6,9 @@ cmake_minimum_required (VERSION 2.8)
 project ("log4cxxEpollSocketServer")
 message(STATUS "\${PROJECT_NAME} = ${PROJECT_NAME}")
 
+option(ENABLE_EDGE_TRIGGER "enable log4cxxEpollSocketServer support edge trigger option" OFF)
+message(STATUS "\${ENABLE_EDGE_TRIGGER} = ${ENABLE_EDGE_TRIGGER}")
+
 ###
 # pkg-config를 사용하여 log4cxx 패키지 찾기
 # sudo apt install liblog4cxx-dev -y (데비안)
@@ -53,6 +56,12 @@ set(SOCKET_FILES
 	"${SOCKET_DIR}/log4cxxClient.cpp"
 )
 message(STATUS "\${SOCKET_FILES} = ${SOCKET_FILES}")
+
+###
+# 전처리 매크로 추가
+if(ENABLE_EDGE_TRIGGER)
+	add_definitions(-DEDGE_TRIGGER)
+endif()
 
 ###
 # 이 프로젝트의 실행 파일에 소스를 추가합니다.
