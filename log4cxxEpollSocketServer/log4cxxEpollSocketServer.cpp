@@ -215,22 +215,22 @@ auto runServer = [](int port_num) -> void {
 				if (ioResult < 0) { // 에러
 					epoll_ctl_del(epoll_fd, client_fd);
 
-					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [readBytes = ") << readBytes << LOG4CXX_STR("] , [ioResult = ") << ioResult << LOG4CXX_STR(" ] ioctl()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
+					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [readBytes = ") << readBytes << LOG4CXX_STR("] , [ioResult = ") << ioResult << LOG4CXX_STR(" ] ioctl()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << log4cxx::ext::socket::getError() << LOG4CXX_STR(")"));
 				} else if (ioResult == 0) { // 성공
 					readBytes = std::max<int>(readBytes, 1);
 					std::vector<char> readBuf(readBytes, 0);
 					int resultBytes = read(client_fd, &readBuf[0], readBuf.size());
 					if (resultBytes < 0) { // 에러
-						switch (errno)
+						switch (log4cxx::ext::socket::getError())
 						{
-						case EWOULDBLOCK: // read 버퍼가 비어있음
-							LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK(EAGAIN))"));
+						case WSAEWOULDBLOCK: // read 버퍼가 비어있음
+							LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = WSAEWOULDBLOCK(EWOULDBLOCK == EAGAIN))"));
 							break;
 						default:
 							{
 								epoll_ctl_del(epoll_fd, client_fd);
 
-								LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR("] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
+								LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR("] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << log4cxx::ext::socket::getError() << LOG4CXX_STR(")"));
 							}
 						}
 					} else if (resultBytes == 0) { // 클라이언트 접속 끊김
@@ -251,23 +251,23 @@ auto runServer = [](int port_num) -> void {
 					LOG4CXX_ASSERT(sLogger, false, LOG4CXX_STR("이곳은 들어올수 없다."));
 					epoll_ctl_del(epoll_fd, client_fd);
 
-					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [readBytes = ") << readBytes << LOG4CXX_STR("] , [ioResult = ") << ioResult << LOG4CXX_STR(" ] ioctl()함수의 반환값이 0보다 커서 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
+					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [readBytes = ") << readBytes << LOG4CXX_STR("] , [ioResult = ") << ioResult << LOG4CXX_STR(" ] ioctl()함수의 반환값이 0보다 커서 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << log4cxx::ext::socket::getError() << LOG4CXX_STR(")"));
 				} // if		
 	#else
 				std::array<char, DEFAULT_BUFFER_LEN> readBuf;
 				while (true) {
 					int resultBytes = read(client_fd, readBuf.data(), DEFAULT_BUFFER_LEN);
 					if (resultBytes < 0) { // 에러
-						switch (errno)
+						switch (log4cxx::ext::socket::getError())
 						{
-						case EWOULDBLOCK: // read 버퍼가 비어있음
-							LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK(EAGAIN))"));
+						case WSAEWOULDBLOCK: // read 버퍼가 비어있음
+							LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = WSAEWOULDBLOCK(EWOULDBLOCK == EAGAIN))"));
 							break;
 						default:
 							{
 								epoll_ctl_del(epoll_fd, client_fd);
 
-								LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
+								LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << log4cxx::ext::socket::getError() << LOG4CXX_STR(")"));
 							}
 						}
 						break;
@@ -292,15 +292,15 @@ auto runServer = [](int port_num) -> void {
 				std::array<char, DEFAULT_BUFFER_LEN> readBuf;
 				int resultBytes = log4cxx::ext::socket::Read(client_fd, readBuf.data(), DEFAULT_BUFFER_LEN);
 				if (resultBytes < 0) { // 에러
-					switch (errno)
+					switch (log4cxx::ext::socket::getError())
 					{
-					case EWOULDBLOCK: // read 버퍼가 비어있음
-						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = EWOULDBLOCK(EAGAIN))"));
+					case WSAEWOULDBLOCK: // read 버퍼가 비어있음
+						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수의 버퍼는 비어있다. (errno = WSAEWOULDBLOCK(EWOULDBLOCK == EAGAIN))"));
 						break;
 					default:
 						epoll_ctl_del(epoll_fd, client_fd);
 
-						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << errno << LOG4CXX_STR(")"));
+						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] read()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << log4cxx::ext::socket::getError() << LOG4CXX_STR(")"));
 					}
 				} else if (resultBytes == 0) { // 클라이언트 접속 끊김
 					epoll_ctl_del(epoll_fd, client_fd);
@@ -323,7 +323,7 @@ auto runServer = [](int port_num) -> void {
 
 	} // while
 
-CLEAN_UP:
+	// 리소스 해제
 	for (auto& clientSocket : clientSockets) {
 		log4cxx::ext::socket::Close(clientSocket);
 	}
