@@ -12,6 +12,7 @@
 #include <netdb.h>  /* Needed for getaddrinfo() and freeaddrinfo() */
 #include <unistd.h> /* Needed for close() */
 #include <fcntl.h> /* fcntl */
+#include <netinet/tcp.h> // TCP_NODELAY
 #include <cstring> // std::strerror
 typedef int SOCKET;
 #define INVALID_SOCKET (-1)
@@ -106,6 +107,19 @@ namespace log4cxx { namespace ext { namespace socket {
 		}
 		return fcntl(socket, F_SETFL, flags | O_NONBLOCK);
 #endif
+	}
+
+	// Nagle 알고리즘 끄기 / 켜기
+	inline int setTcpNodelay(SOCKET socket, int optval = 1)
+	{
+		return setsockopt(socket, IPPROTO_TCP, TCP_NODELAY, (const char*)&optval, sizeof(optval));
+	}
+
+	// Nagle 알고리즘 반환
+	inline int getTcpNodelay(SOCKET socket, int& optval)
+	{
+		socklen_t optlen = sizeof(int);
+		return getsockopt(socket, IPPROTO_TCP, TCP_NODELAY, (char*)&optval, &optlen);
 	}
 
 	inline unsigned long getError()

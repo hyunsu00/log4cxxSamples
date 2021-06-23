@@ -16,7 +16,6 @@
 #else
 #	include <string.h>	// strdup
 #	include <libgen.h>	// dirname
-#   include <netinet/tcp.h> // TCP_NODELAY
 #endif
 
 const char* const SERVER_LOGGER = "serverLogger";
@@ -59,7 +58,8 @@ void runServer(int port_num) {
     }
 
     // Nagle 알고리즘 끄기
-    if (setsockopt(serverSocket, IPPROTO_TCP, TCP_NODELAY, (const char*)&option, sizeof(option)) < 0) {
+    // accept된 clientSocket도 Nagle 알고리즘 상속됨
+    if (log4cxx::ext::socket::setTcpNodelay(serverSocket) < 0) {
         LOG4CXX_FATAL(sLogger, LOG4CXX_STR("Nagle 알고리즘 OFF(TCP_NODELAY) 실패."));
         goto CLEAN_UP;
     }
@@ -100,6 +100,7 @@ void runServer(int port_num) {
         }
 
         int maxId = getMaxId(serverSocket, clientSockets);
+        // 윈도우의 select 함수는 socket만 적용됨, stdin은 적용안됨
         int eventCount = select(maxId + 1, &fds, nullptr, nullptr, nullptr);
         if (eventCount <= 0) {
             // eventCount == 0 : 타임아웃

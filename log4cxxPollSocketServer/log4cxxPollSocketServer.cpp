@@ -13,7 +13,6 @@
 #ifdef _WIN32
 #else
 #	include <sys/poll.h> // poll
-#	include <netinet/tcp.h> // TCP_NODELAY
 #	include <string.h> // strdup
 #	include <libgen.h> // dirname
 #endif
@@ -103,7 +102,8 @@ auto runServer = [](int port_num) -> void {
 	}
 
 	// Nagle 알고리즘 끄기
-	if (setsockopt(serverSocket, IPPROTO_TCP, TCP_NODELAY, (const char*)&option, sizeof(option)) < 0) {
+	// accept된 clientSocket도 Nagle 알고리즘 상속됨
+	if (log4cxx::ext::socket::setTcpNodelay(serverSocket) < 0) {
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("Nagle 알고리즘 OFF(TCP_NODELAY) 실패."));
 		goto CLEAN_UP;
 	}
