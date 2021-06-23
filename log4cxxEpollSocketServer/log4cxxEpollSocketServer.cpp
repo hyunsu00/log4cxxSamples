@@ -12,7 +12,7 @@
 #ifdef _WIN32
 #pragma warning(disable:4244)
 #include "wepoll.h"
-int (*close)(HANDLE) = CloseHandle;
+int (*close)(HANDLE) = epoll_close;
 #else
 #include <sys/epoll.h> // epoll_create, epoll_wait, epoll_ctl
 #include <string.h> // strdup
