@@ -4,21 +4,21 @@
 #include <array>
 #include <set>
 
-#include <sys/unistd.h>
-#include <sys/socket.h>
-#include <sys/epoll.h>
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <netinet/tcp.h> // TCP_NODELAY
-
-#include <string.h> // strdup
-#include <libgen.h> // dirname
-
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
 #include <log4cxx/helpers/loglog.h>		  // log4cxx::helpers::LogLog
 #include "log4cxxSocket.h"
 #include "log4cxxClient.h"
 
+#ifdef _WIN32
+#pragma warning(disable:4244)
+#include "wepoll.h"
+int (*close)(HANDLE) = CloseHandle;
+#else
+#include <sys/epoll.h> // epoll_create, epoll_wait, epoll_ctl
+#include <string.h> // strdup
+#include <libgen.h> // dirname
+typedef int HANDLE;
+#endif
 
 #define LISTEN_BACKLOG 15 // 일반적인 connection의 setup은 client가 connect()를 사용하여 connection request를 전송하면 server는 accept()를 사용하여 connection을 받아들입니다.
                           // 그런데 만약 server가 다른 작업을 진행 중이면 accept()를 할 수 없는 경우가 발생하고 이 경우 connection request는 queue에서 대기하는데 backlog는
@@ -40,24 +40,22 @@ auto runServer = [](int port_num) -> void {
 	log4cxx::ext::socket::Client::setLogger(SERVER_LOGGER);
 	std::set<log4cxx::ext::socket::Client> clientSockets;
 
-	auto epoll_ctl_del = [&clientSockets](int epoll_fd, int client_fd) {
+	auto epoll_ctl_del = [&clientSockets](HANDLE epoll_fd, SOCKET client_fd) {
 		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
-		close(client_fd);
+		log4cxx::ext::socket::Close(client_fd);
 		clientSockets.erase(client_fd);
 	};
 
 	// 소켓 생성
-	int server_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	SOCKET server_fd = log4cxx::ext::socket::Create(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (server_fd < 0) {
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("소켓을 못열었다."));
 		return;
 	}
 
 	// server fd Non-Blocking Socket으로 설정. Edge Trigger 사용하기 위해 설정.
-	int flags = fcntl(server_fd, F_GETFL);
-	flags |= O_NONBLOCK;
-	if (fcntl(server_fd, F_SETFL, flags) < 0) {
-		close(server_fd);
+	if (log4cxx::ext::socket::setNonblock(server_fd) < 0) {
+		log4cxx::ext::socket::Close(server_fd);
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("논블로킹 소켓 설정 실패."));
 		return;
 	}
@@ -65,15 +63,15 @@ auto runServer = [](int port_num) -> void {
 	// 소켓 옵션 설정.
 	// Option -> SO_REUSEADDR : 비정상 종료시 해당 포트 재사용 가능하도록 설정
 	int option = 1;
-	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0) {
-		close(server_fd);
+	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&option, sizeof(option)) < 0) {
+		log4cxx::ext::socket::Close(server_fd);
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("소켓옵션(SO_REUSEADDR) 실패."));
 		return;
 	}
 
 	// Nagle 알고리즘 끄기
 	if (setsockopt(server_fd, IPPROTO_TCP, TCP_NODELAY, (const char*)&option, sizeof(option)) < 0) {
-		close(server_fd);
+		log4cxx::ext::socket::Close(server_fd);
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("Nagle 알고리즘 OFF(TCP_NODELAY) 실패."));
 		return;
 	}
@@ -87,14 +85,14 @@ auto runServer = [](int port_num) -> void {
 
 	// 소켓 속성과 소켓 fd 연결
 	if (bind(server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-		close(server_fd);
+		log4cxx::ext::socket::Close(server_fd);
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("바인딩 실패."));
 		return;
 	}
 
 	// 응답 대기
 	if (listen(server_fd, LISTEN_BACKLOG) < 0) {
-		close(server_fd);
+		log4cxx::ext::socket::Close(server_fd);
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("리슨 실패."));
 		return;
 	}
@@ -102,9 +100,9 @@ auto runServer = [](int port_num) -> void {
 	LOG4CXX_INFO(sLogger, LOG4CXX_STR("클라이언트 접속 요청 대기중..."));
 
 	// Epoll fd 생성
-	int epoll_fd = epoll_create(1024); // size 만큼의 커널 폴링 공간을 만드는 함수
+	HANDLE epoll_fd = epoll_create(1024); // size 만큼의 커널 폴링 공간을 만드는 함수
 	if (epoll_fd < 0) {
-		close(server_fd);
+		log4cxx::ext::socket::Close(server_fd);
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("epoll_create() 함수 실패"));
 		return;
 	}
@@ -133,7 +131,7 @@ auto runServer = [](int port_num) -> void {
 	// EPOLL_CTL_MOD : 기존 파일 디스크립터를 수정
 	// EPOLL_CTL_DEL : 기존 파일 디스크립터를 관심 목록에서 삭제
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, server_fd, &server_event) < 0) {
-		close(server_fd);
+		log4cxx::ext::socket::Close(server_fd);
 		close(epoll_fd);
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("epoll_ctl() 함수 실패"));
 		return;
@@ -169,17 +167,15 @@ auto runServer = [](int port_num) -> void {
 
 				struct sockaddr_in client_addr;
 				int client_len = sizeof(client_addr);
-				int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, (socklen_t *)&client_len);
+				SOCKET client_fd = accept(server_fd, (struct sockaddr *)&client_addr, (socklen_t *)&client_len);
 				if (client_fd < 0) {
 					LOG4CXX_FATAL(sLogger, LOG4CXX_STR("accept 시도 실패."));
 					continue;
 				}
 
 				// client fd Non-Blocking Socket으로 설정. Edge Trigger 사용하기 위해 설정.
-				int flags = fcntl(client_fd, F_GETFL);
-				flags |= O_NONBLOCK;
-				if (fcntl(client_fd, F_SETFL, flags) < 0) {
-					close(client_fd);
+				if (log4cxx::ext::socket::setNonblock(client_fd) < 0) {
+					log4cxx::ext::socket::Close(client_fd);
 					LOG4CXX_FATAL(sLogger, LOG4CXX_STR("논블로킹 소켓 설정 실패."));
 					continue;
 				}
@@ -196,7 +192,7 @@ auto runServer = [](int port_num) -> void {
 				client_event.data.fd = client_fd;
 
 				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &client_event) < 0) {
-					close(client_fd);
+					log4cxx::ext::socket::Close(client_fd);
 					LOG4CXX_FATAL(sLogger, LOG4CXX_STR("epoll_ctl() 함수 실패"));
 					continue;
 				}
@@ -294,7 +290,7 @@ auto runServer = [](int port_num) -> void {
 #else
 				// 레벨 트리거 코드
 				std::array<char, DEFAULT_BUFFER_LEN> readBuf;
-				int resultBytes = read(client_fd, readBuf.data(), DEFAULT_BUFFER_LEN);
+				int resultBytes = log4cxx::ext::socket::Read(client_fd, readBuf.data(), DEFAULT_BUFFER_LEN);
 				if (resultBytes < 0) { // 에러
 					switch (errno)
 					{
@@ -331,7 +327,7 @@ CLEAN_UP:
 	for (auto& clientSocket : clientSockets) {
 		log4cxx::ext::socket::Close(clientSocket);
 	}
-	close(server_fd);
+	log4cxx::ext::socket::Close(server_fd);
 	close(epoll_fd);
 };
 
@@ -340,12 +336,21 @@ int main(int argc, char *argv[])
 	setlocale(LC_ALL, "");
 
 	std::string exeDir;
+#ifdef _WIN32	
+	{
+		char drive[_MAX_DRIVE] = { 0, }; // 드라이브 명
+		char dir[_MAX_DIR] = { 0, }; // 디렉토리 경로
+		_splitpath_s(argv[0], drive, _MAX_DRIVE, dir, _MAX_DIR, nullptr, 0, nullptr, 0);
+		exeDir = std::string(drive) + dir;
+	}
+#else
 	{
 		char* exePath = strdup(argv[0]);
 		exeDir = dirname(exePath);
 		free(exePath);
 		exeDir += "/";
 	}
+#endif
 	std::string filePath = exeDir + "log4cxxEpollSocketServer.conf";
 	log4cxx::PropertyConfigurator::configure(log4cxx::File(filePath));
 	sLogger = log4cxx::Logger::getLogger(SERVER_LOGGER);
