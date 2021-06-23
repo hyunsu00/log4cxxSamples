@@ -11,6 +11,7 @@
 #include "log4cxxClient.h"
 
 #ifdef _WIN32
+int (*poll)(LPWSAPOLLFD, ULONG, INT) = WSAPoll;
 #else
 #	include <sys/poll.h> // poll
 #	include <string.h> // strdup
@@ -32,14 +33,6 @@ auto runServer = [](int port_num) -> void {
 
 	std::vector<pollfd> pollfds;
 	std::set<log4cxx::ext::socket::Client> clientSockets;
-
-	auto createPoll = [](pollfd* fds, size_t nfds, int timeout) -> int {
-#ifdef _WIN32
-		return WSAPoll(fds, (ULONG)nfds, timeout);
-#else
-		return poll(fds, (nfds_t)nfds, timeout);
-#endif
-	};
 
 	auto isReadSet = [](const pollfd& fd) -> bool {
 #ifdef _WIN32
@@ -139,7 +132,7 @@ auto runServer = [](int port_num) -> void {
 
 	while (true) {
 
-		int eventCount = createPoll(&pollfds[0], pollfds.size(), -1);
+		int eventCount = poll(&pollfds[0], (u_long)pollfds.size(), -1);
 		if (eventCount <= 0) {
 			// event_count == 0 : 타임아웃
 			// event_count < 0 : 함수 실패
