@@ -12,7 +12,8 @@ namespace log4cxx { namespace ext { namespace socket {
     public:
         Client(SOCKET socket);
         ~Client();
-        bool operator<(const Client& other) const;
+        bool operator<(const Client& other) const; // std::set
+        bool operator==(const Client& other) const; // std::unordered_set
         operator SOCKET() const;
 
     public:
@@ -30,3 +31,12 @@ namespace log4cxx { namespace ext { namespace socket {
     }; // class Client 
 
 }}} // log4cxx::ext::socket
+
+namespace std {
+    template <>
+    struct hash<log4cxx::ext::socket::Client> {
+        size_t operator()(const log4cxx::ext::socket::Client& client) const {
+            return hash<SOCKET>()(client);
+        }
+    };
+}  // namespace std

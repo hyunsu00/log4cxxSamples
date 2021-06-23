@@ -1,8 +1,9 @@
 ﻿// log4cxxEpollSocketServer.cpp : 애플리케이션의 진입점을 정의합니다.
 //
 #include "BuildConfig.h"
-#include <array>
-#include <set>
+#include <array> // std::array
+#include <set> // std::set
+#include <unordered_set> // std::unordered_set
 
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
 #include <log4cxx/helpers/loglog.h>		  // log4cxx::helpers::LogLog
@@ -38,7 +39,7 @@ namespace {
 auto runServer = [](int port_num) -> void {
 
 	log4cxx::ext::socket::Client::setLogger(SERVER_LOGGER);
-	std::set<log4cxx::ext::socket::Client> clientSockets;
+	std::unordered_set<log4cxx::ext::socket::Client> clientSockets;
 
 	auto epoll_ctl_del = [&clientSockets](HANDLE epoll_fd, SOCKET clientSocket) {
 		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, clientSocket, NULL);

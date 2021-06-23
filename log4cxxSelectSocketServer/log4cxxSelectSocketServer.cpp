@@ -1,11 +1,8 @@
 ﻿// log4cxxSelectSocketServer.cpp : 애플리케이션의 진입점을 정의합니다.
 //
 #include "BuildConfig.h"
-#include <array>
-#include <cassert>
-#include <iostream>
-#include <set>
-#include <algorithm> // std::max
+#include <array> // std::array
+#include <set> // std::set
 
 #include <log4cxx/propertyconfigurator.h> // log4cxx::PropertyConfigurator
 #include <log4cxx/helpers/loglog.h>		  // log4cxx::helpers::LogLog

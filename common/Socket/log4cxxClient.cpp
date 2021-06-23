@@ -31,6 +31,11 @@ namespace log4cxx { namespace ext { namespace socket {
         return m_Socket < other.m_Socket;
     }
 
+    bool Client::operator==(const Client& other) const
+    {
+        return m_Socket == other.m_Socket;
+    }
+
     Client::operator SOCKET() const 
     {
         return m_Socket;
