@@ -201,6 +201,7 @@
     <ClInclude Include="..\common\Socket\log4cxxClient.h" />
     <ClInclude Include="..\common\Socket\log4cxxSocket.h" />
     <ClInclude Include="..\Extern\wepoll\wepoll.h" />
+    <ClInclude Include="BuildConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Extern\wepoll\LICENSE" />

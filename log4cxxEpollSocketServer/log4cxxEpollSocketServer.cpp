@@ -210,8 +210,8 @@ auto runServer = [](int port_num) -> void {
 #ifdef EDGE_TRIGGER 
 				// 엣지 트리거 모드
 	#if 1
-				int readBytes = 0;
-				int ioResult = ioctl(client_fd, FIONREAD, &readBytes);
+				u_long readBytes = 0;
+				int ioResult = log4cxx::ext::socket::getTotalReadBytes(client_fd, readBytes);
 				if (ioResult < 0) { // 에러
 					epoll_ctl_del(epoll_fd, client_fd);
 
@@ -219,7 +219,7 @@ auto runServer = [](int port_num) -> void {
 				} else if (ioResult == 0) { // 성공
 					readBytes = std::max<int>(readBytes, 1);
 					std::vector<char> readBuf(readBytes, 0);
-					int resultBytes = read(client_fd, &readBuf[0], readBuf.size());
+					int resultBytes = log4cxx::ext::socket::Read(client_fd, &readBuf[0], static_cast<int>(readBuf.size()));
 					if (resultBytes < 0) { // 에러
 						switch (log4cxx::ext::socket::getError())
 						{
@@ -256,7 +256,7 @@ auto runServer = [](int port_num) -> void {
 	#else
 				std::array<char, DEFAULT_BUFFER_LEN> readBuf;
 				while (true) {
-					int resultBytes = read(client_fd, readBuf.data(), DEFAULT_BUFFER_LEN);
+					int resultBytes = log4cxx::ext::socket::Read(client_fd, readBuf.data(), DEFAULT_BUFFER_LEN);
 					if (resultBytes < 0) { // 에러
 						switch (log4cxx::ext::socket::getError())
 						{

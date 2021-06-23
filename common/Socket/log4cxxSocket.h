@@ -12,6 +12,7 @@
 #include <netdb.h>  /* Needed for getaddrinfo() and freeaddrinfo() */
 #include <unistd.h> /* Needed for close() */
 #include <fcntl.h> /* fcntl */
+#include <sys/ioctl.h> // ioctl
 #include <netinet/tcp.h> // TCP_NODELAY
 #include <cstring> // std::strerror
 typedef int SOCKET;
@@ -106,6 +107,15 @@ namespace log4cxx { namespace ext { namespace socket {
 			flags = 0;
 		}
 		return fcntl(socket, F_SETFL, flags | O_NONBLOCK);
+#endif
+	}
+
+	inline int getTotalReadBytes(SOCKET socket, u_long& readBytes)
+	{
+#ifdef _WIN32
+		return ioctlsocket(socket, FIONREAD, &readBytes);
+#else
+		return ioctl(socket, FIONREAD, &readBytes);
 #endif
 	}
 

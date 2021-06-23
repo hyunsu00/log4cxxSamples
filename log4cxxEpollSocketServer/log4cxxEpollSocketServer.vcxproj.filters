@@ -54,6 +54,7 @@
     <ClInclude Include="..\Extern\wepoll\wepoll.h">
       <Filter>wepoll</Filter>
     </ClInclude>
+    <ClInclude Include="BuildConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
