@@ -113,6 +113,9 @@
     <PreBuildEvent>
       <Command>xcopy ".\log4cxxEpollSocketServer.conf" "$(OutDir)\" /d /h /y /f</Command>
     </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>xcopy "../Extern/vld/x86/bin/*.*" "$(OutDir)" /e /d /h /y /f</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -134,6 +137,9 @@
     <PreBuildEvent>
       <Command>xcopy ".\log4cxxEpollSocketServer.conf" "$(OutDir)\" /d /h /y /f</Command>
     </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>xcopy "../Extern/vld/x64/bin/*.*" "$(OutDir)" /e /d /h /y /f</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -159,6 +165,9 @@
     <PreBuildEvent>
       <Command>xcopy ".\log4cxxEpollSocketServer.conf" "$(OutDir)\" /d /h /y /f</Command>
     </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>xcopy "../Extern/vld/x86/bin/*.*" "$(OutDir)" /e /d /h /y /f</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -184,6 +193,9 @@
     <PreBuildEvent>
       <Command>xcopy ".\log4cxxEpollSocketServer.conf" "$(OutDir)\" /d /h /y /f</Command>
     </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>xcopy "../Extern/vld/x64/bin/*.*" "$(OutDir)" /e /d /h /y /f</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\common\Loader\ByteBufInputStream.cpp" />
