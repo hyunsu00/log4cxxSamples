@@ -116,7 +116,7 @@ auto runServer = [](int port_num) -> void {
 	// 보면 더이상의 상태 변화가 없기 때문이죠..LT 또는 ET는 쉽게 옵션으로 설정 가능합니다.
 	// 참고로 select / poll은 레벨트리거만 지원합니다.
 	struct epoll_event server_event;
-#ifdef EDGE_TRIGGER 
+#if defined(EDGE_TRIGGER) && !defined(_WIN32) 
 	// 에지 트리거(Edge Trigger, ET)
 	server_event.events = EPOLLIN | EPOLLET;
 #else
@@ -182,7 +182,7 @@ auto runServer = [](int port_num) -> void {
 
 				// 클라이언트 fd, epoll 에 등록
 				struct epoll_event client_event;
-#ifdef EDGE_TRIGGER 
+#if defined(EDGE_TRIGGER) && !defined(_WIN32) 
 				// 에지 트리거(Edge Trigger, ET)
 				client_event.events = EPOLLIN | EPOLLET;
 #else
