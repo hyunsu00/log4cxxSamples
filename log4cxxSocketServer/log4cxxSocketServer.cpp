@@ -206,13 +206,13 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 #endif
 
 CLEAN_UP:
-	log4cxx::ext::socket::Close(clientSocket);
+	closesocket(clientSocket);
 	LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 종료 - ") << clientInfo.c_str());
 }; // auto runClient
 
 auto runServer = [](int port_num) -> void
 {
-	SOCKET serverSocket = log4cxx::ext::socket::Create(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	SOCKET serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (serverSocket == INVALID_SOCKET) {
 		LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("소켓을 못열었다."));
 		return;
@@ -253,7 +253,7 @@ auto runServer = [](int port_num) -> void
 		clientThread.detach();
 	}
 
-	log4cxx::ext::socket::Close(serverSocket);
+	closesocket(serverSocket);
 }; // auto runServer
 
 int main(int argc, char *argv[])

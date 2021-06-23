@@ -75,12 +75,12 @@ auto runServer = [](int port_num) -> void {
 			pollfds.erase(it);
 		}
 
-		log4cxx::ext::socket::Close(socket);
+		closesocket(socket);
 		clientSockets.erase(socket);
 	};
 
 	// 소켓 생성
-	SOCKET serverSocket = log4cxx::ext::socket::Create(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	SOCKET serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (serverSocket == INVALID_SOCKET) {
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("소켓을 못열었다."));
 		return;
@@ -153,7 +153,7 @@ auto runServer = [](int port_num) -> void {
 
 			std::string clientInfo = log4cxx::ext::socket::getClientInfo(clientSocket);
 			std::array<char, DEFAULT_BUFFER_LEN> readBuf;
-			int resultBytes = log4cxx::ext::socket::Read(clientSocket, readBuf.data(), DEFAULT_BUFFER_LEN);
+			int resultBytes = recv(clientSocket, readBuf.data(), DEFAULT_BUFFER_LEN, 0);
             if (resultBytes < 0) { // 에러
 				switch (log4cxx::ext::socket::getError())
 				{
@@ -163,14 +163,14 @@ auto runServer = [](int port_num) -> void {
 					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] recv()함수의 버퍼는 비어있다. (errno = WSAEWOULDBLOCK(EWOULDBLOCK == EAGAIN))"));
 					break;
 				default:
-					log4cxx::ext::socket::Close(clientSocket);
+					closesocket(clientSocket);
 					clientSockets.erase(clientSocket);
 					it = pollfds.erase(it);
 					//
 					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] recv()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << log4cxx::ext::socket::getError() << LOG4CXX_STR(")"));
 				}
 			} else if (resultBytes == 0) { // 클라이언트 접속 끊김
-				log4cxx::ext::socket::Close(clientSocket);
+				closesocket(clientSocket);
 				clientSockets.erase(clientSocket);
 				it = pollfds.erase(it);
 				//
@@ -180,7 +180,7 @@ auto runServer = [](int port_num) -> void {
 				LOG4CXX_ASSERT(sLogger, itClient != clientSockets.end(), LOG4CXX_STR("clientSockets.find() != clientSockets.end()"));
 				if (itClient != clientSockets.end()) {
 					if (!itClient->forceLog(&readBuf[0], resultBytes)) {
-						log4cxx::ext::socket::Close(clientSocket);
+						closesocket(clientSocket);
 						clientSockets.erase(clientSocket);
 						it = pollfds.erase(it);
 					} else {
@@ -207,7 +207,7 @@ auto runServer = [](int port_num) -> void {
 			}
 			// 논블록킹 소켓 설정
 			if (log4cxx::ext::socket::setNonblock(clientSocket) < 0) {
-				log4cxx::ext::socket::Close(clientSocket);
+				closesocket(clientSocket);
 				LOG4CXX_FATAL(sLogger, LOG4CXX_STR("논블로킹 소켓 설정 실패."));
 				continue;
 			}
@@ -223,9 +223,9 @@ auto runServer = [](int port_num) -> void {
 
 CLEAN_UP:
 	for (auto& clientSocket : clientSockets) {
-		log4cxx::ext::socket::Close(clientSocket);
+		closesocket(clientSocket);
 	}
-	log4cxx::ext::socket::Close(serverSocket);
+	closesocket(serverSocket);
 };
 
 int main(int argc, char *argv[])

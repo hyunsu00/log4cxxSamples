@@ -43,7 +43,7 @@ void runServer(int port_num) {
     std::set<log4cxx::ext::socket::Client> clientSockets;
 
     // 소켓 생성
-    SOCKET serverSocket = log4cxx::ext::socket::Create(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    SOCKET serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (serverSocket == INVALID_SOCKET) {
         LOG4CXX_FATAL(sLogger, LOG4CXX_STR("소켓을 못열었다."));
         return;
@@ -123,7 +123,7 @@ void runServer(int port_num) {
             std::string clientInfo = log4cxx::ext::socket::getClientInfo(clientSocket);
             std::array<char, DEFAULT_BUFFER_LEN> readBuf;
             //int resultBytes = recv(sock, readBuf.data(), DEFAULT_BUFFER_LEN, MSG_NOSIGNAL);
-            int resultBytes = log4cxx::ext::socket::Read(clientSocket, readBuf.data(), DEFAULT_BUFFER_LEN);
+            int resultBytes = recv(clientSocket, readBuf.data(), DEFAULT_BUFFER_LEN, 0);
             if (resultBytes < 0) { // 에러
 				switch (log4cxx::ext::socket::getError())
 				{
@@ -133,13 +133,13 @@ void runServer(int port_num) {
                     LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] recv()함수의 버퍼는 비어있다. (errno = WSAEWOULDBLOCK(EWOULDBLOCK == EAGAIN))"));
 					break;
 				default:
-                    log4cxx::ext::socket::Close(clientSocket);
+                    closesocket(clientSocket);
                     it = clientSockets.erase(it);
                     //
                     LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] recv()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << log4cxx::ext::socket::getError() << LOG4CXX_STR(")"));
 				}
 			} else if (resultBytes == 0) { // 클라이언트 접속 끊김
-                log4cxx::ext::socket::Close(clientSocket);
+                closesocket(clientSocket);
                 it = clientSockets.erase(it);
                 //
                 LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트의 접속이 끊겨 소켓을 종료한다."));
@@ -147,7 +147,7 @@ void runServer(int port_num) {
                 bool result = (*it).forceLog(&readBuf[0], resultBytes);
                 LOG4CXX_ASSERT(sLogger, result, LOG4CXX_STR("(*it).forceLog() Failed"));
                 if (!result) {
-                    log4cxx::ext::socket::Close(clientSocket);
+                    closesocket(clientSocket);
                     it = clientSockets.erase(it);
                 } else {
                     ++it;
@@ -170,7 +170,7 @@ void runServer(int port_num) {
             }
             // 논블록킹 소켓 설정
             if (log4cxx::ext::socket::setNonblock(clientSocket) < 0) {
-                log4cxx::ext::socket::Close(clientSocket);
+                closesocket(clientSocket);
                 LOG4CXX_FATAL(sLogger, LOG4CXX_STR("논블로킹 소켓 설정 실패."));
                 continue;
             }
@@ -186,9 +186,9 @@ void runServer(int port_num) {
 
 CLEAN_UP:
     for (auto& clientSocket : clientSockets) {
-        log4cxx::ext::socket::Close(clientSocket);
+        closesocket(clientSocket);
     }
-    log4cxx::ext::socket::Close(serverSocket);
+    closesocket(serverSocket);
 };
 
 int main(int argc, char* argv[])

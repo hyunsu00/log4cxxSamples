@@ -8,7 +8,7 @@
 #else
   /* Assume that any non-Windows platform uses POSIX-style sockets instead. */
 #include <sys/socket.h>
-#include <arpa/inet.h>
+#include <arpa/inet.h> // inet_ntop
 #include <netdb.h>  /* Needed for getaddrinfo() and freeaddrinfo() */
 #include <unistd.h> /* Needed for close() */
 #include <fcntl.h> /* fcntl */
@@ -18,6 +18,9 @@
 typedef int SOCKET;
 #define INVALID_SOCKET (-1)
 #define WSAEWOULDBLOCK  EWOULDBLOCK
+auto closesocket = [](int fd) -> int {
+	return close(fd);
+};
 #endif
 
 namespace log4cxx { namespace ext { namespace socket {
@@ -38,35 +41,6 @@ namespace log4cxx { namespace ext { namespace socket {
 		return WSACleanup();
 #else
 		return 0;
-#endif
-	}
-
-	inline SOCKET Create(int af, int type, int protocol)
-	{
-		return ::socket(af, type, protocol);
-	}
-
-	inline int Close(SOCKET socket, bool isShutdown = false)
-	{
-#ifdef _WIN32
-		if (isShutdown) {
-			shutdown(socket, SD_BOTH);
-		}
-		return closesocket(socket);
-#else
-		if (isShutdown) {
-			shutdown(socket, SHUT_RDWR);
-		}
-		return close(socket);
-#endif
-	}
-
-	inline int Read(SOCKET socket, char* buf, int len)
-	{
-#ifdef _WIN32
-		return recv(socket, buf, len, 0);
-#else
-		return read(socket, buf, len);
 #endif
 	}
 

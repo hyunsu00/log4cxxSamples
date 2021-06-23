@@ -42,12 +42,12 @@ auto runServer = [](int port_num) -> void {
 
 	auto epoll_ctl_del = [&clientSockets](HANDLE epoll_fd, SOCKET client_fd) {
 		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
-		log4cxx::ext::socket::Close(client_fd);
+		closesocket(client_fd);
 		clientSockets.erase(client_fd);
 	};
 
 	// 소켓 생성
-	SOCKET server_fd = log4cxx::ext::socket::Create(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	SOCKET server_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (server_fd < 0) {
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("소켓을 못열었다."));
 		return;
@@ -55,7 +55,7 @@ auto runServer = [](int port_num) -> void {
 
 	// server fd Non-Blocking Socket으로 설정. Edge Trigger 사용하기 위해 설정.
 	if (log4cxx::ext::socket::setNonblock(server_fd) < 0) {
-		log4cxx::ext::socket::Close(server_fd);
+		closesocket(server_fd);
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("논블로킹 소켓 설정 실패."));
 		return;
 	}
@@ -64,14 +64,14 @@ auto runServer = [](int port_num) -> void {
 	// Option -> SO_REUSEADDR : 비정상 종료시 해당 포트 재사용 가능하도록 설정
 	int option = 1;
 	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&option, sizeof(option)) < 0) {
-		log4cxx::ext::socket::Close(server_fd);
+		closesocket(server_fd);
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("소켓옵션(SO_REUSEADDR) 실패."));
 		return;
 	}
 
 	// Nagle 알고리즘 끄기
 	if (setsockopt(server_fd, IPPROTO_TCP, TCP_NODELAY, (const char*)&option, sizeof(option)) < 0) {
-		log4cxx::ext::socket::Close(server_fd);
+		closesocket(server_fd);
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("Nagle 알고리즘 OFF(TCP_NODELAY) 실패."));
 		return;
 	}
@@ -85,14 +85,14 @@ auto runServer = [](int port_num) -> void {
 
 	// 소켓 속성과 소켓 fd 연결
 	if (bind(server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-		log4cxx::ext::socket::Close(server_fd);
+		closesocket(server_fd);
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("바인딩 실패."));
 		return;
 	}
 
 	// 응답 대기
 	if (listen(server_fd, LISTEN_BACKLOG) < 0) {
-		log4cxx::ext::socket::Close(server_fd);
+		closesocket(server_fd);
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("리슨 실패."));
 		return;
 	}
@@ -102,7 +102,7 @@ auto runServer = [](int port_num) -> void {
 	// Epoll fd 생성
 	HANDLE epoll_fd = epoll_create(1024); // size 만큼의 커널 폴링 공간을 만드는 함수
 	if (epoll_fd < 0) {
-		log4cxx::ext::socket::Close(server_fd);
+		closesocket(server_fd);
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("epoll_create() 함수 실패"));
 		return;
 	}
@@ -131,7 +131,7 @@ auto runServer = [](int port_num) -> void {
 	// EPOLL_CTL_MOD : 기존 파일 디스크립터를 수정
 	// EPOLL_CTL_DEL : 기존 파일 디스크립터를 관심 목록에서 삭제
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, server_fd, &server_event) < 0) {
-		log4cxx::ext::socket::Close(server_fd);
+		closesocket(server_fd);
 		close(epoll_fd);
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("epoll_ctl() 함수 실패"));
 		return;
@@ -175,7 +175,7 @@ auto runServer = [](int port_num) -> void {
 
 				// client fd Non-Blocking Socket으로 설정. Edge Trigger 사용하기 위해 설정.
 				if (log4cxx::ext::socket::setNonblock(client_fd) < 0) {
-					log4cxx::ext::socket::Close(client_fd);
+					closesocket(client_fd);
 					LOG4CXX_FATAL(sLogger, LOG4CXX_STR("논블로킹 소켓 설정 실패."));
 					continue;
 				}
@@ -192,7 +192,7 @@ auto runServer = [](int port_num) -> void {
 				client_event.data.fd = client_fd;
 
 				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &client_event) < 0) {
-					log4cxx::ext::socket::Close(client_fd);
+					closesocket(client_fd);
 					LOG4CXX_FATAL(sLogger, LOG4CXX_STR("epoll_ctl() 함수 실패"));
 					continue;
 				}
@@ -216,10 +216,12 @@ auto runServer = [](int port_num) -> void {
 					epoll_ctl_del(epoll_fd, client_fd);
 
 					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [readBytes = ") << readBytes << LOG4CXX_STR("] , [ioResult = ") << ioResult << LOG4CXX_STR(" ] ioctl()함수가 실패하여 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << log4cxx::ext::socket::getError() << LOG4CXX_STR(")"));
-				} else if (ioResult == 0) { // 성공
+				} else { // 성공
+					LOG4CXX_ASSERT(sLogger, ioResult == 0, LOG4CXX_STR("성공시 ioResult > 0 이 들어오면 안된다."));
+
 					readBytes = std::max<int>(readBytes, 1);
 					std::vector<char> readBuf(readBytes, 0);
-					int resultBytes = log4cxx::ext::socket::Read(client_fd, &readBuf[0], static_cast<int>(readBuf.size()));
+					int resultBytes = recv(client_fd, &readBuf[0], static_cast<int>(readBuf.size()), 0);
 					if (resultBytes < 0) { // 에러
 						switch (log4cxx::ext::socket::getError())
 						{
@@ -247,16 +249,11 @@ auto runServer = [](int port_num) -> void {
 
 						LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [resultBytes = ") << resultBytes << LOG4CXX_STR(" ] 클라이언트 데이터 수신됨"));
 					}
-				} else {
-					LOG4CXX_ASSERT(sLogger, false, LOG4CXX_STR("이곳은 들어올수 없다."));
-					epoll_ctl_del(epoll_fd, client_fd);
-
-					LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << client_info.c_str() << LOG4CXX_STR("] , [readBytes = ") << readBytes << LOG4CXX_STR("] , [ioResult = ") << ioResult << LOG4CXX_STR(" ] ioctl()함수의 반환값이 0보다 커서 소켓을 종료한다. ") << LOG4CXX_STR("(error = ") << log4cxx::ext::socket::getError() << LOG4CXX_STR(")"));
 				} // if		
 	#else
 				std::array<char, DEFAULT_BUFFER_LEN> readBuf;
 				while (true) {
-					int resultBytes = log4cxx::ext::socket::Read(client_fd, readBuf.data(), DEFAULT_BUFFER_LEN);
+					int resultBytes = recv(client_fd, readBuf.data(), DEFAULT_BUFFER_LEN, 0);
 					if (resultBytes < 0) { // 에러
 						switch (log4cxx::ext::socket::getError())
 						{
@@ -290,7 +287,7 @@ auto runServer = [](int port_num) -> void {
 #else
 				// 레벨 트리거 코드
 				std::array<char, DEFAULT_BUFFER_LEN> readBuf;
-				int resultBytes = log4cxx::ext::socket::Read(client_fd, readBuf.data(), DEFAULT_BUFFER_LEN);
+				int resultBytes = recv(client_fd, readBuf.data(), DEFAULT_BUFFER_LEN, 0);
 				if (resultBytes < 0) { // 에러
 					switch (log4cxx::ext::socket::getError())
 					{
@@ -325,9 +322,9 @@ auto runServer = [](int port_num) -> void {
 
 	// 리소스 해제
 	for (auto& clientSocket : clientSockets) {
-		log4cxx::ext::socket::Close(clientSocket);
+		closesocket(clientSocket);
 	}
-	log4cxx::ext::socket::Close(server_fd);
+	closesocket(server_fd);
 	close(epoll_fd);
 };
 
