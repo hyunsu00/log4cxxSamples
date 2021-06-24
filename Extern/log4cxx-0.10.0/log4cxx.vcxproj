@@ -515,6 +515,17 @@ xcopy "$(OutDir)$(ProjectName).pdb" "..\..\..\Build\WindowsDesktopOffice\Bin64\"
     <ClCompile Include="log4cxx\src\main\cpp\xmlsocketappender.cpp" />
     <ClCompile Include="log4cxx\src\main\cpp\zipcompressaction.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="apr-util.vcxproj">
+      <Project>{fb49065a-4f57-47cf-b28c-ab7cfd0bf84f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="apr.vcxproj">
+      <Project>{705a869d-5ae7-4281-abca-081f842e2237}</Project>
+    </ProjectReference>
+    <ProjectReference Include="expat.vcxproj">
+      <Project>{055e5bcc-c917-4ece-8c76-d81b3dbae6eb}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
