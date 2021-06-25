@@ -36,7 +36,9 @@ namespace {
 	const int DEFAULT_BUFFER_LEN = 8192;
 } // namespace
 
-auto runServer = [](int port_num) -> void {
+// https://sourceware.org/bugzilla/show_bug.cgi?id=17082
+// auto runServer = [](int port_num) -> void {
+static void runServer(int port) {
 
 	log4cxx::ext::socket::Client::setLogger(SERVER_LOGGER);
 	std::unordered_set<log4cxx::ext::socket::Client> clientSockets;
@@ -81,7 +83,7 @@ auto runServer = [](int port_num) -> void {
 	struct sockaddr_in serverAddr;
 	memset(&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
-	serverAddr.sin_port = htons(port_num);
+	serverAddr.sin_port = htons(port);
 	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); // INADDR_ANY : 사용가능한 랜카드 IP 사용
 
 	// 소켓 속성과 소켓 fd 연결
@@ -97,7 +99,7 @@ auto runServer = [](int port_num) -> void {
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("리슨 실패."));
 		return;
 	}
-	LOG4CXX_INFO(sLogger, LOG4CXX_STR("포트 = ") << port_num);
+	LOG4CXX_INFO(sLogger, LOG4CXX_STR("포트 = ") << port);
 	LOG4CXX_INFO(sLogger, LOG4CXX_STR("클라이언트 접속 요청 대기중..."));
 
 	// Epoll fd 생성

@@ -210,7 +210,9 @@ CLEAN_UP:
 	LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 종료 - ") << clientInfo.c_str());
 }; // auto runClient
 
-auto runServer = [](int port_num) -> void
+// https://sourceware.org/bugzilla/show_bug.cgi?id=17082
+// auto runServer = [](int port) -> void
+static void runServer(int port)
 {
 	SOCKET serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (serverSocket == INVALID_SOCKET) {
@@ -222,20 +224,22 @@ auto runServer = [](int port_num) -> void
 	memset(&serverAddr, 0x00, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); // 소켓 주소 자동 할당
-	serverAddr.sin_port = htons(port_num);			// 서버 포트 설정
+	serverAddr.sin_port = htons(port);	// 서버 포트 설정
 
 	// 소켓 바인딩
 	if (bind(serverSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
+		closesocket(serverSocket);
 		LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("바인딩 실패."));
 		return;
 	}
 
 	// 소켓 리슨
 	if (listen(serverSocket, 5) < 0) {
+		closesocket(serverSocket);
 		LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("리슨 실패."));
 		return;
 	}
-	LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("포트 = ") << port_num);
+	LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("포트 = ") << port);
 	LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 접속 요청 대기중..."));
 
 	while (true) {

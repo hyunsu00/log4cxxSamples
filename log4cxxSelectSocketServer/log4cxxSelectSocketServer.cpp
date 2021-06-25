@@ -24,8 +24,9 @@ namespace {
     const int DEFAULT_BUFFER_LEN = 8192;
 } // namespace
 
-//auto runServer = [](int port_num) -> void {
-void runServer(int port_num) {
+// https://sourceware.org/bugzilla/show_bug.cgi?id=17082
+// auto runServer = [](int port) -> void {
+static void runServer(int port) {
 
     auto getMaxId = [=](SOCKET serverSocket, const std::set<log4cxx::ext::socket::Client>& clientSockets) -> int {
         if (clientSockets.empty()) {
@@ -71,7 +72,7 @@ void runServer(int port_num) {
     memset(&serverAddr, 0x00, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); // 소켓 주소 자동 할당
-    serverAddr.sin_port = htons(port_num);			// 서버 포트 설정
+    serverAddr.sin_port = htons(port); // 서버 포트 설정
 
     // 소켓 바인딩
     if (bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
@@ -84,7 +85,7 @@ void runServer(int port_num) {
         LOG4CXX_FATAL(sLogger, LOG4CXX_STR("리슨 실패."));
         goto CLEAN_UP;
     }
-    LOG4CXX_INFO(sLogger, LOG4CXX_STR("포트 = ") << port_num);
+    LOG4CXX_INFO(sLogger, LOG4CXX_STR("포트 = ") << port);
     LOG4CXX_INFO(sLogger, LOG4CXX_STR("클라이언트 접속 요청 대기중..."));
 
     fd_set fds;
