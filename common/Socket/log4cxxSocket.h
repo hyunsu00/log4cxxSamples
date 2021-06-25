@@ -107,6 +107,12 @@ namespace log4cxx { namespace ext { namespace socket {
 		return getsockopt(socket, IPPROTO_TCP, TCP_NODELAY, (char*)&optval, &optlen);
 	}
 
+	// SO_REUSEADDR : 비정상 종료시 해당 포트 재사용 가능하도록 설정
+	inline int setReuseAddr(SOCKET socket, int optval = 1)
+	{
+		return setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (const char*)&optval, sizeof(optval));
+	}
+
 	inline unsigned long getError()
 	{
 #ifdef _WIN32

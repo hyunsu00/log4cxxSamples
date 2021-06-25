@@ -89,10 +89,8 @@ static void runServer(int port) {
 		return;
 	}
 
-	// 소켓 옵션 설정.
-	// Option -> SO_REUSEADDR : 비정상 종료시 해당 포트 재사용 가능하도록 설정
-	int option = 1;
-	if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&option, sizeof(option)) < 0) {
+	// 비정상 종료시 해당 포트 재사용 가능하도록 설정
+	if (log4cxx::ext::socket::setReuseAddr(serverSocket) < 0) {
 		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("소켓옵션(SO_REUSEADDR) 실패."));
 		goto CLEAN_UP;
 	}
@@ -144,7 +142,7 @@ static void runServer(int port) {
 		}
 		LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("[BEGIN] poll() succeeded : eventCount = ") << eventCount);
 
-		auto it = pollfds.begin() + 1;
+		auto it = pollfds.begin() + 1; // 리슨소켓 이후 부터(클라이언트소켓) 시작
 		while (it != pollfds.end()) {
 			SOCKET clientSocket = it->fd;
 			if (!isReadSet(*it)) {

@@ -15,11 +15,8 @@
 #include "ByteBufInputStream.h"
 #include "ObjectLoader.h"
 
-const char *const SERVER_LOGGER = "serverLogger";
-inline log4cxx::LoggerPtr serverLogger()
-{
-	return log4cxx::Logger::getLogger(SERVER_LOGGER);
-}
+const char* const SERVER_LOGGER = "serverLogger";
+static log4cxx::LoggerPtr sLogger = log4cxx::Logger::getRootLogger();
 using LogLog = log4cxx::helpers::LogLog;
 
 auto loadFiles = [](const std::string &sampleDir) -> bool
@@ -35,9 +32,9 @@ auto loadFiles = [](const std::string &sampleDir) -> bool
 				remoteLogger->callAppenders(event, p);
 			}
 		} catch (log4cxx::ext::SmallBufferException &e) {
-			LOG4CXX_WARN(serverLogger(), e.what());
+			LOG4CXX_WARN(sLogger, e.what());
 		} catch (log4cxx::ext::InvalidBufferException &e) {
-			LOG4CXX_ERROR(serverLogger(), e.what());
+			LOG4CXX_ERROR(sLogger, e.what());
 			return false;
 		}
 
@@ -51,9 +48,9 @@ auto loadFiles = [](const std::string &sampleDir) -> bool
 		try {
 			size = log4cxx::ext::loader::readStart(byteBuf);
 		} catch (log4cxx::ext::SmallBufferException &e) {
-			LOG4CXX_WARN(serverLogger(), e.what());
+			LOG4CXX_WARN(sLogger, e.what());
 		} catch (log4cxx::ext::InvalidBufferException &e) {
-			LOG4CXX_ERROR(serverLogger(), e.what());
+			LOG4CXX_ERROR(sLogger, e.what());
 			return false;
 		}
 
@@ -102,7 +99,7 @@ auto loadFiles = [](const std::string &sampleDir) -> bool
 
 auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 {
-	LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 접속 - ") << clientInfo.c_str());
+	LOG4CXX_INFO(sLogger, LOG4CXX_STR("클라이언트 접속 - ") << clientInfo.c_str());
 
 #if 0
 
@@ -124,7 +121,7 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 			readBytes = static_cast<size_t>(pBuf - &recvBuf[0]);
 		}
 
-		LOG4CXX_ASSERT(serverLogger(), len == readBytes, LOG4CXX_STR("자바 스트림 프로토콜 크기는 4byte 이여야 한다."));
+		LOG4CXX_ASSERT(sLogger, len == readBytes, LOG4CXX_STR("자바 스트림 프로토콜 크기는 4byte 이여야 한다."));
 		if (len != readBytes) {
 			goto CLEAN_UP;
 		}
@@ -132,7 +129,7 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 		try {
 			log4cxx::ext::loader::readStart(recvBuf);
 		} catch (log4cxx::helpers::Exception &e) {
-			LOG4CXX_ERROR(serverLogger(), e.what());
+			LOG4CXX_ERROR(sLogger, e.what());
 			goto CLEAN_UP;
 		}
 	}
@@ -149,10 +146,10 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 						remoteLogger->callAppenders(event, p);
 					}
 				} catch (log4cxx::ext::SmallBufferException& e) { // 무시
-					LOG4CXX_WARN(serverLogger(), e.what());
+					LOG4CXX_WARN(sLogger, e.what());
 					break;
 				} catch (log4cxx::ext::InvalidBufferException& e) { // 종료
-					LOG4CXX_ERROR(serverLogger(), e.what());
+					LOG4CXX_ERROR(sLogger, e.what());
 					return false;
 				}
 			}
@@ -166,7 +163,7 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 			// recvBytes == 0 일 경우 -> 정상적인 종료
 			// recvBytes == SOCKET_ERROR(-1) 일 경우 -> 소켓에러 WSAGetLastError() 호출하여 오류코드 검색 가능
 			if (recvBytes <= 0) {
-				LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] : [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 종료중... "));
+				LOG4CXX_INFO(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] : [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 종료중... "));
 				goto CLEAN_UP;
 			}
 
@@ -192,7 +189,7 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 		while (true) {
 			log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::createLoggingEvent(clientSocket);
 			if (!event) {
-				LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] : 종료중... "));
+				LOG4CXX_INFO(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] : 종료중... "));
 				goto CLEAN_UP;
 			}
 			log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
@@ -207,7 +204,7 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 
 CLEAN_UP:
 	closesocket(clientSocket);
-	LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 종료 - ") << clientInfo.c_str());
+	LOG4CXX_INFO(sLogger, LOG4CXX_STR("클라이언트 종료 - ") << clientInfo.c_str());
 }; // auto runClient
 
 // https://sourceware.org/bugzilla/show_bug.cgi?id=17082
@@ -216,7 +213,23 @@ static void runServer(int port)
 {
 	SOCKET serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (serverSocket == INVALID_SOCKET) {
-		LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("소켓을 못열었다."));
+		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("소켓을 못열었다."));
+		return;
+	}
+
+	// 소켓 옵션 설정.
+	// Option -> SO_REUSEADDR : 비정상 종료시 해당 포트 재사용 가능하도록 설정
+	int option = 1;
+	if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&option, sizeof(option)) < 0) {
+		closesocket(serverSocket);
+		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("소켓옵션(SO_REUSEADDR) 실패."));
+		return;
+	}
+
+	// Nagle 알고리즘 끄기
+	if (setsockopt(serverSocket, IPPROTO_TCP, TCP_NODELAY, (const char*)&option, sizeof(option)) < 0) {
+		closesocket(serverSocket);
+		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("Nagle 알고리즘 OFF(TCP_NODELAY) 실패."));
 		return;
 	}
 
@@ -229,25 +242,25 @@ static void runServer(int port)
 	// 소켓 바인딩
 	if (bind(serverSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
 		closesocket(serverSocket);
-		LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("바인딩 실패."));
+		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("바인딩 실패."));
 		return;
 	}
 
 	// 소켓 리슨
 	if (listen(serverSocket, 5) < 0) {
 		closesocket(serverSocket);
-		LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("리슨 실패."));
+		LOG4CXX_FATAL(sLogger, LOG4CXX_STR("리슨 실패."));
 		return;
 	}
-	LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("포트 = ") << port);
-	LOG4CXX_INFO(serverLogger(), LOG4CXX_STR("클라이언트 접속 요청 대기중..."));
+	LOG4CXX_INFO(sLogger, LOG4CXX_STR("포트 = ") << port);
+	LOG4CXX_INFO(sLogger, LOG4CXX_STR("클라이언트 접속 요청 대기중..."));
 
 	while (true) {
 		struct sockaddr_in clientAddr;
 		int len = sizeof(clientAddr);
 		SOCKET clientSocket = accept(serverSocket, (struct sockaddr *)&clientAddr, (socklen_t *)&len);
 		if (clientSocket < 0) {
-			LOG4CXX_FATAL(serverLogger(), LOG4CXX_STR("accept 시도 실패."));
+			LOG4CXX_FATAL(sLogger, LOG4CXX_STR("accept 시도 실패."));
 			break;
 		}
 
