@@ -37,7 +37,7 @@ namespace {
 } // namespace
 
 // https://sourceware.org/bugzilla/show_bug.cgi?id=17082
-// auto runServer = [](int port_num) -> void {
+// auto runServer = [](int port) -> void {
 static void runServer(int port) {
 
 	log4cxx::ext::socket::Client::setLogger(SERVER_LOGGER);
