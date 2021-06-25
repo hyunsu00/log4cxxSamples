@@ -28,7 +28,7 @@ typedef int HANDLE;
                           // 따라서, 접속 가능한 클라이언트의 최대수가 아닌 연결을 기다리는 클라이언트의 최대수입니다
 
 const char* const SERVER_LOGGER = "serverLogger";
-static log4cxx::LoggerPtr sLogger = log4cxx::Logger::getRootLogger();
+static log4cxx::LoggerPtr sLogger = log4cxx::Logger::getLogger(SERVER_LOGGER);
 using LogLog = log4cxx::helpers::LogLog;
 
 namespace {

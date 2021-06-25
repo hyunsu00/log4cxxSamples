@@ -16,7 +16,7 @@
 #endif
 
 const char* const SERVER_LOGGER = "serverLogger";
-static log4cxx::LoggerPtr sLogger = log4cxx::Logger::getRootLogger();
+static log4cxx::LoggerPtr sLogger = log4cxx::Logger::getLogger(SERVER_LOGGER);
 using LogLog = log4cxx::helpers::LogLog;
 
 namespace {
