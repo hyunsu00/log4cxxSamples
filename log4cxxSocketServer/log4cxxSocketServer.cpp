@@ -99,7 +99,7 @@ auto loadFiles = [](const std::string &sampleDir) -> bool
 
 auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 {
-	LOG4CXX_INFO(sLogger, LOG4CXX_STR("클라이언트 접속 - ") << clientInfo.c_str());
+	LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 접속 - ") << clientInfo.c_str());
 
 #if 0
 
@@ -163,7 +163,7 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 			// recvBytes == 0 일 경우 -> 정상적인 종료
 			// recvBytes == SOCKET_ERROR(-1) 일 경우 -> 소켓에러 WSAGetLastError() 호출하여 오류코드 검색 가능
 			if (recvBytes <= 0) {
-				LOG4CXX_INFO(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] : [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 종료중... "));
+				LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] : [recvBytes = ") << recvBytes << LOG4CXX_STR(" ] 종료중... "));
 				goto CLEAN_UP;
 			}
 
@@ -189,7 +189,7 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 		while (true) {
 			log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::createLoggingEvent(clientSocket);
 			if (!event) {
-				LOG4CXX_INFO(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] : 종료중... "));
+				LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] : 종료중... "));
 				goto CLEAN_UP;
 			}
 			log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
@@ -204,7 +204,7 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 
 CLEAN_UP:
 	closesocket(clientSocket);
-	LOG4CXX_INFO(sLogger, LOG4CXX_STR("클라이언트 종료 - ") << clientInfo.c_str());
+	LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 종료 - ") << clientInfo.c_str());
 }; // auto runClient
 
 // https://sourceware.org/bugzilla/show_bug.cgi?id=17082
