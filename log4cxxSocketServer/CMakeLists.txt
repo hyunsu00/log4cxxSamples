@@ -68,8 +68,6 @@ add_custom_command(
 	TARGET ${PROJECT_NAME} PRE_BUILD
 	COMMENT "conf 파일을 복사합니다."
 	COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/log4cxxSocketServer.conf" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/"
-	COMMENT "samples 폴더를 복사합니다."
-	COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/../samples" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/samples/"
 )
 message(STATUS "\${CMAKE_COMMAND} = ${CMAKE_COMMAND}")
 
@@ -77,7 +75,6 @@ message(STATUS "\${CMAKE_COMMAND} = ${CMAKE_COMMAND}")
 # 인스톨
 install(TARGETS ${PROJECT_NAME} DESTINATION ${PROJECT_NAME})
 install(FILES "${PROJECT_SOURCE_DIR}/log4cxxSocketServer.conf" DESTINATION ${PROJECT_NAME})
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/../samples" DESTINATION ${PROJECT_NAME})
 
 ###
 # cpack

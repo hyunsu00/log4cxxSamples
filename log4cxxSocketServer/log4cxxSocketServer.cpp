@@ -19,84 +19,6 @@ const char* const SERVER_LOGGER = "serverLogger";
 static log4cxx::LoggerPtr sLogger = log4cxx::Logger::getLogger(SERVER_LOGGER);
 using LogLog = log4cxx::helpers::LogLog;
 
-auto loadFiles = [](const std::string &sampleDir) -> bool
-{
-	auto forceLog = [](const std::vector<char> &byteBuf) -> bool
-	{
-		try {
-			std::vector<char> copyByteBuf = byteBuf;
-			log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::createLoggingEvent(copyByteBuf);
-			log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
-			if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
-				log4cxx::helpers::Pool p;
-				remoteLogger->callAppenders(event, p);
-			}
-		} catch (log4cxx::ext::SmallBufferException &e) {
-			LOG4CXX_WARN(sLogger, e.what());
-		} catch (log4cxx::ext::InvalidBufferException &e) {
-			LOG4CXX_ERROR(sLogger, e.what());
-			return false;
-		}
-
-		return true;
-	}; // auto forceLog
-
-	{
-		std::vector<char> byteBuf = log4cxx::ext::io::loadFile((sampleDir + "LoggingEvent_#1.bin").c_str());
-
-		size_t size = 0;
-		try {
-			size = log4cxx::ext::loader::readStart(byteBuf);
-		} catch (log4cxx::ext::SmallBufferException &e) {
-			LOG4CXX_WARN(sLogger, e.what());
-		} catch (log4cxx::ext::InvalidBufferException &e) {
-			LOG4CXX_ERROR(sLogger, e.what());
-			return false;
-		}
-
-		byteBuf.erase(byteBuf.begin(), byteBuf.begin() + size);
-
-		std::vector<char> copyBuf;
-		size_t byteBufSize = byteBuf.size();
-		size_t count = byteBufSize / 100;
-		size_t remain = byteBufSize % 100;
-
-		for (size_t i = 0; i < count; i++) {
-			for (size_t j = 0; j < 100; j++) {
-				copyBuf.push_back(byteBuf[j + 100 * i]);
-			}
-			// 로그 출력
-			if (!forceLog(copyBuf)) {
-				return false;
-			}
-		}
-		for (size_t i = 0; i < remain; i++) {
-			copyBuf.push_back(byteBuf[i + 100 * count]);
-		}
-		// 로그 출력
-		if (!forceLog(copyBuf))
-		{
-			return false;
-		}
-	}
-
-	{
-		std::vector<char> byteBuf = log4cxx::ext::io::loadFile((sampleDir + "LoggingEvent_#2.bin").c_str());
-		if (!forceLog(byteBuf)) {
-			return false;
-		}
-	}
-
-	{
-		std::vector<char> byteBuf = log4cxx::ext::io::loadFile((sampleDir + "LoggingEvent_#3.bin").c_str());
-		if (!forceLog(byteBuf)) {
-			return false;
-		}
-	}
-
-	return true;
-}; // auto loadFiles
-
 auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 {
 	LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 접속 - ") << clientInfo.c_str());
@@ -299,8 +221,6 @@ int main(int argc, char *argv[])
 
 	std::string filePath = exeDir + "log4cxxSocketServer.conf";
 	log4cxx::PropertyConfigurator::configure(log4cxx::File(filePath));
-
-	// loadFiles(sampleDir);
 
 	log4cxx::ext::socket::Init();
 

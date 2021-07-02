@@ -15,16 +15,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "apr-util", "..\Extern\log4c
 		{055E5BCC-C917-4ECE-8C76-D81B3DBAE6EB} = {055E5BCC-C917-4ECE-8C76-D81B3DBAE6EB}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "log4cxx", "..\Extern\log4cxx-0.10.0\log4cxxD.vcxproj", "{24D2D608-22E9-42EF-960B-15A900E6AD16}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "log4cxxD", "..\Extern\log4cxx-0.10.0\log4cxxD.vcxproj", "{24D2D608-22E9-42EF-960B-15A900E6AD16}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "log4cxxDynamicSocketServer", "log4cxxDynamicSocketServer.vcxproj", "{1D1886D9-3716-443F-8E41-8ECB3D6E53EC}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{26D0DD4B-647D-4387-B97B-8DD83BD727D9}"
-	ProjectSection(SolutionItems) = preProject
-		..\samples\LoggingEvent_#1.bin = ..\samples\LoggingEvent_#1.bin
-		..\samples\LoggingEvent_#2.bin = ..\samples\LoggingEvent_#2.bin
-		..\samples\LoggingEvent_#3.bin = ..\samples\LoggingEvent_#3.bin
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

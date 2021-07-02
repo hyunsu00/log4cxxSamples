@@ -11,13 +11,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Readme", "Readme", "{A6836C
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "log4cxxSocketServer", "log4cxxSocketServer\log4cxxSocketServer.vcxproj", "{47808743-92C8-4878-B99E-1DD1869B28DC}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{26D0DD4B-647D-4387-B97B-8DD83BD727D9}"
-	ProjectSection(SolutionItems) = preProject
-		samples\LoggingEvent_#1.bin = samples\LoggingEvent_#1.bin
-		samples\LoggingEvent_#2.bin = samples\LoggingEvent_#2.bin
-		samples\LoggingEvent_#3.bin = samples\LoggingEvent_#3.bin
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "log4cxxSocketClient", "log4cxxSocketClient\log4cxxSocketClient.vcxproj", "{1FDE8FE0-1066-4C6B-B8D9-E562CA769E9A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "log4cxxSelectSocketServer", "log4cxxSelectSocketServer\log4cxxSelectSocketServer.vcxproj", "{CCCA1D3D-B200-4E1A-92AE-A5348FE1F43A}"

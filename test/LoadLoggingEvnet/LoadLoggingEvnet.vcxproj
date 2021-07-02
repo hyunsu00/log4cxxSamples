@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -20,9 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{47808743-92C8-4878-B99E-1DD1869B28DC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>log4cxxSocketServer</RootNamespace>
+    <ProjectGuid>{3bcece1f-a6f7-4206-acdf-d71cd04b31a0}</ProjectGuid>
+    <RootNamespace>LoadLoggingEvnet</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -60,6 +60,7 @@
     <Import Project="..\packages\log4cxx-v141.0.10.0-stable\build\native\log4cxx-v141.targets" Condition="Exists('..\packages\log4cxx-v141.0.10.0-stable\build\native\log4cxx-v141.targets')" />
     <Import Project="..\packages\expat.v141.2.2.9\build\native\expat.v141.targets" Condition="Exists('..\packages\expat.v141.2.2.9\build\native\expat.v141.targets')" />
   </ImportGroup>
+  <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -78,13 +79,13 @@
     <OutDir>$(SolutionDir)\Build\Windows\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\Build\Windows\$(Platform)\Obj\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>true</LinkIncremental>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)\Build\Windows\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\Build\Windows\$(Platform)\Obj\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LinkIncremental>false</LinkIncremental>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)\Build\Windows\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\Build\Windows\$(Platform)\Obj\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
@@ -95,56 +96,30 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\common\Loader;..\common\Socket;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\common\Loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\log4cxxSocketServer\log4cxxSocketServer.conf" "$(OutDir)\" /d /h /y /f</Command>
-    </PreBuildEvent>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\common\Loader;..\common\Socket;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-    <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\log4cxxSocketServer\log4cxxSocketServer.conf" "$(OutDir)\" /d /h /y /f</Command>
-    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\common\Loader;..\common\Socket;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\common\Loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -153,22 +128,36 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\log4cxxSocketServer\log4cxxSocketServer.conf" "$(OutDir)\" /d /h /y /f</Command>
-    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..\..\common\Loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\common\Loader;..\common\Socket;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\common\Loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -177,26 +166,24 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)\log4cxxSocketServer\log4cxxSocketServer.conf" "$(OutDir)\" /d /h /y /f</Command>
-    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>xcopy "../samples/*.*" "$(OutDir)samples/" /e /d /h /y /f</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="log4cxxSocketServer.conf" />
+    <ClCompile Include="..\..\common\Loader\ByteBufInputStream.cpp" />
+    <ClCompile Include="..\..\common\Loader\ObjectLoader.cpp" />
+    <ClCompile Include="..\..\common\Loader\SocketInputStream.cpp" />
+    <ClCompile Include="LoadLoggingEvnet.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\common\Loader\ByteBufInputStream.h" />
+    <ClInclude Include="..\..\common\Loader\InputStreamDef.h" />
+    <ClInclude Include="..\..\common\Loader\ObjectLoader.h" />
+    <ClInclude Include="..\..\common\Loader\SocketInputStream.h" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\common\Loader\ByteBufInputStream.cpp" />
-    <ClCompile Include="..\common\Loader\ObjectLoader.cpp" />
-    <ClCompile Include="..\common\Loader\SocketInputStream.cpp" />
-    <ClCompile Include="log4cxxSocketServer.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\common\Loader\ByteBufInputStream.h" />
-    <ClInclude Include="..\common\Loader\InputStreamDef.h" />
-    <ClInclude Include="..\common\Loader\ObjectLoader.h" />
-    <ClInclude Include="..\common\Loader\SocketInputStream.h" />
-    <ClInclude Include="..\common\Socket\log4cxxSocket.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
