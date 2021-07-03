@@ -2,14 +2,17 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="log4cxxSocketServer.cpp" />
-    <ClCompile Include="..\common\Loader\ByteBufInputStream.cpp">
+    <ClCompile Include="..\log4cxxExt\Loader\ByteBufInputStream.cpp">
       <Filter>Loader</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\Loader\ObjectLoader.cpp">
+    <ClCompile Include="..\log4cxxExt\Loader\ObjectLoader.cpp">
       <Filter>Loader</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\Loader\SocketInputStream.cpp">
+    <ClCompile Include="..\log4cxxExt\Loader\SocketInputStream.cpp">
       <Filter>Loader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\log4cxxExt\Socket\log4cxxClient.cpp">
+      <Filter>Socket</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -17,26 +20,29 @@
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Loader">
-      <UniqueIdentifier>{13ae466c-90e2-4077-8222-bb705f67a5c1}</UniqueIdentifier>
+      <UniqueIdentifier>{8d2d38cd-b3f5-4a1d-b1cd-7ea6126c834a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Socket">
-      <UniqueIdentifier>{e39f6fa5-5e0d-46f9-be73-4d3530bfe275}</UniqueIdentifier>
+      <UniqueIdentifier>{a3f09ab3-5617-4f6b-a592-75fbfc703343}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\common\Loader\ByteBufInputStream.h">
+    <ClInclude Include="..\log4cxxExt\Loader\ByteBufInputStream.h">
       <Filter>Loader</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\Loader\InputStreamDef.h">
+    <ClInclude Include="..\log4cxxExt\Loader\InputStreamDef.h">
       <Filter>Loader</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\Loader\ObjectLoader.h">
+    <ClInclude Include="..\log4cxxExt\Loader\ObjectLoader.h">
       <Filter>Loader</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\Loader\SocketInputStream.h">
+    <ClInclude Include="..\log4cxxExt\Loader\SocketInputStream.h">
       <Filter>Loader</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\Socket\log4cxxSocket.h">
+    <ClInclude Include="..\log4cxxExt\Socket\log4cxxClient.h">
+      <Filter>Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\log4cxxExt\Socket\log4cxxSocket.h">
       <Filter>Socket</Filter>
     </ClInclude>
   </ItemGroup>

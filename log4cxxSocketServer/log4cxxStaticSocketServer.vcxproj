@@ -19,9 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\common\Loader\ByteBufInputStream.cpp" />
-    <ClCompile Include="..\common\Loader\ObjectLoader.cpp" />
-    <ClCompile Include="..\common\Loader\SocketInputStream.cpp" />
+    <ClCompile Include="..\log4cxxExt\Loader\ByteBufInputStream.cpp" />
+    <ClCompile Include="..\log4cxxExt\Loader\ObjectLoader.cpp" />
+    <ClCompile Include="..\log4cxxExt\Loader\SocketInputStream.cpp" />
+    <ClCompile Include="..\log4cxxExt\Socket\log4cxxClient.cpp" />
     <ClCompile Include="log4cxxSocketServer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -33,11 +34,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\common\Loader\ByteBufInputStream.h" />
-    <ClInclude Include="..\common\Loader\InputStreamDef.h" />
-    <ClInclude Include="..\common\Loader\ObjectLoader.h" />
-    <ClInclude Include="..\common\Loader\SocketInputStream.h" />
-    <ClInclude Include="..\common\Socket\log4cxxSocket.h" />
+    <ClInclude Include="..\log4cxxExt\Loader\ByteBufInputStream.h" />
+    <ClInclude Include="..\log4cxxExt\Loader\InputStreamDef.h" />
+    <ClInclude Include="..\log4cxxExt\Loader\ObjectLoader.h" />
+    <ClInclude Include="..\log4cxxExt\Loader\SocketInputStream.h" />
+    <ClInclude Include="..\log4cxxExt\Socket\log4cxxClient.h" />
+    <ClInclude Include="..\log4cxxExt\Socket\log4cxxSocket.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -117,7 +119,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;LOG4CXX_STATIC;APR_DECLARE_STATIC;APU_DECLARE_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Extern\log4cxx-0.10.0\log4cxx\src\main\include;..\common\Loader;..\common\Socket</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Extern/log4cxx-0.10.0/log4cxx/src/main/include;../log4cxxExt/Loader;../log4cxxExt/Socket</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -136,7 +138,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;LOG4CXX_STATIC;APR_DECLARE_STATIC;APU_DECLARE_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Extern\log4cxx-0.10.0\log4cxx\src\main\include;..\common\Loader;..\common\Socket</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Extern/log4cxx-0.10.0/log4cxx/src/main/include;../log4cxxExt/Loader;../log4cxxExt/Socket</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -155,7 +157,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;LOG4CXX_STATIC;APR_DECLARE_STATIC;APU_DECLARE_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Extern\log4cxx-0.10.0\log4cxx\src\main\include;..\common\Loader;..\common\Socket</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Extern/log4cxx-0.10.0/log4cxx/src/main/include;../log4cxxExt/Loader;../log4cxxExt/Socket</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -174,7 +176,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;LOG4CXX_STATIC;APR_DECLARE_STATIC;APU_DECLARE_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Extern\log4cxx-0.10.0\log4cxx\src\main\include;..\common\Loader;..\common\Socket</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Extern/log4cxx-0.10.0/log4cxx/src/main/include;../log4cxxExt/Loader;../log4cxxExt/Socket</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

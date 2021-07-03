@@ -12,7 +12,7 @@
 #include "log4cxxClient.h"
 
 #ifdef _WIN32
-int (*poll)(LPWSAPOLLFD, ULONG, INT) = WSAPoll;
+int (__stdcall *poll)(LPWSAPOLLFD, ULONG, INT) = WSAPoll;
 #else
 #	include <sys/poll.h> // poll
 #	include <string.h> // strdup

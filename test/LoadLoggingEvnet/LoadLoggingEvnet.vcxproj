@@ -138,7 +138,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\..\common\Loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../log4cxxExt/Loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -171,19 +171,15 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\common\Loader\ByteBufInputStream.cpp" />
-    <ClCompile Include="..\..\common\Loader\ObjectLoader.cpp" />
-    <ClCompile Include="..\..\common\Loader\SocketInputStream.cpp" />
     <ClCompile Include="LoadLoggingEvnet.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\common\Loader\ByteBufInputStream.h" />
-    <ClInclude Include="..\..\common\Loader\InputStreamDef.h" />
-    <ClInclude Include="..\..\common\Loader\ObjectLoader.h" />
-    <ClInclude Include="..\..\common\Loader\SocketInputStream.h" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ProjectReference Include="..\..\log4cxxExt\log4cxxExt.vcxproj">
+      <Project>{40c462d2-55e0-491e-b844-7aa92cdef722}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

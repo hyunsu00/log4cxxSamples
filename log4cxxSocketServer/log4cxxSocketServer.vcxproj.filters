@@ -10,40 +10,8 @@
     <Filter Include="packages">
       <UniqueIdentifier>{78c32e65-a57e-4d1a-aa4e-276a21368d24}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Loader">
-      <UniqueIdentifier>{f4835de9-2eb4-4605-b7ab-99115582ab26}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Socket">
-      <UniqueIdentifier>{a05fa1b9-8b09-40f3-aa43-538541c552ed}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="log4cxxSocketServer.cpp" />
-    <ClCompile Include="..\common\Loader\ByteBufInputStream.cpp">
-      <Filter>Loader</Filter>
-    </ClCompile>
-    <ClCompile Include="..\common\Loader\ObjectLoader.cpp">
-      <Filter>Loader</Filter>
-    </ClCompile>
-    <ClCompile Include="..\common\Loader\SocketInputStream.cpp">
-      <Filter>Loader</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\common\Loader\ByteBufInputStream.h">
-      <Filter>Loader</Filter>
-    </ClInclude>
-    <ClInclude Include="..\common\Loader\InputStreamDef.h">
-      <Filter>Loader</Filter>
-    </ClInclude>
-    <ClInclude Include="..\common\Loader\ObjectLoader.h">
-      <Filter>Loader</Filter>
-    </ClInclude>
-    <ClInclude Include="..\common\Loader\SocketInputStream.h">
-      <Filter>Loader</Filter>
-    </ClInclude>
-    <ClInclude Include="..\common\Socket\log4cxxSocket.h">
-      <Filter>Socket</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
