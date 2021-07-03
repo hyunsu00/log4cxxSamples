@@ -28,11 +28,11 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
             if not os.path.exists(directory):
                 os.makedirs(directory)
         except OSError:
-            print('Error: Creating directory. ' + directory)
+            print("Error: Creating directory. " + directory)
         cnt = 0
 
         # pickle 처리
-        '''
+        """
         while True:
             chunk = self.connection.recv(4)
             if len(chunk) < 4:
@@ -48,10 +48,10 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
             self.writeChunk(directory + '/chunk{0}.pkl'.format(cnt), chunk)
             self.writeRecord(directory + '/record{0}.pkl'.format(cnt), record)
             cnt += 1
-        '''
+        """
 
         # msgpack 처리
-        # '''
+        """
         import msgpack
         unpacker = msgpack.Unpacker(use_list=False, raw=False)
         while True:
@@ -62,7 +62,11 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
             for unpacked in unpacker:
                 record = msgpackLogRecord.createLogRecord(unpacked)
                 self.handleLogRecord(record)
-        # '''
+        """
+
+        # bytes 처리
+        while True:
+            data = self.connection.recv(1024)
 
     def unPickle(self, data):
         return pickle.loads(data)
@@ -82,12 +86,12 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
         logger.handle(record)
 
     def writeChunk(self, fileName, data):
-        f = open(fileName, 'wb')
+        f = open(fileName, "wb")
         f.write(data)
         f.close()
 
     def writeRecord(self, fileName, data):
-        f = open(fileName, 'wb')
+        f = open(fileName, "wb")
         pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
         f.close()
 
@@ -99,9 +103,7 @@ class LogRecordSocketReceiver(socketserver.ThreadingTCPServer):
 
     allow_reuse_address = 1
 
-    def __init__(self, host='localhost',
-                 port=logging.handlers.DEFAULT_TCP_LOGGING_PORT,
-                 handler=LogRecordStreamHandler):
+    def __init__(self, host="localhost", port=logging.handlers.DEFAULT_TCP_LOGGING_PORT, handler=LogRecordStreamHandler):
         socketserver.ThreadingTCPServer.__init__(self, (host, port), handler)
         self.abort = 0
         self.timeout = 1
@@ -109,23 +111,21 @@ class LogRecordSocketReceiver(socketserver.ThreadingTCPServer):
 
     def serve_until_stopped(self):
         import select
+
         abort = 0
         while not abort:
-            rd, wr, ex = select.select([self.socket.fileno()],
-                                       [], [],
-                                       self.timeout)
+            rd, wr, ex = select.select([self.socket.fileno()], [], [], self.timeout)
             if rd:
                 self.handle_request()
             abort = self.abort
 
 
 def main():
-    logging.basicConfig(
-        format='%(relativeCreated)5d %(name)-15s %(levelname)-8s %(message)s')
+    logging.basicConfig(format="%(relativeCreated)5d %(name)-15s %(levelname)-8s %(message)s")
     tcpserver = LogRecordSocketReceiver()
-    print('About to start TCP server...')
+    print("About to start TCP server...")
     tcpserver.serve_until_stopped()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

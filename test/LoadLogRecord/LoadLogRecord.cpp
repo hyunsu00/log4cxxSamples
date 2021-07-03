@@ -7,7 +7,9 @@
 #include <log4cxx/consoleappender.h> // log4cxx::ConsoleAppender
 #include <log4cxx/patternlayout.h> // log4cxx::PatternLayout
 #include <log4cxx/logmanager.h> // log4cxx::LogManager
-
+#include <log4cxx/spi/loggingevent.h> // log4cxx::spi::LoggingEventPtr
+#include "BytesObjectLoader.h"
+#include "MsgpackObjectLoader.h"
 
 std::vector<char> loadFile(const char* filename)
 {
@@ -48,15 +50,19 @@ std::vector<char> loadFile(const char* filename)
 
 int main(int argc, char* argv[])
 {
+	setlocale(LC_ALL, "");
+
 	std::string exeDir;
-	std::string sampleDir;
+	std::string msgpackDir;
+	std::string binDir;
 #ifdef _WIN32	
 	{
 		char drive[_MAX_DRIVE] = { 0, }; // 드라이브 명
 		char dir[_MAX_DIR] = { 0, }; // 디렉토리 경로
 		_splitpath_s(argv[0], drive, _MAX_DRIVE, dir, _MAX_DIR, nullptr, 0, nullptr, 0);
 		exeDir = std::string(drive) + dir;
-		sampleDir = exeDir + "samples\\msgpack\\";
+		msgpackDir = exeDir + "samples\\msgpack\\";
+		binDir = exeDir + "samples\\bin\\";
 	}
 #else
 	{
@@ -64,11 +70,21 @@ int main(int argc, char* argv[])
 		exeDir = dirname(exePath);
 		free(exePath);
 		exeDir += "/";
-		sampleDir = exeDir + "samples/msgpack/";
+		msgpackDir = exeDir + "samples/msgpack/";
+		binDir = exeDir + "samples/bin/";
 	}
 #endif
 
-	std::map<msgpack::type::object_type, std::string> typeMap = {
+	// log4cxx::BasicConfigurator::configure();
+	log4cxx::ConsoleAppenderPtr appender(new log4cxx::ConsoleAppender());
+	log4cxx::LayoutPtr layout(new log4cxx::PatternLayout(LOG4CXX_STR("%5p %F\:%L [%d] - %m%n")));
+	appender->setLayout(layout);
+	log4cxx::helpers::Pool pool;
+	appender->activateOptions(pool);
+	log4cxx::Logger::getRootLogger()->addAppender(appender);
+	log4cxx::LogManager::getLoggerRepository()->setConfigured(true);
+
+	std::map<::msgpack::type::object_type, std::string> typeMap = {
 		{msgpack::type::NIL, "NIL"},
 		{msgpack::type::BOOLEAN, "BOOLEAN"},
 		{msgpack::type::POSITIVE_INTEGER, "POSITIVE_INTEGER"},
@@ -83,7 +99,7 @@ int main(int argc, char* argv[])
 		{msgpack::type::EXT, "EXT"},
 	};
 
-	std::vector<char> byteBuf = loadFile((sampleDir + "record0.msgpak").c_str());
+	std::vector<char> byteBuf = loadFile((msgpackDir + "record0.msgpak").c_str());
 
 #if 0
 	msgpack::unpacker unpacker;
@@ -109,13 +125,23 @@ int main(int argc, char* argv[])
 	}
 #endif
 
-	try {
-		msgpack::object_handle oh = msgpack::unpack(&byteBuf[0], byteBuf.size());
-	} catch (msgpack::insufficient_bytes& e) {
-		std::cout << e.what() << std::endl;
-	} catch (msgpack::unpack_error& e) {
-		std::cout << e.what() << std::endl;
+#if 1
+	byteBuf = loadFile((msgpackDir + "record0.msgpak").c_str());
+	log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::msgpack::createLoggingEvent(byteBuf);
+	log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
+	if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
+		log4cxx::helpers::Pool p;
+		remoteLogger->callAppenders(event, p);
 	}
-	
+#endif
 
+#if 1
+	byteBuf = loadFile((binDir + "record0.bin").c_str());
+	event = log4cxx::ext::loader::bytes::createLoggingEvent(byteBuf);
+	remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
+	if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
+		log4cxx::helpers::Pool p;
+		remoteLogger->callAppenders(event, p);
+	}
+#endif
 }

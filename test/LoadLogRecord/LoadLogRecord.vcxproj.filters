@@ -2,8 +2,19 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="LoadLogRecord.cpp" />
+    <ClCompile Include="LoggingEventEx.cpp" />
+    <ClCompile Include="BytesObjectLoader.cpp" />
+    <ClCompile Include="MsgpackObjectLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="LoggingEvnetEx.h" />
+    <ClInclude Include="BytesObjectLoader.h" />
+    <ClInclude Include="MsgpackObjectLoader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\..\Extern\msgpack.natvis" />
   </ItemGroup>
 </Project>
