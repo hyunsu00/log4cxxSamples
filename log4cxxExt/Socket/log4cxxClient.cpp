@@ -2,7 +2,6 @@
 //
 #include "log4cxxSocket.h"
 #include "Exceptions.h"
-#include "ObjectLoader.h"
 #include "log4cxxClient.h"
 
 namespace log4cxx { namespace ext { namespace socket {
