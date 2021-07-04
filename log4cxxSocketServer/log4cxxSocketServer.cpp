@@ -4,15 +4,13 @@
 #include <log4cxx/helpers/loglog.h>		  // log4cxx::helpers::LogLog
 #include <thread>						  // std::thread
 
-#include "log4cxxSocket.h"
-
 #ifdef _WIN32
 #else
 #	include <string.h>	// strdup
 #	include <libgen.h>	// dirname
 #endif
 
-#include "ByteBufInputStream.h"
+#include "log4cxxSocket.h"
 #include "ObjectLoader.h"
 
 const char* const SERVER_LOGGER = "serverLogger";
@@ -23,7 +21,7 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 {
 	LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 접속 - ") << clientInfo.c_str());
 
-#if 0
+#if 1
 
 	const size_t BUF_LEN = 4096;
 	std::vector<char> recvBuf(BUF_LEN, 0);

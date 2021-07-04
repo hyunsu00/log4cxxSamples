@@ -1,68 +1,12 @@
 ﻿// BytesObjectLoader.cpp
 //
-#include <vector> // std::vector
-#include <log4cxx/spi/loggingevent.h> // log4cxx::spi::LoggingEventPtr
-#include <log4cxx/helpers/exception.h> // SmallBufferException, InvalidBufferException
 #include <log4cxx/helpers/charsetdecoder.h> // log4cxx::helpers::CharsetDecoder
 #include <log4cxx/helpers/bytebuffer.h> // log4cxx::helpers::ByteBuffer
+#include "Exceptions.h"
 #include "LoggingEvnetEx.h"
 #include "BytesObjectLoader.h"
 
-namespace log4cxx { namespace ext {
-
-	class SmallBufferException : public log4cxx::helpers::RuntimeException
-	{
-	public:
-		SmallBufferException(const LogString& msg);
-		SmallBufferException(const SmallBufferException& msg);
-		SmallBufferException& operator=(const SmallBufferException& src);
-	}; // class SmallBufferException
-
-	class InvalidBufferException : public log4cxx::helpers::RuntimeException
-	{
-	public:
-		InvalidBufferException(const LogString& msg);
-		InvalidBufferException(const InvalidBufferException& msg);
-		InvalidBufferException& operator=(const InvalidBufferException& src);
-	}; // class InvalidBufferException
-
-	SmallBufferException::SmallBufferException(const LogString& msg1)
-	: RuntimeException(msg1)
-	{
-	}
-
-	SmallBufferException::SmallBufferException(const SmallBufferException& src)
-	: RuntimeException(src)
-	{
-	}
-
-	SmallBufferException& SmallBufferException::operator=(const SmallBufferException& src)
-	{
-		RuntimeException::operator=(src);
-		return *this;
-	}
-
-	InvalidBufferException::InvalidBufferException(const LogString& msg1)
-	: RuntimeException(msg1)
-	{
-	}
-
-	InvalidBufferException::InvalidBufferException(const InvalidBufferException& src)
-	: RuntimeException(src)
-	{
-	}
-
-	InvalidBufferException& InvalidBufferException::operator=(const InvalidBufferException& src)
-	{
-		RuntimeException::operator=(src);
-		return *this;
-	}
-
-}} // log4cxx::ext
-
-namespace log4cxx { namespace ext { namespace io {
-
-	using ByteBuf = std::vector<char>;
+namespace log4cxx { namespace ext { namespace io { namespace Bytes {
 
 	size_t readInt(const ByteBuf& byteBuf, size_t pos, int& value) /*throw(SmallBufferException)*/
 	{
@@ -215,26 +159,26 @@ namespace log4cxx { namespace ext { namespace io {
 		return readPos;
 	}
 
-}}} // log4cxx::ext::io
+}}}} // log4cxx::ext::io::Bytes
 
-namespace log4cxx { namespace ext { namespace loader { namespace  bytes {
+namespace log4cxx { namespace ext { namespace loader { namespace  Bytes {
 
-	log4cxx::spi::LoggingEventPtr createLoggingEvent(ByteBuf& byteBuf)
+	log4cxx::spi::LoggingEventPtr createLoggingEvent(ByteBuf& byteBuf) /*throw(SmallBufferException, InvalidBufferException)*/
 	{
 		const char* pBuf = &byteBuf[0];
 		size_t pos = 0;
 
 		LoggingEventData eventData;
-		pos += io::readLogString(byteBuf, pos, eventData.m_LoggerName);
-		pos += io::readInt(byteBuf, pos, eventData.m_Level);
-		pos += io::readLogString(byteBuf, pos, eventData.m_Message);
-		pos += io::readLong(byteBuf, pos, eventData.m_Timestamp);
-		pos += io::readLogString(byteBuf, pos, eventData.m_ThreadName);
-		pos += io::readUTFString(byteBuf, pos, eventData.m_PathName);
-		pos += io::readUTFString(byteBuf, pos, eventData.m_FuncName);
-		pos += io::readUTFString(byteBuf, pos, eventData.m_LineNumber);
+		pos += io::Bytes::readLogString(byteBuf, pos, eventData.m_LoggerName);
+		pos += io::Bytes::readInt(byteBuf, pos, eventData.m_Level);
+		pos += io::Bytes::readLogString(byteBuf, pos, eventData.m_Message);
+		pos += io::Bytes::readLong(byteBuf, pos, eventData.m_Timestamp);
+		pos += io::Bytes::readLogString(byteBuf, pos, eventData.m_ThreadName);
+		pos += io::Bytes::readUTFString(byteBuf, pos, eventData.m_PathName);
+		pos += io::Bytes::readUTFString(byteBuf, pos, eventData.m_FuncName);
+		pos += io::Bytes::readUTFString(byteBuf, pos, eventData.m_LineNumber);
 
 		return log4cxx::ext::loader::createLoggingEvent(eventData);
 	}
 
-}}}} // log4cxx::ext::loader::bytes
+}}}} // log4cxx::ext::loader::Bytes

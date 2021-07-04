@@ -1,14 +1,12 @@
 ﻿// MsgpackObjectLoader.cpp
 #include <iostream>
-#include <vector> // std::vector
-#include <log4cxx/spi/loggingevent.h> // log4cxx::spi::LoggingEventPtr
 #include <log4cxx/helpers/charsetdecoder.h> // log4cxx::helpers::CharsetDecoder
 #include <log4cxx/helpers/bytebuffer.h> // log4cxx::helpers::ByteBuffer
+#include <msgpack.hpp>
 #include "LoggingEvnetEx.h"
 #include "MsgpackObjectLoader.h"
-#include <msgpack.hpp>
 
-namespace log4cxx { namespace ext { namespace loader { namespace msgpack {
+namespace log4cxx { namespace ext { namespace loader { namespace Msgpack {
 
 	log4cxx::spi::LoggingEventPtr createLoggingEvent(ByteBuf& byteBuf) /*throw(msgpack::insufficient_bytes, msgpack::unpack_error)*/
 	{
@@ -84,4 +82,4 @@ namespace log4cxx { namespace ext { namespace loader { namespace msgpack {
 		return event;
 	}
 
-}}}} // log4cxx::ext::loader::msgpack
+}}}} // log4cxx::ext::loader::Msgpack

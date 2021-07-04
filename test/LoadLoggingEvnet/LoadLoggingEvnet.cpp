@@ -15,8 +15,8 @@
 #	include <libgen.h>	// dirname
 #endif
 
-#include "ByteBufInputStream.h"
-#include "ObjectLoader.h"
+#include "FileLoader.h"
+#include "DefaultObjectLoader.h"
 
 static log4cxx::LoggerPtr sLogger = log4cxx::Logger::getRootLogger();
 
@@ -26,7 +26,7 @@ auto loadFiles = [](const std::string &sampleDir) -> bool
 	{
 		try {
 			std::vector<char> copyByteBuf = byteBuf;
-			log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::createLoggingEvent(copyByteBuf);
+			log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::Default::createLoggingEvent(copyByteBuf);
 			log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
 			if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
 				log4cxx::helpers::Pool p;
@@ -47,7 +47,7 @@ auto loadFiles = [](const std::string &sampleDir) -> bool
 
 		size_t size = 0;
 		try {
-			size = log4cxx::ext::loader::readStart(byteBuf);
+			size = log4cxx::ext::loader::Default::readStart(byteBuf);
 		} catch (log4cxx::ext::SmallBufferException &e) {
 			LOG4CXX_WARN(sLogger, e.what());
 		} catch (log4cxx::ext::InvalidBufferException &e) {
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
 
 	// log4cxx::BasicConfigurator::configure();
 	log4cxx::ConsoleAppenderPtr appender(new log4cxx::ConsoleAppender());
-	log4cxx::LayoutPtr layout(new log4cxx::PatternLayout(LOG4CXX_STR("%5p %F\:%L [%d] - %m%n")));
+	log4cxx::LayoutPtr layout(new log4cxx::PatternLayout(LOG4CXX_STR("%5p %F\\:%L [%d] - %m%n")));
 	appender->setLayout(layout);
 	log4cxx::helpers::Pool pool;
 	appender->activateOptions(pool);

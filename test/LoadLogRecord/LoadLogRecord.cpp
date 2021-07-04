@@ -1,52 +1,17 @@
 ﻿// LoadLogRecord.cpp
 //
 #include <iostream>
-#include <msgpack.hpp>
-#include <memory> // std::unique_ptr
+
 #include <log4cxx/basicconfigurator.h> // log4cxx::BasicConfigurator
 #include <log4cxx/consoleappender.h> // log4cxx::ConsoleAppender
 #include <log4cxx/patternlayout.h> // log4cxx::PatternLayout
 #include <log4cxx/logmanager.h> // log4cxx::LogManager
-#include <log4cxx/spi/loggingevent.h> // log4cxx::spi::LoggingEventPtr
+
+#include <msgpack.hpp> // msgpack::unpacker
+
+#include "FileLoader.h"
 #include "BytesObjectLoader.h"
 #include "MsgpackObjectLoader.h"
-
-std::vector<char> loadFile(const char* filename)
-{
-	struct FileCloseDeleter
-	{
-		inline void operator()(FILE* fp) const
-		{
-			fclose(fp);
-		}
-	}; // struct FileCloseDeleter 
-	using AutoFilePtr = std::unique_ptr<std::remove_pointer<FILE*>::type, FileCloseDeleter>;
-
-	auto getFileContents = [](const char* filename) -> std::vector<char> {
-		FILE* file = fopen(filename, "rb");
-		if (!file) {
-			fprintf(stderr, "Failed to open: %s\n", filename);
-			return std::vector<char>();
-		}
-		(void)fseek(file, 0, SEEK_END);
-		size_t file_length = ftell(file);
-		if (!file_length) {
-			return std::vector<char>();
-		}
-		(void)fseek(file, 0, SEEK_SET);
-
-		std::vector<char> buffer(file_length, 0);
-		size_t bytes_read = fread(&buffer[0], 1, file_length, file);
-		(void)fclose(file);
-		if (bytes_read != file_length) {
-			fprintf(stderr, "Failed to read: %s\n", filename);
-			return std::vector<char>();
-		}
-		return buffer;
-	};
-
-	return getFileContents(filename);
-}
 
 int main(int argc, char* argv[])
 {
@@ -77,7 +42,7 @@ int main(int argc, char* argv[])
 
 	// log4cxx::BasicConfigurator::configure();
 	log4cxx::ConsoleAppenderPtr appender(new log4cxx::ConsoleAppender());
-	log4cxx::LayoutPtr layout(new log4cxx::PatternLayout(LOG4CXX_STR("%5p %F\:%L [%d] - %m%n")));
+	log4cxx::LayoutPtr layout(new log4cxx::PatternLayout(LOG4CXX_STR("%5p %F\\:%L [%d] - %m%n")));
 	appender->setLayout(layout);
 	log4cxx::helpers::Pool pool;
 	appender->activateOptions(pool);
@@ -99,9 +64,9 @@ int main(int argc, char* argv[])
 		{msgpack::type::EXT, "EXT"},
 	};
 
-	std::vector<char> byteBuf = loadFile((msgpackDir + "record0.msgpak").c_str());
+	std::vector<char> byteBuf = log4cxx::ext::io::loadFile((msgpackDir + "record0.msgpak").c_str());
 
-#if 0
+#if 1
 	msgpack::unpacker unpacker;
 	unpacker.reserve_buffer(byteBuf.size());
 	memcpy(unpacker.buffer(), &byteBuf[0], byteBuf.size());
@@ -126,8 +91,8 @@ int main(int argc, char* argv[])
 #endif
 
 #if 1
-	byteBuf = loadFile((msgpackDir + "record0.msgpak").c_str());
-	log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::msgpack::createLoggingEvent(byteBuf);
+	byteBuf = log4cxx::ext::io::loadFile((msgpackDir + "record0.msgpak").c_str());
+	log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::Msgpack::createLoggingEvent(byteBuf);
 	log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
 	if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
 		log4cxx::helpers::Pool p;
@@ -136,8 +101,8 @@ int main(int argc, char* argv[])
 #endif
 
 #if 1
-	byteBuf = loadFile((binDir + "record0.bin").c_str());
-	event = log4cxx::ext::loader::bytes::createLoggingEvent(byteBuf);
+	byteBuf = log4cxx::ext::io::loadFile((binDir + "record0.bin").c_str());
+	event = log4cxx::ext::loader::Bytes::createLoggingEvent(byteBuf);
 	remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
 	if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
 		log4cxx::helpers::Pool p;

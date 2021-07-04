@@ -1,10 +1,10 @@
-﻿// SocketInputStream.h
+﻿// DefaultSocketInputStream.h
 #pragma once
 #include <vector> // std::vector
 #include <log4cxx/logstring.h> // log4cxx::LogString
 #include <log4cxx/mdc.h> // log4cxx::MDC::Map
 
-namespace log4cxx { namespace ext { namespace io {
+namespace log4cxx { namespace ext { namespace io { namespace Default {
 
     bool read(SOCKET socket, void* buf, size_t len) noexcept;
     bool readByte(SOCKET socket, unsigned char& value) noexcept;
@@ -26,4 +26,4 @@ namespace log4cxx { namespace ext { namespace io {
     bool readMDC(SOCKET socket, MDC::Map& value) noexcept;
     bool readNDC(SOCKET socket, LogString& value) noexcept;
 
-}}} // log4cxx::ext::io
+}}}} // log4cxx::ext::io::Default

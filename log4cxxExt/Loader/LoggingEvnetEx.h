@@ -1,5 +1,6 @@
 ﻿// LoggingEventEx.h
 #pragma once
+#include <log4cxx/spi/loggingevent.h> // log4cxx::spi::LoggingEventPtr
 
 namespace log4cxx { namespace ext {
 
@@ -20,6 +21,14 @@ namespace log4cxx { namespace ext {
 
 namespace log4cxx { namespace ext { namespace loader {
 
-	log4cxx::spi::LoggingEventPtr createLoggingEvent(const LoggingEventData& data) noexcept;
+	log4cxx::spi::LoggingEventPtr createLoggingEvent(
+		const LoggingEventData& data
+	) noexcept;
+	log4cxx::spi::LoggingEventPtr createLoggingEvent(
+		const LogString& logger,
+		const LevelPtr& level, const LogString& message,
+		log4cxx_time_t timeStamp, const LogString& threadName,
+		const std::string& fullInfo
+	) noexcept;
 
 }}} // log4cxx::ext::loader

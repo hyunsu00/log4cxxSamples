@@ -1,9 +1,7 @@
 ﻿// log4cxxClient.cpp
-#include <string>
-#include <vector>
-#include <log4cxx/log4cxx.h>
+//
 #include "log4cxxSocket.h"
-#include "ByteBufInputStream.h"
+#include "Exceptions.h"
 #include "ObjectLoader.h"
 #include "log4cxxClient.h"
 

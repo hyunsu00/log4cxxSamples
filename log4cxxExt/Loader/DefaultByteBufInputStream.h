@@ -1,33 +1,10 @@
-﻿// ByteBufInputStream.h
+﻿// DefaultByteBufInputStream.h
 #pragma once
 #include <vector> // std::vector
-#ifdef _WIN32
-class LOG4CXX_EXPORT std::exception; // C4275
-#endif
-#include <log4cxx/helpers/exception.h> // log4cxx::helpers::RuntimeException
+#include <log4cxx/logstring.h> // log4cxx::LogString
 #include <log4cxx/mdc.h> // log4cxx::MDC::Map
 
-namespace log4cxx { namespace ext {
-
-    class SmallBufferException : public log4cxx::helpers::RuntimeException
-    {
-    public:
-        SmallBufferException(const LogString& msg);
-        SmallBufferException(const SmallBufferException& msg);
-        SmallBufferException& operator=(const SmallBufferException& src);
-    }; // class SmallBufferException
-
-    class InvalidBufferException : public log4cxx::helpers::RuntimeException
-    {
-    public:
-        InvalidBufferException(const LogString& msg);
-        InvalidBufferException(const InvalidBufferException& msg);
-        InvalidBufferException& operator=(const InvalidBufferException& src);
-    }; // class InvalidBufferException
-
-}} // log4cxx::ext
-
-namespace log4cxx { namespace ext { namespace io {
+namespace log4cxx { namespace ext { namespace io { namespace Default {
 
     using ByteBuf = std::vector<char>;
 
@@ -51,4 +28,4 @@ namespace log4cxx { namespace ext { namespace io {
     size_t readMDC(const ByteBuf& byteBuf, size_t pos, MDC::Map& value) /*throw(SmallBufferException, InvalidBufferException)*/;
     size_t readNDC(const ByteBuf& byteBuf, size_t pos, LogString& value) /*throw(SmallBufferException, InvalidBufferException)*/;
 
-}}} // log4cxx::ext::io
+}}}} // log4cxx::ext::io::Default

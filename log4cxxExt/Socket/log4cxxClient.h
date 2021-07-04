@@ -1,6 +1,8 @@
 ﻿// log4cxxClient.h
 //
 #pragma once
+#include <string> // std::string
+#include <vector> // std::vector
 
 namespace log4cxx { namespace ext { namespace socket {
 

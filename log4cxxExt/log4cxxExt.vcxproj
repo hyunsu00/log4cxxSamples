@@ -19,16 +19,28 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Loader\ByteBufInputStream.cpp" />
+    <ClCompile Include="Loader\BytesObjectLoader.cpp" />
+    <ClCompile Include="Loader\DefaultByteBufInputStream.cpp" />
+    <ClCompile Include="Loader\Exceptions.cpp" />
+    <ClCompile Include="Loader\FileLoader.cpp" />
+    <ClCompile Include="Loader\LoggingEventEx.cpp" />
+    <ClCompile Include="Loader\DefaultObjectLoader.cpp" />
+    <ClCompile Include="Loader\DefaultSocketInputStream.cpp" />
+    <ClCompile Include="Loader\MsgpackObjectLoader.cpp" />
     <ClCompile Include="Loader\ObjectLoader.cpp" />
-    <ClCompile Include="Loader\SocketInputStream.cpp" />
     <ClCompile Include="Socket\log4cxxClient.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Loader\ByteBufInputStream.h" />
-    <ClInclude Include="Loader\InputStreamDef.h" />
+    <ClInclude Include="Loader\BytesObjectLoader.h" />
+    <ClInclude Include="Loader\DefaultByteBufInputStream.h" />
+    <ClInclude Include="Loader\DefaultInputStreamDef.h" />
+    <ClInclude Include="Loader\Exceptions.h" />
+    <ClInclude Include="Loader\FileLoader.h" />
+    <ClInclude Include="Loader\LoggingEvnetEx.h" />
+    <ClInclude Include="Loader\DefaultObjectLoader.h" />
+    <ClInclude Include="Loader\DefaultSocketInputStream.h" />
+    <ClInclude Include="Loader\MsgpackObjectLoader.h" />
     <ClInclude Include="Loader\ObjectLoader.h" />
-    <ClInclude Include="Loader\SocketInputStream.h" />
     <ClInclude Include="Socket\log4cxxClient.h" />
     <ClInclude Include="Socket\log4cxxSocket.h" />
   </ItemGroup>
@@ -121,7 +133,8 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>./Loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./Loader;../Extern/msgpack-c-cpp-3.3.0/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4275;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -140,7 +153,8 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>./Loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./Loader;../Extern/msgpack-c-cpp-3.3.0/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4275;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -159,7 +173,8 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>./Loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./Loader;../Extern/msgpack-c-cpp-3.3.0/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4275;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -178,7 +193,8 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>./Loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./Loader;../Extern/msgpack-c-cpp-3.3.0/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4275;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>

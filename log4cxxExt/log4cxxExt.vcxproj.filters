@@ -10,39 +10,84 @@
     <Filter Include="packages">
       <UniqueIdentifier>{192730d0-3181-43b4-bc7f-c40ce40fe9e4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Loader\Default">
+      <UniqueIdentifier>{55b59255-3e92-449b-bb77-3d728398555d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Loader\Bytes">
+      <UniqueIdentifier>{239ad4d2-4ba5-4ccb-8092-722a7b1bf6b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Loader\Msgpack">
+      <UniqueIdentifier>{4c6f28d1-ba63-46b1-9eec-afcca1e5aa0e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Loader\ByteBufInputStream.cpp">
+    <ClCompile Include="Socket\log4cxxClient.cpp">
+      <Filter>Socket</Filter>
+    </ClCompile>
+    <ClCompile Include="Loader\LoggingEventEx.cpp">
       <Filter>Loader</Filter>
     </ClCompile>
     <ClCompile Include="Loader\ObjectLoader.cpp">
       <Filter>Loader</Filter>
     </ClCompile>
-    <ClCompile Include="Loader\SocketInputStream.cpp">
+    <ClCompile Include="Loader\FileLoader.cpp">
       <Filter>Loader</Filter>
     </ClCompile>
-    <ClCompile Include="Socket\log4cxxClient.cpp">
-      <Filter>Socket</Filter>
+    <ClCompile Include="Loader\DefaultByteBufInputStream.cpp">
+      <Filter>Loader\Default</Filter>
+    </ClCompile>
+    <ClCompile Include="Loader\DefaultObjectLoader.cpp">
+      <Filter>Loader\Default</Filter>
+    </ClCompile>
+    <ClCompile Include="Loader\DefaultSocketInputStream.cpp">
+      <Filter>Loader\Default</Filter>
+    </ClCompile>
+    <ClCompile Include="Loader\BytesObjectLoader.cpp">
+      <Filter>Loader\Bytes</Filter>
+    </ClCompile>
+    <ClCompile Include="Loader\Exceptions.cpp">
+      <Filter>Loader</Filter>
+    </ClCompile>
+    <ClCompile Include="Loader\MsgpackObjectLoader.cpp">
+      <Filter>Loader\Msgpack</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Loader\ByteBufInputStream.h">
-      <Filter>Loader</Filter>
-    </ClInclude>
-    <ClInclude Include="Loader\InputStreamDef.h">
-      <Filter>Loader</Filter>
-    </ClInclude>
-    <ClInclude Include="Loader\ObjectLoader.h">
-      <Filter>Loader</Filter>
-    </ClInclude>
-    <ClInclude Include="Loader\SocketInputStream.h">
-      <Filter>Loader</Filter>
-    </ClInclude>
     <ClInclude Include="Socket\log4cxxClient.h">
       <Filter>Socket</Filter>
     </ClInclude>
     <ClInclude Include="Socket\log4cxxSocket.h">
       <Filter>Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader\LoggingEvnetEx.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader\ObjectLoader.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader\FileLoader.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader\DefaultByteBufInputStream.h">
+      <Filter>Loader\Default</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader\DefaultInputStreamDef.h">
+      <Filter>Loader\Default</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader\DefaultObjectLoader.h">
+      <Filter>Loader\Default</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader\DefaultSocketInputStream.h">
+      <Filter>Loader\Default</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader\BytesObjectLoader.h">
+      <Filter>Loader\Bytes</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader\Exceptions.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader\MsgpackObjectLoader.h">
+      <Filter>Loader\Msgpack</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

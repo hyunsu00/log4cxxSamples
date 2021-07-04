@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.31410.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LoadLogRecord", "LoadLogRecord\LoadLogRecord.vcxproj", "{C08B9573-E21A-46FE-B9F8-7B665852D77B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "log4cxxExt", "..\log4cxxExt\log4cxxExt.vcxproj", "{40C462D2-55E0-491E-B844-7AA92CDEF722}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{C08B9573-E21A-46FE-B9F8-7B665852D77B}.Release|x64.Build.0 = Release|x64
 		{C08B9573-E21A-46FE-B9F8-7B665852D77B}.Release|x86.ActiveCfg = Release|Win32
 		{C08B9573-E21A-46FE-B9F8-7B665852D77B}.Release|x86.Build.0 = Release|Win32
+		{40C462D2-55E0-491E-B844-7AA92CDEF722}.Debug|x64.ActiveCfg = Debug|x64
+		{40C462D2-55E0-491E-B844-7AA92CDEF722}.Debug|x64.Build.0 = Debug|x64
+		{40C462D2-55E0-491E-B844-7AA92CDEF722}.Debug|x86.ActiveCfg = Debug|Win32
+		{40C462D2-55E0-491E-B844-7AA92CDEF722}.Debug|x86.Build.0 = Debug|Win32
+		{40C462D2-55E0-491E-B844-7AA92CDEF722}.Release|x64.ActiveCfg = Release|x64
+		{40C462D2-55E0-491E-B844-7AA92CDEF722}.Release|x64.Build.0 = Release|x64
+		{40C462D2-55E0-491E-B844-7AA92CDEF722}.Release|x86.ActiveCfg = Release|Win32
+		{40C462D2-55E0-491E-B844-7AA92CDEF722}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

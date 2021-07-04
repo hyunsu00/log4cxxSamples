@@ -1,4 +1,4 @@
-﻿// SocketInputStream.cpp
+﻿// DefaultSocketInputStream.cpp
 //
 #ifdef _WIN32
 #	include <winsock2.h> // SOCKET, recv
@@ -10,15 +10,13 @@ typedef int SOCKET;
 #	define _ASSERTE assert
 #endif
 
-#include <log4cxx/log4cxx.h> // log4cxx_int64_t
-#include "InputStreamDef.h"
-#include "SocketInputStream.h"
 #include <log4cxx/helpers/charsetdecoder.h> // log4cxx::helpers::CharsetDecoder
 #include <log4cxx/helpers/bytebuffer.h> // log4cxx::helpers::ByteBuffer
-#include <memory> // std::unique_ptr
-#include <memory.h> // memcmp
 
-namespace log4cxx { namespace ext { namespace io {
+#include "DefaultInputStreamDef.h"
+#include "DefaultSocketInputStream.h"
+
+namespace log4cxx { namespace ext { namespace io { namespace Default {
 
 	bool read(SOCKET socket, void* buf, size_t len) noexcept
 	{
@@ -404,4 +402,4 @@ namespace log4cxx { namespace ext { namespace io {
 		return true;
 	}
 
-}}} // // log4cxx::ext::io
+}}}} // log4cxx::ext::io::Default

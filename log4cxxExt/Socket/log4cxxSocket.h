@@ -23,6 +23,7 @@ auto closesocket = [](int fd) -> int {
 	return close(fd);
 };
 #endif
+#include <string> // std::string
 
 namespace log4cxx { namespace ext { namespace socket {
 

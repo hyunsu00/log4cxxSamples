@@ -1,4 +1,4 @@
-﻿// InputStreamDef.h
+﻿// DefaultInputStreamDef.h
 #pragma once
 
 namespace log4cxx { namespace ext { namespace classDesc {
@@ -90,7 +90,7 @@ namespace log4cxx { namespace ext { namespace classDesc {
 
 }}} // log4cxx::ext::classDesc
 
-namespace log4cxx { namespace ext { namespace io  {
+namespace log4cxx { namespace ext { namespace io  { namespace Default {
 
 	enum { STREAM_MAGIC = 0xACED };
 	enum { STREAM_VERSION = 5 };
@@ -110,4 +110,4 @@ namespace log4cxx { namespace ext { namespace io  {
 		SC_SERIALIZABLE = 0x02
 	};
 
-}}} // log4cxx::ext::io
+}}}} // log4cxx::ext::io::Default

@@ -1,4 +1,4 @@
-﻿// ByteBufInputStream.cpp
+﻿// DefaultByteBufInputStream.cpp
 //
 #ifdef _WIN32
 #	include <crtdbg.h> // _ASSERTE
@@ -8,51 +8,13 @@
 #endif
 
 #include <log4cxx/log4cxx.h> // log4cxx_int64_t
-#include "InputStreamDef.h"
-#include "ByteBufInputStream.h"
-#include <log4cxx/helpers/exception.h> // SmallBufferException, InvalidBufferException
 #include <log4cxx/helpers/charsetdecoder.h> // log4cxx::helpers::CharsetDecoder
 #include <log4cxx/helpers/bytebuffer.h> // log4cxx::helpers::ByteBuffer
-#include <memory> // std::unique_ptr
-#include <memory.h> // memcmp
+#include "Exceptions.h"
+#include "DefaultInputStreamDef.h"
+#include "DefaultByteBufInputStream.h"
 
-namespace log4cxx { namespace ext {
-
-	SmallBufferException::SmallBufferException(const LogString& msg1)
-	: RuntimeException(msg1)
-	{
-	}
-
-	SmallBufferException::SmallBufferException(const SmallBufferException& src)
-	: RuntimeException(src)
-	{
-	}
-
-	SmallBufferException& SmallBufferException::operator=(const SmallBufferException& src)
-	{
-		RuntimeException::operator=(src);
-		return *this;
-	}
-
-	InvalidBufferException::InvalidBufferException(const LogString& msg1)
-	: RuntimeException(msg1)
-	{
-	}
-
-	InvalidBufferException::InvalidBufferException(const InvalidBufferException& src)
-	: RuntimeException(src)
-	{
-	}
-
-	InvalidBufferException& InvalidBufferException::operator=(const InvalidBufferException& src)
-	{
-		RuntimeException::operator=(src);
-		return *this;
-	}
-
-}} // log4cxx::ext
-
-namespace log4cxx { namespace ext { namespace io {
+namespace log4cxx { namespace ext { namespace io { namespace Default {
 
 	size_t readByte(const ByteBuf& byteBuf, size_t pos, unsigned char& value) /*throw(SmallBufferException)*/
 	{
@@ -181,9 +143,9 @@ namespace log4cxx { namespace ext { namespace io {
 		size_t readPos = 0;
 
 		if (!skipTypeClass) {
-			unsigned char typeClass = io::TC_STRING;
-			size_t size = io::readByte(byteBuf, pos, typeClass);
-			if (typeClass != io::TC_STRING) {
+			unsigned char typeClass = TC_STRING;
+			size_t size = readByte(byteBuf, pos, typeClass);
+			if (typeClass != TC_STRING) {
 				throw InvalidBufferException(LOG4CXX_STR("type이 TC_STRING이여야만 한다."));
 			}
 			readPos += size;
@@ -234,9 +196,9 @@ namespace log4cxx { namespace ext { namespace io {
 		size_t readPos = 0;
 
 		if (!skipTypeClass) {
-			unsigned char typeClass = io::TC_STRING;
-			size_t size = io::readByte(byteBuf, pos, typeClass);
-			if (typeClass != io::TC_STRING) {
+			unsigned char typeClass = TC_STRING;
+			size_t size = readByte(byteBuf, pos, typeClass);
+			if (typeClass != TC_STRING) {
 				throw InvalidBufferException(LOG4CXX_STR("type이 TC_STRING이여야만 한다."));
 			}
 			readPos += size;
@@ -290,9 +252,9 @@ namespace log4cxx { namespace ext { namespace io {
 		size_t readPos = 0;
 
 		if (!skipTypeClass) {
-			unsigned char typeClass = io::TC_OBJECT;
-			size_t size = io::readByte(byteBuf, pos, typeClass);
-			if (typeClass != io::TC_OBJECT) {
+			unsigned char typeClass = TC_OBJECT;
+			size_t size = readByte(byteBuf, pos, typeClass);
+			if (typeClass != TC_OBJECT) {
 				throw InvalidBufferException(LOG4CXX_STR("type이 TC_OBJECT이여야만 한다."));
 			}
 			readPos += size;
@@ -365,8 +327,8 @@ namespace log4cxx { namespace ext { namespace io {
 		const size_t byteBufSize = byteBuf.size();
 		size_t readPos = 0;
 
-		unsigned char typeClass = io::TC_CLASSDESC;
-		size_t size = io::readByte(byteBuf, pos + readPos, typeClass);
+		unsigned char typeClass = TC_CLASSDESC;
+		size_t size = readByte(byteBuf, pos + readPos, typeClass);
 		readPos += size;
 
 		switch (typeClass)
@@ -389,7 +351,7 @@ namespace log4cxx { namespace ext { namespace io {
 		case TC_REFERENCE:
 			{
 				int val = 0;
-				size = io::readInt(byteBuf, pos + readPos, val);
+				size = readInt(byteBuf, pos + readPos, val);
 				readPos += size;
 
 				value.second = val;
@@ -409,8 +371,8 @@ namespace log4cxx { namespace ext { namespace io {
 		const size_t byteBufSize = byteBuf.size();
 		size_t readPos = 0;
 
-		unsigned char typeClass = io::TC_NULL;
-		size_t size = io::readByte(byteBuf, pos + readPos, typeClass);
+		unsigned char typeClass = TC_NULL;
+		size_t size = readByte(byteBuf, pos + readPos, typeClass);
 		readPos += size;
 
 		switch (typeClass)
@@ -447,8 +409,8 @@ namespace log4cxx { namespace ext { namespace io {
 		const size_t byteBufSize = byteBuf.size();
 		size_t readPos = 0;
 
-		unsigned char typeClass = io::TC_NULL;
-		size_t size = io::readByte(byteBuf, pos + readPos, typeClass);
+		unsigned char typeClass = TC_NULL;
+		size_t size = readByte(byteBuf, pos + readPos, typeClass);
 		readPos += size;
 
 		switch (typeClass)
@@ -481,8 +443,8 @@ namespace log4cxx { namespace ext { namespace io {
 		const size_t byteBufSize = byteBuf.size();
 		size_t readPos = 0;
 
-		unsigned char typeClass = io::TC_NULL;
-		size_t size = io::readByte(byteBuf, pos + readPos, typeClass);
+		unsigned char typeClass = TC_NULL;
+		size_t size = readByte(byteBuf, pos + readPos, typeClass);
 		readPos += size;
 
 		switch (typeClass)
@@ -509,4 +471,4 @@ namespace log4cxx { namespace ext { namespace io {
 		return readPos;
 	}
 
-}}} // // log4cxx::ext::io
+}}}} // log4cxx::ext::io::Default
