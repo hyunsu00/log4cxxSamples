@@ -16,7 +16,7 @@ class bytesSocketHandler(logging.handlers.SocketHandler):
         clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             clientSocket.connect(self.address)
-            clientSocket.send(b"\xFF\xFF\xFF\xFF")
+            clientSocket.send(b"\xAC\xED\x01\x05")
         except OSError:
             clientSocket.close()
             raise
@@ -77,7 +77,7 @@ class msgpackSocketHandler(logging.handlers.SocketHandler):
         clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             clientSocket.connect(self.address)
-            clientSocket.send(b"\xFF\xFF\xFF\xFF")
+            clientSocket.send(b"\xAC\xED\x02\x05")
         except OSError:
             clientSocket.close()
             raise

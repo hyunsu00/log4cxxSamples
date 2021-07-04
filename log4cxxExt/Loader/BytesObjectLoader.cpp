@@ -172,7 +172,7 @@ namespace log4cxx { namespace ext { namespace loader { namespace  Bytes {
 
 		// STREAM_MAGIC, STREAM_VERSION
 		unsigned char start[] = {
-			0xAC, 0xED, 0x00, 0x05
+			0xAC, 0xED, 0x01, 0x05
 		};
 		size_t size = sizeof(start);
 		if (pos + readPos + size > byteBufSize) {
@@ -203,6 +203,10 @@ namespace log4cxx { namespace ext { namespace loader { namespace  Bytes {
 		pos += io::Bytes::readUTFString(byteBuf, pos, eventData.m_PathName);
 		pos += io::Bytes::readUTFString(byteBuf, pos, eventData.m_FuncName);
 		pos += io::Bytes::readUTFString(byteBuf, pos, eventData.m_LineNumber);
+
+		size_t readBytes = pos;
+		_ASSERTE((byteBuf.size() >= readBytes) && "모든 값을 읽지 못했다.");
+		byteBuf.erase(byteBuf.begin(), byteBuf.begin() + readBytes);
 
 		return log4cxx::ext::loader::createLoggingEvent(eventData);
 	}

@@ -18,7 +18,7 @@ namespace log4cxx { namespace ext { namespace loader { namespace Msgpack {
 
 		// STREAM_MAGIC, STREAM_VERSION
 		unsigned char start[] = {
-			0xAC, 0xED, 0x00, 0x05
+			0xAC, 0xED, 0x02, 0x05
 		};
 		size_t size = sizeof(start);
 		if (pos + readPos + size > byteBufSize) {
@@ -114,10 +114,10 @@ namespace log4cxx { namespace ext { namespace loader { namespace Msgpack {
 			throw InvalidBufferException(LOG4CXX_STR("data 정보가 잘못 되었다."));
 		}
 		
-		auto event = log4cxx::ext::loader::createLoggingEvent(eventData);
+		_ASSERTE((byteBuf.size() >= readBytes) && "모든 값을 읽지 못했다.");
 		byteBuf.erase(byteBuf.begin(), byteBuf.begin() + readBytes);
 	
-		return event;
+		return log4cxx::ext::loader::createLoggingEvent(eventData);
 	}
 
 }}}} // log4cxx::ext::loader::Msgpack

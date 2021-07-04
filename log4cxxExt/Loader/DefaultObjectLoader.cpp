@@ -205,8 +205,8 @@ namespace log4cxx { namespace ext { namespace loader { namespace Default {
 			pos += size;
 		}
 
-		_ASSERTE((byteBuf.size() >= pos) && "모든 값을 읽지 못했다.");
 		size_t readBytes = pos;
+		_ASSERTE((byteBuf.size() >= readBytes) && "모든 값을 읽지 못했다.");
 		byteBuf.erase(byteBuf.begin(), byteBuf.begin() + readBytes);
 
 		auto eventPtr = log4cxx::ext::loader::createLoggingEvent(

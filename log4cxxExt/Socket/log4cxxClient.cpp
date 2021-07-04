@@ -15,7 +15,7 @@ namespace log4cxx { namespace ext { namespace socket {
 
     Client::Client(SOCKET socket)
     : m_Socket(socket)
-    , m_Start(true)
+    , m_LoggingFunc(nullptr)
     , m_ByteBuf()
     {
     }
@@ -42,38 +42,38 @@ namespace log4cxx { namespace ext { namespace socket {
     bool Client::forceLog(const char* bytes, size_t size) const
     {
         m_ByteBuf.insert(m_ByteBuf.end(), bytes, bytes + size);
-        if (m_Start) {
-            size_t readBytes = 0;
+
+        if (!m_LoggingFunc) {
             try {
-                readBytes = log4cxx::ext::loader::readStart(m_ByteBuf);
+                m_LoggingFunc = log4cxx::ext::loader::createLoggingEventFunc(m_ByteBuf);
             } catch (log4cxx::ext::SmallBufferException& e) { // 무시
                 LOG4CXX_WARN(s_Logger, e.what());
                 return true;
+            } catch (...) {
+                LOG4CXX_ERROR(s_Logger, LOG4CXX_STR("loggingEventFunc 생성 실패."));
+                return false;
+            }
+            
+            if (!m_LoggingFunc) {
+                LOG4CXX_ERROR(s_Logger, LOG4CXX_STR("loggingEventFunc 생성 실패."));
+                return false;
+            }
+        }
+
+        while (!m_ByteBuf.empty()) {
+            try {
+                log4cxx::spi::LoggingEventPtr event = m_LoggingFunc(m_ByteBuf);
+                log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
+                if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
+                    log4cxx::helpers::Pool p;
+                    remoteLogger->callAppenders(event, p);
+                }
+            } catch (log4cxx::ext::SmallBufferException& e) { // 무시
+                LOG4CXX_WARN(s_Logger, e.what());
+                break;
             } catch (log4cxx::ext::InvalidBufferException& e) { // 종료
                 LOG4CXX_ERROR(s_Logger, e.what());
                 return false;
-            }
-            m_ByteBuf.erase(m_ByteBuf.begin(), m_ByteBuf.begin() + readBytes);
-
-            m_Start = false;
-        }
-
-        if (!m_Start) {
-            while (!m_ByteBuf.empty()) {
-                try {
-                    log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::createLoggingEvent(m_ByteBuf);
-                    log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
-                    if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
-                        log4cxx::helpers::Pool p;
-                        remoteLogger->callAppenders(event, p);
-                    }
-                } catch (log4cxx::ext::SmallBufferException& e) { // 무시
-                    LOG4CXX_WARN(s_Logger, e.what());
-                    break;
-                } catch (log4cxx::ext::InvalidBufferException& e) { // 종료
-                    LOG4CXX_ERROR(s_Logger, e.what());
-                    return false;
-                }
             }
         }
 

@@ -3,6 +3,7 @@
 #pragma once
 #include <string> // std::string
 #include <vector> // std::vector
+#include <ObjectLoader.h>
 
 namespace log4cxx { namespace ext { namespace socket {
 
@@ -28,7 +29,7 @@ namespace log4cxx { namespace ext { namespace socket {
 
     private:
         SOCKET m_Socket;
-        mutable bool m_Start;
+        mutable loader::LoggingEventFunc m_LoggingFunc;
         mutable std::vector<char> m_ByteBuf;
     }; // class Client 
 
