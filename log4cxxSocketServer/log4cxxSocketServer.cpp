@@ -11,7 +11,7 @@
 #endif
 
 #include "log4cxxSocket.h"
-#include "ObjectLoader.h"
+#include "DefaultObjectLoader.h"
 
 const char* const SERVER_LOGGER = "serverLogger";
 static log4cxx::LoggerPtr sLogger = log4cxx::Logger::getLogger(SERVER_LOGGER);
@@ -32,7 +32,7 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 		const size_t len = 4;
 		size_t readBytes = 0;
 		while (readBytes < len) {
-			int len_read = ::recv(clientSocket, pBuf, len - readBytes, 0);
+			int len_read = ::recv(clientSocket, pBuf, static_cast<int>(len - readBytes), 0);
 			if (len_read <= 0) {
 				goto CLEAN_UP;
 			}
@@ -47,7 +47,7 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 		}
 
 		try {
-			log4cxx::ext::loader::readStart(recvBuf);
+			log4cxx::ext::loader::Default::readStart(recvBuf);
 		} catch (log4cxx::helpers::Exception &e) {
 			LOG4CXX_ERROR(sLogger, e.what());
 			goto CLEAN_UP;
@@ -59,7 +59,7 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 		auto forceLog = [](std::vector<char>& byteBuf) -> bool {
 			while (!byteBuf.empty()) {
 				try {
-					log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::createLoggingEvent(byteBuf);
+					log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::Default::createLoggingEvent(byteBuf);
 					log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
 					if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
 						log4cxx::helpers::Pool p;
@@ -98,7 +98,7 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 
 	// 자바 스트림 프로토콜 확인
 	{
-		bool start = log4cxx::ext::loader::readStart(clientSocket);
+		bool start = log4cxx::ext::loader::Default::readStart(clientSocket);
 		if (!start) {
 			goto CLEAN_UP;
 		}
@@ -107,7 +107,7 @@ auto runClient = [](SOCKET clientSocket, const std::string &clientInfo)
 	// LoggingEvent
 	{
 		while (true) {
-			log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::createLoggingEvent(clientSocket);
+			log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::Default::createLoggingEvent(clientSocket);
 			if (!event) {
 				LOG4CXX_DEBUG(sLogger, LOG4CXX_STR("클라이언트 [") << clientInfo.c_str() << LOG4CXX_STR("] : 종료중... "));
 				goto CLEAN_UP;

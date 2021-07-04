@@ -20,6 +20,8 @@ namespace log4cxx { namespace ext { namespace loader { namespace  Bytes {
 
 	using ByteBuf = log4cxx::ext::io::Bytes::ByteBuf;
 
+	// 바이트 프로토콜 반환
+	size_t readStart(const ByteBuf& byteBuf) /*throw(SmallBufferException, InvalidBufferException)*/;
 	// LoggingEvent 객체 생성
 	log4cxx::spi::LoggingEventPtr createLoggingEvent(ByteBuf& byteBuf) /*throw(SmallBufferException, InvalidBufferException)*/;
 

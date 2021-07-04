@@ -13,6 +13,27 @@
 #include "BytesObjectLoader.h"
 #include "MsgpackObjectLoader.h"
 
+static log4cxx::LoggerPtr sLogger = log4cxx::Logger::getRootLogger();
+auto forceLog = [](const std::vector<char>& byteBuf) -> bool
+{
+	try {
+		std::vector<char> copyByteBuf = byteBuf;
+		log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::Msgpack::createLoggingEvent(copyByteBuf);
+		log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
+		if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
+			log4cxx::helpers::Pool p;
+			remoteLogger->callAppenders(event, p);
+		}
+	} catch (log4cxx::ext::SmallBufferException& e) {
+		LOG4CXX_WARN(sLogger, e.what());
+	} catch (log4cxx::ext::InvalidBufferException& e) {
+		LOG4CXX_ERROR(sLogger, e.what());
+		return false;
+	}
+
+	return true;
+}; // auto forceLog
+
 int main(int argc, char* argv[])
 {
 	setlocale(LC_ALL, "");
@@ -92,15 +113,27 @@ int main(int argc, char* argv[])
 
 #if 1
 	byteBuf = log4cxx::ext::io::loadFile((msgpackDir + "record0.msgpak").c_str());
-	log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::Msgpack::createLoggingEvent(byteBuf);
-	log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
-	if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
-		log4cxx::helpers::Pool p;
-		remoteLogger->callAppenders(event, p);
+
+	std::vector<char> copyBuf;
+	size_t byteBufSize = byteBuf.size();
+	size_t count = byteBufSize / 100;
+	size_t remain = byteBufSize % 100;
+
+	for (size_t i = 0; i < count; i++) {
+		for (size_t j = 0; j < 100; j++) {
+			copyBuf.push_back(byteBuf[j + 100 * i]);
+		}
+		// 로그 출력
+		forceLog(copyBuf);
 	}
+	for (size_t i = 0; i < remain; i++) {
+		copyBuf.push_back(byteBuf[i + 100 * count]);
+	}
+	// 로그 출력
+	forceLog(copyBuf);
 #endif
 
-#if 1
+#if 0
 	byteBuf = log4cxx::ext::io::loadFile((binDir + "record0.bin").c_str());
 	event = log4cxx::ext::loader::Bytes::createLoggingEvent(byteBuf);
 	remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());

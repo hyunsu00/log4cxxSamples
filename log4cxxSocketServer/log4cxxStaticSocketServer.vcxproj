@@ -19,10 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\log4cxxExt\Loader\ByteBufInputStream.cpp" />
-    <ClCompile Include="..\log4cxxExt\Loader\ObjectLoader.cpp" />
-    <ClCompile Include="..\log4cxxExt\Loader\SocketInputStream.cpp" />
-    <ClCompile Include="..\log4cxxExt\Socket\log4cxxClient.cpp" />
+    <ClCompile Include="..\log4cxxExt\Loader\DefaultByteBufInputStream.cpp" />
+    <ClCompile Include="..\log4cxxExt\Loader\DefaultObjectLoader.cpp" />
+    <ClCompile Include="..\log4cxxExt\Loader\DefaultSocketInputStream.cpp" />
+    <ClCompile Include="..\log4cxxExt\Loader\Exceptions.cpp" />
+    <ClCompile Include="..\log4cxxExt\Loader\LoggingEventEx.cpp" />
     <ClCompile Include="log4cxxSocketServer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -34,11 +35,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\log4cxxExt\Loader\ByteBufInputStream.h" />
-    <ClInclude Include="..\log4cxxExt\Loader\InputStreamDef.h" />
-    <ClInclude Include="..\log4cxxExt\Loader\ObjectLoader.h" />
-    <ClInclude Include="..\log4cxxExt\Loader\SocketInputStream.h" />
-    <ClInclude Include="..\log4cxxExt\Socket\log4cxxClient.h" />
+    <ClInclude Include="..\log4cxxExt\Loader\DefaultByteBufInputStream.h" />
+    <ClInclude Include="..\log4cxxExt\Loader\DefaultInputStreamDef.h" />
+    <ClInclude Include="..\log4cxxExt\Loader\DefaultObjectLoader.h" />
+    <ClInclude Include="..\log4cxxExt\Loader\DefaultSocketInputStream.h" />
+    <ClInclude Include="..\log4cxxExt\Loader\Exceptions.h" />
+    <ClInclude Include="..\log4cxxExt\Loader\LoggingEvnetEx.h" />
     <ClInclude Include="..\log4cxxExt\Socket\log4cxxSocket.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
