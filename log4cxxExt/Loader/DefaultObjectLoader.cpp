@@ -4,9 +4,11 @@
 #	include <winsock2.h> // SOCKET
 #	include <crtdbg.h> // _ASSERTE
 #else
+typedef int SOCKET;
 #	include <assert.h> // assert
 #	define _ASSERTE assert
 #endif
+#include <memory.h> // memcpy
 
 #include "DefaultInputStreamDef.h"
 #include "DefaultByteBufInputStream.h"

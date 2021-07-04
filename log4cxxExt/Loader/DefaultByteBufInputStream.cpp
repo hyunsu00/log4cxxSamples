@@ -6,6 +6,7 @@
 #	include <assert.h> // assert
 #	define _ASSERTE assert
 #endif
+#include <memory.h> // memcpy
 
 #include <log4cxx/log4cxx.h> // log4cxx_int64_t
 #include <log4cxx/helpers/charsetdecoder.h> // log4cxx::helpers::CharsetDecoder

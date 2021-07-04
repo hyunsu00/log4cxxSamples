@@ -2,6 +2,8 @@
 //
 #ifdef _WIN32
 #	include <winsock2.h> // SOCKET
+#else
+typedef int SOCKET;
 #endif
 #include "ObjectLoader.h"
 #include "DefaultObjectLoader.h"

@@ -1,10 +1,6 @@
 ﻿// DefaultObjectLoader.h
 #pragma once
 
-#ifndef _WIN32
-typedef int SOCKET;
-#endif
-
 #include <vector> // std::vector
 #include <log4cxx/spi/loggingevent.h> // log4cxx::spi::LoggingEventPtr
 #include "Exceptions.h" // log4cxx::ext::SmallBufferException, log4cxx::ext::InvalidBufferException

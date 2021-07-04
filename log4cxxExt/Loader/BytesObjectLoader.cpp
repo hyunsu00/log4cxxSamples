@@ -1,5 +1,13 @@
 ﻿// BytesObjectLoader.cpp
 //
+#ifdef _WIN32
+#	include <crtdbg.h> // _ASSERTE
+#else
+#	include <assert.h> // assert
+#	define _ASSERTE assert
+#endif
+#include <memory.h> // memcpy
+
 #include <log4cxx/helpers/charsetdecoder.h> // log4cxx::helpers::CharsetDecoder
 #include <log4cxx/helpers/bytebuffer.h> // log4cxx::helpers::ByteBuffer
 #include "Exceptions.h"

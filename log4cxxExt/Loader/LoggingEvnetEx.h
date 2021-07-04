@@ -10,7 +10,7 @@ namespace log4cxx { namespace ext {
 		LogString m_LoggerName;
 		int m_Level;
 		LogString m_Message;
-		__int64 m_Timestamp;
+		log4cxx_int64_t m_Timestamp;
 		LogString m_ThreadName;
 		std::string m_PathName;
 		std::string m_FuncName;

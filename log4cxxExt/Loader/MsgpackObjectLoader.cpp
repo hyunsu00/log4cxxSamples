@@ -1,4 +1,11 @@
 ﻿// MsgpackObjectLoader.cpp
+#ifdef _WIN32
+#	include <crtdbg.h> // _ASSERTE
+#else
+#	include <assert.h> // assert
+#	define _ASSERTE assert
+#endif
+#include <cmath> // std::round
 #include <iostream>
 #include <log4cxx/helpers/charsetdecoder.h> // log4cxx::helpers::CharsetDecoder
 #include <log4cxx/helpers/bytebuffer.h> // log4cxx::helpers::ByteBuffer
@@ -97,7 +104,7 @@ namespace log4cxx { namespace ext { namespace loader { namespace Msgpack {
 			eventData.m_LoggerName = fromUTF8(msgmap.ptr[msgIndex_name].val.as<std::vector<char>>());
 			eventData.m_Level = msgmap.ptr[msgIndex_levelno].val.as<int>() * 1000;
 			eventData.m_Message = fromUTF8(msgmap.ptr[msgIndex_msg].val.as<std::vector<char>>());
-			eventData.m_Timestamp = static_cast<__int64>(std::round(msgmap.ptr[msgIndex_created].val.as<float>() * 1000 * 1000));
+			eventData.m_Timestamp = static_cast<log4cxx_int64_t>(std::round(msgmap.ptr[msgIndex_created].val.as<float>() * 1000 * 1000));
 			eventData.m_ThreadName = fromUTF8(msgmap.ptr[msgIndex_threadName].val.as<std::vector<char>>());
 			eventData.m_PathName = msgmap.ptr[msgIndex_pathname].val.as<std::string>();
 			eventData.m_FuncName = msgmap.ptr[msgIndex_funcName].val.as<std::string>();
