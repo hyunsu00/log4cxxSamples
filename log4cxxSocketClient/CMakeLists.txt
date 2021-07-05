@@ -3,7 +3,7 @@
 #
 cmake_minimum_required (VERSION 2.8)
 
-project ("log4cxxSocketClient")
+project("log4cxxSocketClient")
 message(STATUS "\${PROJECT_NAME} = ${PROJECT_NAME}")
 
 ###
@@ -33,8 +33,8 @@ add_executable (${PROJECT_NAME} "log4cxxSocketClient.cpp")
 target_link_libraries(${PROJECT_NAME} ${LOG4CXX_LIBRARIES})
 
 ###
-# C++ 11 Thread 링크
-# SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11 -pthread")
+# C++ 11 사용
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11")
 
 add_custom_command(
 	TARGET ${PROJECT_NAME} PRE_BUILD
@@ -42,10 +42,6 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/log4cxxSocketClient.conf" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/"
 )
 message(STATUS "\${CMAKE_COMMAND} = ${CMAKE_COMMAND}")
-
-###
-# C++ 11 사용
-SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11")
 
 ###
 # 인스톨

@@ -3,19 +3,8 @@
 #
 cmake_minimum_required (VERSION 2.8)
 
-project ("log4cxxPollSocketServer")
+project("log4cxxPollSocketServer")
 message(STATUS "\${PROJECT_NAME} = ${PROJECT_NAME}")
-
-###
-# pkg-config를 사용하여 log4cxx 패키지 찾기
-# sudo apt install liblog4cxx-dev -y (데비안)
-# sudo yum install liblog4cxx-devel -y (센트OS)
-# 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LOG4CXX liblog4cxx REQUIRED)
-message(STATUS "\${LOG4CXX_LIBRARIES} = ${LOG4CXX_LIBRARIES}")
-message(STATUS "\${LOG4CXX_INCLUDE_DIRS} = ${LOG4CXX_INCLUDE_DIRS}")
-include_directories(${LOG4CXX_INCLUDE_DIRS})
 
 if (CMAKE_SIZEOF_VOID_P EQUAL 8)
 	set(TARGET_PLATFORM "x64")
@@ -25,42 +14,22 @@ endif()
 message(STATUS "\${TARGET_PLATFORM} = ${TARGET_PLATFORM}")
 
 ###
-#
-set (LOADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../common/Loader)
-message(STATUS "\${LOADER_DIR} = ${LOADER_DIR}")
-include_directories(${LOADER_DIR})
-
-set (SOCKET_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../common/Socket)
-message(STATUS "\${SOCKET_DIR} = ${SOCKET_DIR}")
-include_directories(${SOCKET_DIR})
-
-###
-# 소스 파일 설정
-set(LOADER_FILES 
-	"${LOADER_DIR}/InputStreamDef.h" 
-	"${LOADER_DIR}/ByteBufInputStream.h" 
-	"${LOADER_DIR}/ByteBufInputStream.cpp" 
-	"${LOADER_DIR}/SocketInputStream.h" 
-	"${LOADER_DIR}/SocketInputStream.cpp" 
-	"${LOADER_DIR}/ObjectLoader.h" 
-	"${LOADER_DIR}/ObjectLoader.cpp" 
-)
-message(STATUS "\${LOADER_FILES} = ${LOADER_FILES}")
-
-set(SOCKET_FILES 
-	"${SOCKET_DIR}/log4cxxSocket.h"
-	"${SOCKET_DIR}/log4cxxClient.h"
-	"${SOCKET_DIR}/log4cxxClient.cpp"
-)
-message(STATUS "\${SOCKET_FILES} = ${SOCKET_FILES}")
-
-###
 # 이 프로젝트의 실행 파일에 소스를 추가합니다.
-add_executable (${PROJECT_NAME} "BuildConfig.h" "log4cxxPollSocketServer.cpp" ${LOADER_FILES} ${SOCKET_FILES})
+add_executable(${PROJECT_NAME} "BuildConfig.h" "log4cxxPollSocketServer.cpp")
 
 ###
+# log4cxxExt 라이브러리 추가
+set(LOG4CXX_EXT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../log4cxxExt)
+if (NOT TARGET log4cxxExt)
+	add_subdirectory(${LOG4CXX_EXT_DIR} ${CMAKE_CURRENT_BINARY_DIR}/log4cxxExt)
+endif()
+message(STATUS "\${CMAKE_CURRENT_BINARY_DIR}/log4cxxExt = ${CMAKE_CURRENT_BINARY_DIR}/log4cxxExt")
 # 실행파일 생성후에 지정
-target_link_libraries(${PROJECT_NAME} ${LOG4CXX_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} log4cxxExt)
+
+###
+# C++ 11 사용
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11")
 
 add_custom_command(
 	TARGET ${PROJECT_NAME} PRE_BUILD
@@ -68,10 +37,6 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/log4cxxPollSocketServer.conf" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/"
 )
 message(STATUS "\${CMAKE_COMMAND} = ${CMAKE_COMMAND}")
-
-###
-# C++ 11 사용
-SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11")
 
 ###
 # 인스톨
