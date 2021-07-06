@@ -41,7 +41,7 @@ auto loadFiles = [](const std::string &sampleDir) -> bool
 
 		return true;
 	}; // auto forceLog
-
+#if 0
 	{
 		std::vector<char> byteBuf = log4cxx::ext::io::loadFile((sampleDir + "LoggingEvent_#1.bin").c_str());
 
@@ -77,6 +77,14 @@ auto loadFiles = [](const std::string &sampleDir) -> bool
 		// 로그 출력
 		if (!forceLog(copyBuf))
 		{
+			return false;
+		}
+	}
+#endif
+	{
+		std::vector<char> byteBuf = log4cxx::ext::io::loadFile((sampleDir + "LoggingEvent_#1.bin").c_str());
+		byteBuf.erase(byteBuf.begin(), byteBuf.begin() + 4);
+		if (!forceLog(byteBuf)) {
 			return false;
 		}
 	}

@@ -1,18 +1,19 @@
 # client.py
 import logging
 import logging.handlers
-import socketHandlers
 import time
+from LoggingEvent import DefaultSocketHandler, ByteSocketHandler, MsgpackSocketHandler, JsonSocketHandler
 
-
-def createSocketHandler(str="bytes") -> logging.handlers.SocketHandler:
+def createSocketHandler(str="Default") -> logging.handlers.SocketHandler:
     socketHandler = None
-    if str == "bytes":
-        socketHandler = socketHandlers.bytesSocketHandler("localhost", 9988)
-    elif str == "msgpack":
-        socketHandler = socketHandlers.msgpackSocketHandler("localhost", 9988)
-    elif str == "json":
-        socketHandler = socketHandlers.jsonSocketHandler("localhost", 9988)
+    if str == "Default":
+        socketHandler = DefaultSocketHandler.DefaultSocketHandler("localhost", 9988)
+    elif str == "Bytes":
+        socketHandler = ByteSocketHandler.ByteSocketHandler("localhost", 9988)
+    elif str == "Msgpack":
+        socketHandler = MsgpackSocketHandler.MsgpackSocketHandler("localhost", 9988)
+    elif str == "Json":
+        socketHandler = JsonSocketHandler.JsonSocketHandler("localhost", 9988)
     else:
         socketHandler = logging.handlers.SocketHandler("localhost", logging.handlers.DEFAULT_TCP_LOGGING_PORT)
 
@@ -25,7 +26,7 @@ def main():
 
     # don't bother with a formatter, since a socket handler sends the event as
     # an unformatted pickle
-    rootLogger.addHandler(createSocketHandler("msgpack"))
+    rootLogger.addHandler(createSocketHandler("Default"))
 
     # Now, we can log to the root logger, or any other logger. First the root...
     logging.info("INFO 출력 مرحبًا (mrhbana)...")
