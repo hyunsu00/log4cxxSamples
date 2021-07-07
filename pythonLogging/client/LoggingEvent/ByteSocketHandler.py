@@ -1,6 +1,9 @@
 import logging
+import logging.handlers
 import socket
 import struct
+
+BYTE_START_FLAG = b"\xAC\xED\x01\x05"
 
 #####
 # ByteSocketHandler
@@ -15,7 +18,7 @@ class ByteSocketHandler(logging.handlers.SocketHandler):
         clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             clientSocket.connect(self.address)
-            clientSocket.send(b"\xAC\xED\x01\x05")
+            clientSocket.send(BYTE_START_FLAG)
         except OSError:
             clientSocket.close()
             raise

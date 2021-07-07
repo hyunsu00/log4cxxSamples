@@ -1,4 +1,5 @@
 import logging
+import logging.handlers
 import socket
 import struct
 
@@ -83,10 +84,13 @@ TC_CLASS = b'\x76'
 TC_BLOCKDATA = b'\x77'
 TC_ENDBLOCKDATA = b'\x78'
 
+DEFAULT_START_FLAG = b"\xAC\xED\x00\x05"
+
 #####
 # DefaultSocketHandler
 #####
 class DefaultSocketHandler(logging.handlers.SocketHandler):
+	"""description of class"""
 	def __init__(self, host, port):
 		super().__init__(host, port)
 
@@ -95,8 +99,8 @@ class DefaultSocketHandler(logging.handlers.SocketHandler):
 		clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		try:
 			clientSocket.connect(self.address)
-			clientSocket.send(b"\xAC\xED\x00\x05")
-		except OSError:
+			clientSocket.send(DEFAULT_START_FLAG)
+		except OSError as e:
 			clientSocket.close()
 			raise
 		return clientSocket

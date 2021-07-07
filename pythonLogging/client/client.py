@@ -1,24 +1,7 @@
 # client.py
 import logging
-import logging.handlers
 import time
-from LoggingEvent import DefaultSocketHandler, ByteSocketHandler, MsgpackSocketHandler, JsonSocketHandler
-
-def createSocketHandler(str="Default") -> logging.handlers.SocketHandler:
-    socketHandler = None
-    if str == "Default":
-        socketHandler = DefaultSocketHandler.DefaultSocketHandler("localhost", 9988)
-    elif str == "Bytes":
-        socketHandler = ByteSocketHandler.ByteSocketHandler("localhost", 9988)
-    elif str == "Msgpack":
-        socketHandler = MsgpackSocketHandler.MsgpackSocketHandler("localhost", 9988)
-    elif str == "Json":
-        socketHandler = JsonSocketHandler.JsonSocketHandler("localhost", 9988)
-    else:
-        socketHandler = logging.handlers.SocketHandler("localhost", logging.handlers.DEFAULT_TCP_LOGGING_PORT)
-
-    return socketHandler
-
+from LoggingEvent import *
 
 def main():
     rootLogger = logging.getLogger("")
@@ -26,7 +9,7 @@ def main():
 
     # don't bother with a formatter, since a socket handler sends the event as
     # an unformatted pickle
-    rootLogger.addHandler(createSocketHandler("Default"))
+    rootLogger.addHandler(createLoggingEventHandler(LOGGING_EVENT_DEFAULT, "localhost", 9988))
 
     # Now, we can log to the root logger, or any other logger. First the root...
     logging.info("INFO 출력 مرحبًا (mrhbana)...")
@@ -43,7 +26,6 @@ def main():
         logger2.warning("WARN 출력 你好 (Nǐ hǎo)...")
         logger2.error("ERROR 출력 こんにちは (Kon'nichiwa)...")
         time.sleep(1)
-
 
 if __name__ == "__main__":
     main()

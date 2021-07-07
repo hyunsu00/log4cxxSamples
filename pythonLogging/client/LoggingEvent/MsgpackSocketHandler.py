@@ -1,6 +1,9 @@
 import logging
+import logging.handlers
 import socket
 import msgpack
+
+MSGPACK_START_FLAG = b"\xAC\xED\x02\x05"
 
 #####
 # MsgpackSocketHandler
@@ -15,7 +18,7 @@ class MsgpackSocketHandler(logging.handlers.SocketHandler):
         clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             clientSocket.connect(self.address)
-            clientSocket.send(b"\xAC\xED\x02\x05")
+            clientSocket.send(MSGPACK_START_FLAG)
         except OSError:
             clientSocket.close()
             raise

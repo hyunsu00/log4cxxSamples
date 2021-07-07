@@ -1,5 +1,8 @@
 import logging
+import logging.handlers
 import socket
+
+JSON_START_FLAG = b"\xAC\xED\x03\x05"
 
 #####
 # JsonSockeHandler
@@ -14,7 +17,7 @@ class JsonSocketHandler(logging.handlers.SocketHandler):
         clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             clientSocket.connect(self.address)
-            clientSocket.send(b"\xAC\xED\x03\x05")
+            clientSocket.send(JSON_START_FLAG)
         except OSError:
             clientSocket.close()
             raise
