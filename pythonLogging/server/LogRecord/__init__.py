@@ -1,7 +1,12 @@
 from .DefaultLogRecord import *
-from .BytetLogRecord import *
-from .MsgpacktLogRecord import *
+from .BytesLogRecord import *
+from .MsgpackLogRecord import *
 from .JsonLogRecord import *
 
-#__all__ = ['DefaultLogRecord', 'BytetLogRecord',
-#           'MsgpacktLogRecord', 'JsonLogRecord']
+#__all__ = ['DefaultLogRecord', 'BytesLogRecord',
+#           'MsgpackLogRecord', 'JsonLogRecord']
+
+def debugWrite(fileName : str, data : bytes):
+    f = open(fileName, "wb")
+    f.write(data)
+    f.close()

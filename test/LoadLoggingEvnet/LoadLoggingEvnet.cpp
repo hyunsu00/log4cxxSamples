@@ -14,6 +14,7 @@
 #	include <string.h>	// strdup
 #	include <libgen.h>	// dirname
 #endif
+#include <iostream> // std::cout
 
 #include "FileLoader.h"
 #include "DefaultObjectLoader.h"
@@ -41,7 +42,8 @@ auto loadFiles = [](const std::string &sampleDir) -> bool
 
 		return true;
 	}; // auto forceLog
-#if 0
+
+	std::cout << "[LoggingEvent_#1]" << std::endl;
 	{
 		std::vector<char> byteBuf = log4cxx::ext::io::loadFile((sampleDir + "LoggingEvent_#1.bin").c_str());
 
@@ -80,7 +82,8 @@ auto loadFiles = [](const std::string &sampleDir) -> bool
 			return false;
 		}
 	}
-#endif
+
+	std::cout << "\n[LoggingEvent_#1]" << std::endl;
 	{
 		std::vector<char> byteBuf = log4cxx::ext::io::loadFile((sampleDir + "LoggingEvent_#1.bin").c_str());
 		byteBuf.erase(byteBuf.begin(), byteBuf.begin() + 4);
@@ -89,6 +92,7 @@ auto loadFiles = [](const std::string &sampleDir) -> bool
 		}
 	}
 
+	std::cout << "\n[LoggingEvent_#2.bin]" << std::endl;
 	{
 		std::vector<char> byteBuf = log4cxx::ext::io::loadFile((sampleDir + "LoggingEvent_#2.bin").c_str());
 		if (!forceLog(byteBuf)) {
@@ -96,13 +100,39 @@ auto loadFiles = [](const std::string &sampleDir) -> bool
 		}
 	}
 
+	std::cout << "\n[LoggingEvent_#3.bin]" << std::endl;
 	{
 		std::vector<char> byteBuf = log4cxx::ext::io::loadFile((sampleDir + "LoggingEvent_#3.bin").c_str());
 		if (!forceLog(byteBuf)) {
 			return false;
 		}
 	}
+	
+	std::cout << "\n[ava.bin]" << std::endl;
+	{
+		std::vector<char> byteBuf = log4cxx::ext::io::loadFile((sampleDir + "java.bin").c_str());
+		byteBuf.erase(byteBuf.begin(), byteBuf.begin() + 4);
 
+		while (!byteBuf.empty()) {
+			try {
+				log4cxx::spi::LoggingEventPtr event = log4cxx::ext::loader::Default::createLoggingEvent(byteBuf);
+				log4cxx::LoggerPtr remoteLogger = log4cxx::Logger::getLogger(event->getLoggerName());
+				if (event->getLevel()->isGreaterOrEqual(remoteLogger->getEffectiveLevel())) {
+					log4cxx::helpers::Pool p;
+					remoteLogger->callAppenders(event, p);
+				}
+				if (byteBuf[0] == 0x79) { // TC_RESET
+					byteBuf.erase(byteBuf.begin(), byteBuf.begin() + 1);
+				}
+			} catch (log4cxx::ext::SmallBufferException& e) { // 무시
+				LOG4CXX_WARN(sLogger, e.what());
+				break;
+			} catch (log4cxx::ext::InvalidBufferException& e) { // 종료
+				LOG4CXX_ERROR(sLogger, e.what());
+				return false;
+			}
+		}
+	}
 	return true;
 }; // auto loadFiles
 

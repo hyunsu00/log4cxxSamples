@@ -81,6 +81,23 @@ namespace log4cxx { namespace ext { namespace io { namespace Default {
 		return true;
 	}
 
+	bool readShort(SOCKET socket, short& value) noexcept
+	{
+		_ASSERTE(sizeof(short) == 2 && "읽을 데이터의 크기는 2이여야 한다.");
+		if (!read(socket, &value, sizeof(short))) {
+			return false;
+		}
+
+		// 리틀 엔디안으로 변경
+		char bytes[2] = { 0, };
+		bytes[1] = (char)(value & 0xFF);
+		bytes[0] = (char)((value >> 8) & 0xFF);
+
+		memcpy(&value, bytes, sizeof(bytes));
+
+		return true;
+	}
+
 	bool readInt(SOCKET socket, int& value) noexcept
 	{
 		_ASSERTE(sizeof(int) == 4 && "읽을 데이터의 크기는 4이여야 한다.");
@@ -272,14 +289,63 @@ namespace log4cxx { namespace ext { namespace io { namespace Default {
 		{
 		case TC_CLASSDESC:
 			{
-				size_t size = classDescLen - sizeof(classDesc[0]);
-				std::vector<unsigned char> byteBuf;
-				if (!readBytes(socket, size , byteBuf)) {
+				short dataLen = 0;
+				if (!readShort(socket, dataLen)) { // 클래스 이름의 길이
 					return false;
 				}
-				int ret = memcmp(classDesc + 1, &byteBuf[0], size);
-				_ASSERTE(ret == 0 && "memcmp() Failed");
-				if (ret != 0) {
+				std::vector<unsigned char> data;
+				if (!readBytes(socket, dataLen, data)) { // 클래스 이름
+					return false;
+				}
+				if (!readBytes(socket, 8, data)) { // 시리얼 버전 식별자
+					return false;
+				}
+				unsigned char flag = 0;
+				if (!readByte(socket, flag)) { // 직렬화 플래그
+					return false;
+				}
+				short fieldLen = 0;
+				if (!readShort(socket, fieldLen)) { // 필드수
+					return false;
+				}
+				for (int i = 0; i < fieldLen; i++) {
+					if (!readByte(socket, typeClass)) { // 필드 유형 코드
+						return false;
+					}
+					if (!readShort(socket, dataLen)) {  // 필드 이름의 길이
+						return false;
+					}
+					if (!readBytes(socket, dataLen, data)) { // 필드의 이름
+						return false;
+					}
+				}
+				while (true) {
+					if (!readByte(socket, typeClass)) { 
+						return false;
+					}
+					if (typeClass == TC_ENDBLOCKDATA) { // 0x78
+						break;
+					} else if (typeClass == TC_REFERENCE) { // 0x71
+						int val = 0;
+						if (!readInt(socket, val)) {
+							return false;
+						}
+					} else if (typeClass == 0x4C || typeClass == TC_STRING) { // 0x4C || 0x74
+						if (!readShort(socket, dataLen)) { // 문자열 길이
+							return false;
+						}
+						if (!readBytes(socket, dataLen, data)) { // 문자열
+							return false;
+						}
+					} else {
+						_ASSERTE(!"typeClass is invalid");
+						return false;
+					}
+				}
+				// 클래스 계층 구조의 최상위에 도달했기 때문에 더 이상 슈퍼 클래스가 없다는
+				// 사실을 나타낼때 TC_NULL 이다.
+				if (!readByte(socket, typeClass) || typeClass != TC_NULL) {
+					_ASSERTE(!"typeClass is invalid");
 					return false;
 				}
 			}

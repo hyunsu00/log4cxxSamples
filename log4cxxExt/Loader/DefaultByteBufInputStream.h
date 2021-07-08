@@ -10,6 +10,7 @@ namespace log4cxx { namespace ext { namespace io { namespace Default {
 
     size_t readByte(const ByteBuf& byteBuf, size_t pos, unsigned char& value) /*throw(SmallBufferException)*/;
     size_t readBytes(const ByteBuf& byteBuf, size_t pos, size_t bytes, std::vector<unsigned char>& value) /*throw(SmallBufferException)*/;
+    size_t readShort(const ByteBuf& byteBuf, size_t pos, short& value) /*throw(SmallBufferException)*/;
     size_t readInt(const ByteBuf& byteBuf, size_t pos, int& value) /*throw(SmallBufferException)*/;
     size_t readLong(const ByteBuf& byteBuf, size_t pos, log4cxx_int64_t& value) /*throw(SmallBufferException)*/;
 

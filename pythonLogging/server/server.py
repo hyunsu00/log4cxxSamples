@@ -7,6 +7,7 @@ import struct
 import os
 import msgpackLogRecord
 
+from LogRecord import*
 
 class LogRecordStreamHandler(socketserver.StreamRequestHandler):
     """Handler for a streaming logging request.

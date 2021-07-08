@@ -103,7 +103,8 @@ namespace log4cxx { namespace ext { namespace io  { namespace Default {
 		TC_ARRAY = 0x75,
 		TC_CLASS = 0x76,
 		TC_BLOCKDATA = 0x77,
-		TC_ENDBLOCKDATA = 0x78
+		TC_ENDBLOCKDATA = 0x78,
+		TC_RESET = 0x79
 	};
 	enum {
 		SC_WRITE_METHOD = 0x01,

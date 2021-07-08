@@ -9,6 +9,7 @@ namespace log4cxx { namespace ext { namespace io { namespace Default {
     bool read(SOCKET socket, void* buf, size_t len) noexcept;
     bool readByte(SOCKET socket, unsigned char& value) noexcept;
     bool readBytes(SOCKET socket, size_t bytes, std::vector<unsigned char>& value) noexcept;
+    bool readShort(SOCKET socket, short& value) noexcept;
     bool readInt(SOCKET socket, int& value) noexcept;
     bool readLong(SOCKET socket, log4cxx_int64_t& value) noexcept;
 

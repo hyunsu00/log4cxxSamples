@@ -6,7 +6,8 @@ import org.apache.log4j.Level;
 import org.apache.log4j.net.SocketAppender;
 
 public class log4jClient  {
-	static public final int PORT = 9988; 
+	//static public final int PORT = 9988; 
+	static public final int PORT = 9988;
 	private static final Logger clientLogger = Logger.getLogger(log4jClient.class);
 	public static void main(String args[]) {
 		// BasicConfigurator.configure();
@@ -18,6 +19,7 @@ public class log4jClient  {
 		Logger.getRootLogger().addAppender(
 			new SocketAppender("localhost", PORT)
 		);
+
 		Logger.getRootLogger().setLevel(Level.INFO);
 		try {
 			Logger rootLogger = Logger.getRootLogger();

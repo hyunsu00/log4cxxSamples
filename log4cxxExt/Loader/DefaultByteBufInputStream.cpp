@@ -53,6 +53,31 @@ namespace log4cxx { namespace ext { namespace io { namespace Default {
 		return readPos;
 	}
 
+	size_t readShort(const ByteBuf& byteBuf, size_t pos, short& value) /*throw(SmallBufferException)*/
+	{
+		const char* pBuf = &byteBuf[0] + pos;
+		const size_t byteBufSize = byteBuf.size();
+		size_t readPos = 0;
+
+		_ASSERTE(sizeof(short) == 2 && "읽을 데이터의 크기는 2이여야 한다.");
+		const size_t size = 2;
+		if (pos + readPos + size > byteBufSize) {
+			throw SmallBufferException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
+		}
+
+		// 빅 엔디안
+		char bytes[2];
+		memcpy(bytes, pBuf + readPos, size);
+
+		// 리틀 엔디안으로 변경
+		std::swap(bytes[0], bytes[1]);
+
+		memcpy(&value, bytes, sizeof(bytes));
+
+		readPos += size;
+		return readPos;
+	}
+
 	size_t readInt(const ByteBuf& byteBuf, size_t pos, int& value) /*throw(SmallBufferException)*/
 	{
 		const char* pBuf = &byteBuf[0] + pos;
@@ -336,17 +361,40 @@ namespace log4cxx { namespace ext { namespace io { namespace Default {
 		{
 		case TC_CLASSDESC:
 			{
-				size = classDescLen - sizeof(classDesc[0]);
-				if (pos + readPos + size > byteBufSize) {
-					throw SmallBufferException(LOG4CXX_STR("버퍼 사이즈가 작아 읽을 수가 없다."));
+				short dataLen = 0; short fieldLen = 0;
+				readPos += readShort(byteBuf, pos + readPos, dataLen); // 클래스 이름의 길이
+				readPos += dataLen; // 클래스 이름
+				readPos += 8; // 시리얼 버전 식별자
+				readPos += 1; // 직렬화 플래그
+				readPos += readShort(byteBuf, pos + readPos, fieldLen); // 필드수
+				for (int i = 0; i < fieldLen; i++) {
+					readPos += 1; // 필드 유형 코드
+					readPos += readShort(byteBuf, pos + readPos, dataLen); // 필드 이름의 길이
+					readPos += dataLen; // 필드의 이름
 				}
 
-				int ret = memcmp(classDesc + 1, pBuf + readPos, size);
-				_ASSERTE(ret == 0 && "memcmp() Failed");
-				if (ret != 0) {
+				while (true) {
+					readPos += readByte(byteBuf, pos + readPos, typeClass);
+					if (typeClass == TC_ENDBLOCKDATA) { // 0x78
+						break;
+					} else if (typeClass == TC_REFERENCE) { // 0x71
+						int val = 0;
+						readPos += readInt(byteBuf, pos + readPos, val);
+					} else if (typeClass == 0x4C || typeClass == TC_STRING) { // 0x4C || 0x74
+						readPos += readShort(byteBuf, pos + readPos, dataLen); // 문자열 길이
+						readPos += dataLen; // 문자열
+					} else {
+						_ASSERTE(!"typeClass is invalid");
+						throw InvalidBufferException(LOG4CXX_STR("TC_CLASSDESC의 클래스 정보가 잘못되었다."));
+					}
+				}
+				// 클래스 계층 구조의 최상위에 도달했기 때문에 더 이상 슈퍼 클래스가 없다는
+				// 사실을 나타낼때 TC_NULL 이다.
+				readPos += readByte(byteBuf, pos + readPos, typeClass);
+				_ASSERTE(typeClass == TC_NULL && "type == TC_NULL 이여야 한다."); // 0x70
+				if (typeClass != TC_NULL) {
 					throw InvalidBufferException(LOG4CXX_STR("TC_CLASSDESC의 클래스 정보가 잘못되었다."));
 				}
-				readPos += size;
 			}
 			break;
 		case TC_REFERENCE:

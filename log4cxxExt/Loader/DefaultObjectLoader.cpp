@@ -73,17 +73,27 @@ namespace log4cxx { namespace ext { namespace loader { namespace Default {
 		const char* pBuf = &byteBuf[0];
 		size_t pos = 0;
 
-		// <==> writeProlog(os, p);
+		// 
 		{
-			unsigned char typeClass = TC_OBJECT;
+			unsigned char typeClass = TC_RESET;
 			size_t size = readByte(byteBuf, pos, typeClass);
-			if (typeClass != TC_OBJECT) {
-				throw InvalidBufferException(LOG4CXX_STR("type이 TC_OBJECT이여야만 한다."));
+			if (typeClass != TC_RESET && typeClass != TC_OBJECT) {
+				throw InvalidBufferException(LOG4CXX_STR("typeClass는 TC_RESET 또는 TC_OBJECT 여야만 한다."));
+			}
+
+			if (typeClass == TC_RESET) {
+				size += readByte(byteBuf, pos + size, typeClass);
+				if (typeClass != TC_OBJECT) {
+					throw InvalidBufferException(LOG4CXX_STR("type이 TC_OBJECT이여야만 한다."));
+				}	
 			}
 			pos += size;
+		}
 
+		// <==> writeProlog(os, p);
+		{
 			std::pair<std::string, unsigned int> value;
-			size = readProlog(byteBuf, pos, classDesc::LOGGING_EVENT, sizeof(classDesc::LOGGING_EVENT), value);
+			size_t size = readProlog(byteBuf, pos, classDesc::LOGGING_EVENT, sizeof(classDesc::LOGGING_EVENT), value);
 			pos += size;
 		}
 
@@ -202,7 +212,7 @@ namespace log4cxx { namespace ext { namespace loader { namespace Default {
 			unsigned char value = TC_ENDBLOCKDATA;
 			size_t size = readByte(byteBuf, pos, value);
 			if (value != TC_ENDBLOCKDATA) {
-				throw InvalidBufferException(LOG4CXX_STR("value는 TC_NULL 여야만 한다."));
+				throw InvalidBufferException(LOG4CXX_STR("value는 TC_ENDBLOCKDATA 여야만 한다."));
 			}
 			pos += size;
 		}
@@ -227,13 +237,21 @@ namespace log4cxx { namespace ext { namespace loader { namespace Default {
 	{
 		using namespace log4cxx::ext::io::Default;
 
-		// <==> writeProlog(os, p);
 		{
-			unsigned char typeClass = TC_OBJECT;
-			if (!readByte(socket, typeClass) || typeClass != TC_OBJECT) {
+			unsigned char typeClass = TC_RESET;
+			if (!readByte(socket, typeClass) || (typeClass != TC_RESET && typeClass != TC_OBJECT)) {
 				return nullptr;
 			}
 
+			if (typeClass == TC_RESET) {
+				if (!readByte(socket, typeClass) || typeClass != TC_OBJECT) {
+					return nullptr;
+				}
+			}
+		}
+		
+		// <==> writeProlog(os, p);
+		{
 			std::pair<std::string, unsigned int> value;
 			if (!readProlog(socket, classDesc::LOGGING_EVENT, sizeof(classDesc::LOGGING_EVENT), value)) {
 				return nullptr;
