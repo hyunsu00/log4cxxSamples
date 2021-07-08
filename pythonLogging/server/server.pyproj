@@ -21,9 +21,27 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="LogRecord\BytesLogRecord.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="LogRecord\DefaultLogRecord.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="LogRecord\JsonLogRecord.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="LogRecord\MsgpackLogRecord.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="LogRecord\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="msgpackLogRecord.py" />
     <Compile Include="server.py" />
     <Compile Include="__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="LogRecord\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
