@@ -46,10 +46,7 @@ class ByteSocketHandler(logging.handlers.SocketHandler):
             funcNameLen, funcName,
             linenoLen, lineno,
         )
-        dataLen = len(data)
-        self.debugWrite("record.bin", data)
-
         # 현재는 보내지 않음
         # 보낼려면 return dataLen + data
-        # dataLen = struct.pack("!L", dataLen)
+        # dataLen = struct.pack("!L", len(data))
         return data

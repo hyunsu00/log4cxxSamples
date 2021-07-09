@@ -21,22 +21,21 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="LogRecord\BytesLogRecord.py">
+    <Compile Include="LogRecord\BytesLogRecordStreamHandler.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="LogRecord\DefaultLogRecord.py">
+    <Compile Include="LogRecord\DefaultLogRecordStreamHandler.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="LogRecord\JsonLogRecord.py">
+    <Compile Include="LogRecord\JsonLogRecordStreamHandler.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="LogRecord\MsgpackLogRecord.py">
+    <Compile Include="LogRecord\MsgpackLogRecordStreamHandler.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="LogRecord\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="msgpackLogRecord.py" />
     <Compile Include="server.py" />
     <Compile Include="__init__.py" />
   </ItemGroup>

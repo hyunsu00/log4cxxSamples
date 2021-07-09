@@ -4,6 +4,7 @@ import time
 from LoggingEvent import *
 
 def main():
+    logging.basicConfig(format="%(relativeCreated)5d %(name)-15s %(levelname)-8s %(message)s")
     rootLogger = logging.getLogger("")
     rootLogger.setLevel(logging.DEBUG)
 
