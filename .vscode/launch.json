@@ -5,7 +5,7 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "(gdb) Launch",
+			"name": "(gdb) 시작",
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/build/log4cxxEpollSocketServer/log4cxxEpollSocketServer",
@@ -19,6 +19,11 @@
 				{
 					"description": "gdb에 자동 서식 지정 사용",
 					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				},
+				{
+					"description": "디스어셈블리 버전을 Intel(으)로 설정",
+					"text": "-gdb-set disassembly-flavor intel",
 					"ignoreFailures": true
 				}
 			]

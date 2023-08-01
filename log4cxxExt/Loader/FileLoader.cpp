@@ -1,6 +1,7 @@
 ﻿// FileLoader.cpp
 //
 #include <memory> // std::unique_ptr
+#include <cstdio>
 #include "FileLoader.h"
 
 namespace log4cxx { namespace ext { namespace io {

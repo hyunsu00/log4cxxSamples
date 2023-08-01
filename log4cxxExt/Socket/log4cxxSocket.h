@@ -19,7 +19,7 @@ typedef int SOCKET;
 #define INVALID_SOCKET (-1)
 #define SD_BOTH         SHUT_RDWR
 #define WSAEWOULDBLOCK  EWOULDBLOCK
-auto closesocket = [](int fd) -> int {
+static auto closesocket = [](int fd) -> int {
 	return close(fd);
 };
 #endif

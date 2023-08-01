@@ -8,6 +8,7 @@ message(STATUS "\${PROJECT_NAME} = ${PROJECT_NAME}")
 
 ###
 # pkg-config를 사용하여 log4cxx 패키지 찾기
+# sudo apt install pkg-config -y (데비안)
 # sudo apt install liblog4cxx-dev -y (데비안)
 # sudo yum install liblog4cxx-devel -y (센트OS)
 # 
@@ -19,7 +20,6 @@ message(STATUS "\${LOG4CXX_INCLUDE_DIRS} = ${LOG4CXX_INCLUDE_DIRS}")
 
 # sudo apt install libmsgpack-dev (데비안)
 find_package(Msgpack REQUIRED)
-message(STATUS "\${LOG4CXX_INCLUDE_DIRS} = ${LOG4CXX_INCLUDE_DIRS}")
 message(STATUS "\${MSGPACK_LIBRARIES} = ${MSGPACK_LIBRARIES}")
 message(STATUS "\${MSGPACK_INCLUDE_DIRS} = ${MSGPACK_INCLUDE_DIRS}")
 #include_directories(${MSGPACK_INCLUDE_DIRS})
